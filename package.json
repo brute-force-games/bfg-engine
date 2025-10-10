@@ -1,0 +1,46 @@
+{
+  "name": "@brute-force-games/bfg-engine",
+  "version": "0.1.0",
+  "description": "Core infrastructure and logic library for Brute Force Games",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "game-engine",
+    "typescript",
+    "brute-force-games"
+  ],
+  "author": "Brute Force Games",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@vitejs/plugin-react": "^4.2.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-plugin-dts": "^3.7.0"
+  },
+  "peerDependencies": {
+    "react": "19.2.0",
+    "bfg-ui-components": "^0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@tanstack/react-form": "^1.23.5",
+    "tinybase": "^6.7.0",
+    "trystero": "^0.21.8"
+  }
+}
