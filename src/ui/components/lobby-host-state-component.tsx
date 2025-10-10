@@ -12,15 +12,11 @@ import {
   Stack, 
   Chip, 
   Alert,
-  CircularProgress
-} from "@mui/material"
-import { 
-  PlayArrow, 
-  Clear, 
-  PersonRemove, 
+  Clear,
+  PersonRemove,
   Gamepad,
   Settings
-} from "@mui/icons-material"
+} from "bfg-ui-components"
 import { useGameHosting } from "~/hooks/games-registry/game-hosting"
 import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 
@@ -145,14 +141,14 @@ export const LobbyHostStateComponent = ({
               <Typography variant="h6" component="h2" gutterBottom>
                 Player Pool
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
+              <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+                <Typography variant="body2" style={{ color: '#666' }}>
                   [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
                 </Typography>
               </Stack>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {playerPoolHandles.length > 0 ? playerPoolHandles : (
-                  <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                  <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
                     No players in pool
                   </Typography>
                 )}
@@ -169,7 +165,7 @@ export const LobbyHostStateComponent = ({
     <>
       <Stack spacing={2}>
         <Box>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+          <Stack direction="row" spacing={1} flexWrap="wrap" style={{ alignItems: 'center' }}>
             <Typography variant="h6" component="h2" gutterBottom>
               {lobbyState.lobbyName}
             </Typography>
@@ -184,11 +180,11 @@ export const LobbyHostStateComponent = ({
               size="small"
             />
           </Stack>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontStyle: 'italic' }}>
+            <Typography variant="body2" gutterBottom style={{ color: '#666', fontStyle: 'italic' }}>
               hosted by {lobbyState.gameHostPlayerProfile.handle}
             </Typography>
           {!lobbyState.isLobbyValid && (
-            <Alert severity="warning" sx={{ mt: 1 }}>
+            <Alert severity="warning" style={{ marginTop: '8px' }}>
               Lobby configuration is invalid. Please check your settings.
             </Alert>
           )}
@@ -199,13 +195,12 @@ export const LobbyHostStateComponent = ({
           <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
             <Button
               variant="contained"
-              startIcon={isStartingGame ? <CircularProgress size={16} /> : <PlayArrow />}
               onClick={() => startGame()}
               disabled={isGameStarted || isStartingGame || !lobbyState.isLobbyValid}
               color="primary"
               size="large"
             >
-              {isStartingGame ? `Starting ${lobbyState.gameTitle}...` : `Start ${lobbyState.gameTitle || 'Game'}`}
+              {isStartingGame ? '⟳ ' : ''}{isStartingGame ? `Starting ${lobbyState.gameTitle}...` : `▶ Start ${lobbyState.gameTitle || 'Game'}`}
             </Button>
           </Stack>
         </Box>
@@ -218,46 +213,44 @@ export const LobbyHostStateComponent = ({
 
         {/* Player Pool */}
         <Box>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={1} flexWrap="wrap" style={{ alignItems: 'center', marginBottom: '8px' }}>
             <Typography variant="h6" component="h2">
               Player Pool
             </Typography>
             <Button
               variant="outlined"
               size="small"
-              startIcon={<PersonRemove />}
               onClick={() => setLobbyPlayerPool([])}
               disabled={isGameStarted || lobbyState.playerPool.length === 0}
               color="warning"
-              sx={{ minWidth: 'auto', px: 1 }}
+              style={{ minWidth: 'auto', padding: '4px 8px' }}
             >
-              Clear Seats
+              <PersonRemove /> Clear Seats
             </Button>
           </Stack>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+          <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+            <Typography variant="body2" style={{ color: '#666' }}>
               [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
             </Typography>
           </Stack>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {playerPoolHandles.length > 0 ? playerPoolHandles : (
-              <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                No players in pool
-              </Typography>
-            )}
-          </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {playerPoolHandles.length > 0 ? playerPoolHandles : (
+                  <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
+                    No players in pool
+                  </Typography>
+                )}
+              </Stack>
         </Box>
 
         {/* Game Title */}
         <Box>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={1} flexWrap="wrap" style={{ alignItems: 'center', marginBottom: '8px' }}>
             <Typography variant="h6" component="h2">
               Game Selection
             </Typography>
             <Button
               variant="outlined"
               size="small"
-              startIcon={<Clear />}
               onClick={() => updateLobbyState({ 
                 ...lobbyState, 
                 gameTitle: undefined,
@@ -265,34 +258,33 @@ export const LobbyHostStateComponent = ({
               })}
               disabled={isGameStarted || !lobbyState.gameTitle}
               color="warning"
-              sx={{ minWidth: 'auto', px: 1 }}
+              style={{ minWidth: 'auto', padding: '4px 8px' }}
             >
-              Clear Game
+              <Clear /> Clear Game
             </Button>
             {onOpenLobbyOptionsDialog && (
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<Settings />}
                 onClick={onOpenLobbyOptionsDialog}
                 disabled={isGameStarted}
-                sx={{ minWidth: 'auto', px: 1 }}
+                style={{ minWidth: 'auto', padding: '4px 8px' }}
               >
-                Configure
+                <Settings /> Configure
               </Button>
             )}
           </Stack>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Gamepad sx={{ color: 'primary.main' }} />
+          <Stack direction="row" spacing={1} flexWrap="wrap" style={{ alignItems: 'center' }}>
+            <Gamepad style={{ color: '#1976d2' }} />
             <Typography variant="body1">
               {lobbyState.gameTitle || "No game selected"}
             </Typography>
             {playerCountLabel && (
-              <Chip 
-                label={playerCountLabel} 
-                variant="outlined"
-                size="small"
-              />
+            <Chip 
+              label={playerCountLabel} 
+              variant="outlined"
+              size="small"
+            />
             )}
           </Stack>
         </Box>

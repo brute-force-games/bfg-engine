@@ -6,12 +6,9 @@ import {
   Button, 
   Paper,
   Avatar,
-  Link
-} from '@mui/material'
-import { 
   CheckCircle as CheckCircleIcon,
   OpenInNew as OpenInNewIcon
-} from '@mui/icons-material'
+} from 'bfg-ui-components'
 
 
 interface ILobbyPlayerJoinGameComponentProps {
@@ -45,33 +42,32 @@ export const LobbyPlayerJoinGameComponent = ({
   return (
     <Paper 
       elevation={3} 
-      sx={{ 
-        p: 3, 
-        borderRadius: 2,
+      style={{ 
+        padding: '24px', 
+        borderRadius: '8px',
         textAlign: 'center'
       }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {/* Success Icon */}
         <Avatar 
-          sx={{ 
-            bgcolor: 'success.light', 
-            mb: 2,
+          style={{ 
+            backgroundColor: '#81c784', 
+            marginBottom: '16px',
             width: 40,
             height: 40
           }}
         >
-          <CheckCircleIcon sx={{ color: 'success.main', fontSize: 24 }} />
+          <CheckCircleIcon />
         </Avatar>
         
         {/* Main Message */}
         <Typography 
           variant="h4" 
           component="h2" 
-          sx={{ 
+          style={{ 
             fontWeight: 'bold', 
-            color: 'text.primary',
-            mb: 1
+            marginBottom: '8px'
           }}
         >
           Game Has Started!
@@ -79,45 +75,35 @@ export const LobbyPlayerJoinGameComponent = ({
         
         <Typography 
           variant="h6" 
-          sx={{ 
-            color: 'text.secondary',
-            mb: 3
+          style={{ 
+            color: '#666',
+            marginBottom: '24px'
           }}
         >
           The game is now live and ready to play. Click the link below to join the action!
         </Typography>
         
         {/* Game Link Button */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Button
-            component={Link}
-            href={lobbyState.gameLink}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={() => window.open(lobbyState.gameLink, '_blank', 'noopener,noreferrer')}
             variant="contained"
             size="large"
-            startIcon={<OpenInNewIcon />}
-            sx={{
-              px: 4,
-              py: 1.5,
+            style={{
+              padding: '12px 32px',
               fontSize: '1.1rem',
-              fontWeight: 'medium',
+              fontWeight: '500',
               textTransform: 'none',
-              boxShadow: 3,
-              '&:hover': {
-                boxShadow: 6,
-                transform: 'translateY(-2px)',
-              },
               transition: 'all 0.2s ease-in-out'
             }}
           >
-            Join Game Now
+            <OpenInNewIcon /> Join Game Now
           </Button>
           
           {/* Additional Info */}
           <Typography 
             variant="body2" 
-            sx={{ color: 'text.disabled' }}
+            style={{ color: '#999' }}
           >
             This link will open in a new tab
           </Typography>

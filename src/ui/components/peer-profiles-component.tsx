@@ -2,17 +2,13 @@ import { useState } from "react";
 import { 
   Typography, 
   Box, 
-  Collapse, 
   IconButton, 
   Chip,
   Stack,
-  Avatar
-} from "@mui/material";
-import { 
-  ExpandMore, 
-  ExpandLess,
+  Avatar,
+  ExpandMore,
   People
-} from "@mui/icons-material";
+} from "bfg-ui-components";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
 
@@ -41,36 +37,31 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
   };
 
   return (
-    <Box sx={{
-      border: '1px solid',
-      borderColor: 'divider',
-      borderRadius: 2,
-      backgroundColor: 'background.paper',
-      transition: 'all 0.2s ease',
-      '&:hover': {
-        boxShadow: 2,
-        transform: 'translateY(-1px)'
-      }
+    <Box style={{
+      border: '1px solid #e0e0e0',
+      borderRadius: '8px',
+      backgroundColor: '#fff',
+      transition: 'all 0.2s ease'
     }}>
       {/* Compact header - always visible */}
       <Stack 
         direction="row" 
         alignItems="center" 
         justifyContent="space-between"
-        sx={{ p: 2 }}
+        style={{ padding: '16px' }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
           <Avatar 
             src={peerProfile.avatarImageUrl}
-            sx={{ width: 32, height: 32, fontSize: '0.875rem' }}
+            style={{ width: 32, height: 32, fontSize: '0.875rem' }}
           >
             {!peerProfile.avatarImageUrl && getInitials(peerProfile.handle)}
           </Avatar>
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+            <Typography variant="subtitle2" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
               {peerProfile.handle}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" style={{ color: '#666' }}>
               Peer Profile
             </Typography>
           </Box>
@@ -81,12 +72,12 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
             size="small" 
             color="success" 
             variant="outlined"
-            sx={{ height: 20, fontSize: '0.75rem' }}
+            style={{ height: 20, fontSize: '0.75rem' }}
           />
           <IconButton
             onClick={() => setExpanded(!expanded)}
             size="small"
-            sx={{ 
+            style={{ 
               transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease'
             }}
@@ -97,11 +88,11 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
       </Stack>
 
       {/* Expandable details */}
-      <Collapse in={expanded}>
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Stack spacing={1} sx={{ mb: 2 }}>
+      {expanded && (
+        <Box style={{ padding: '0 16px 16px' }}>
+          <Stack spacing={1} style={{ marginBottom: '16px' }}>
             <Box>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" style={{ color: '#666' }}>
                 Created
               </Typography>
               <Typography variant="body2">
@@ -109,7 +100,7 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
               </Typography>
             </Box>
             <Box>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" style={{ color: '#666' }}>
                 Updated
               </Typography>
               <Typography variant="body2">
@@ -118,19 +109,18 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
             </Box>
           </Stack>
           
-          <Box sx={{
-            backgroundColor: 'grey.50',
-            border: '1px solid',
-            borderColor: 'grey.200',
-            borderRadius: 1,
-            p: 1
+          <Box style={{
+            backgroundColor: '#f5f5f5',
+            border: '1px solid #e0e0e0',
+            borderRadius: '4px',
+            padding: '8px'
           }}>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+            <Typography variant="caption" style={{ color: '#666', display: 'block', marginBottom: '4px' }}>
               Profile ID
             </Typography>
             <Typography 
               variant="caption" 
-              sx={{ 
+              style={{ 
                 fontFamily: 'monospace',
                 wordBreak: 'break-all',
                 fontSize: '0.75rem'
@@ -140,7 +130,7 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
             </Typography>
           </Box>
         </Box>
-      </Collapse>
+      )}
     </Box>
   );
 };
@@ -156,16 +146,16 @@ export const PeerProfilesComponent = ({ peerProfiles }: IPeerProfilesComponentPr
 
   if (!hasPeers) {
     return (
-      <Box sx={{ 
-        padding: 3,
+      <Box style={{ 
+        padding: '24px',
         textAlign: 'center',
-        color: 'text.secondary'
+        color: '#666'
       }}>
-        <People sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
-        <Typography variant="h6" sx={{ mb: 1, color: 'text.primary' }}>
+        <People style={{ opacity: 0.5, marginBottom: '16px' }} />
+        <Typography variant="h6" style={{ marginBottom: '8px' }}>
           No peers connected
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" style={{ color: '#666' }}>
           Waiting for other players to join...
         </Typography>
       </Box>
@@ -179,14 +169,14 @@ export const PeerProfilesComponent = ({ peerProfiles }: IPeerProfilesComponentPr
         direction="row" 
         alignItems="center" 
         spacing={1}
-        sx={{ mb: 2 }}
+        style={{ marginBottom: '16px' }}
       >
-        <People sx={{ fontSize: 20, color: 'primary.main' }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+        <People style={{ width: 20, height: 20, color: '#1976d2' }} />
+        <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>
           Connected Peers
         </Typography>
         <Chip 
-          label={peerProfileEntries.length} 
+          label={peerProfileEntries.length.toString()} 
           size="small" 
           color="primary" 
           variant="outlined"

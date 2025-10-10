@@ -8,16 +8,15 @@ import {
   Typography, 
   TextField, 
   Select, 
-  MenuItem, 
+  Option,
   FormControl, 
-  InputLabel, 
+  InputLabel,
   Button, 
   Alert, 
   Box, 
   Stack, 
-  CircularProgress,
   Chip
-} from '@mui/material';
+} from 'bfg-ui-components';
 import { useMyDefaultPlayerProfile } from '~/hooks/stores/use-my-player-profiles-store';
 import { GameLobby } from '~/models/p2p-lobby';
 import { convertPrivateToPublicProfile } from '~/models/player-profile/utils';
@@ -158,18 +157,15 @@ export const NewLobbyPage = () => {
   // Show loading state if player profile is not loaded
   if (!defaultPlayerProfile) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+      <Container maxWidth="md" style={{ padding: '32px 0' }}>
+        <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
           Create New Game Lobby
         </Typography>
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-            <Stack spacing={2} alignItems="center">
-              <CircularProgress />
-              <Typography variant="body1" color="text.secondary">
-                Loading player profile...
-              </Typography>
-            </Stack>
+        <Paper elevation={2} style={{ padding: '24px' }}>
+          <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+            <Typography variant="body1" style={{ color: '#666' }}>
+              Loading player profile...
+            </Typography>
           </Box>
         </Paper>
       </Container>
@@ -179,17 +175,17 @@ export const NewLobbyPage = () => {
   // Show lobby creation success if a lobby was just created
   if (createdLobbyId) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+      <Container maxWidth="md" style={{ padding: '32px 0' }}>
+        <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
           Host a Lobby
         </Typography>
         
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Alert severity="success" sx={{ mb: 3 }}>
+        <Paper elevation={2} style={{ padding: '24px' }}>
+          <Alert severity="success" style={{ marginBottom: '24px' }}>
             <Typography variant="h6" gutterBottom>
               Lobby Created Successfully!
             </Typography>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+            <Typography variant="body2" style={{ marginBottom: '16px' }}>
               Your lobby has been created and is ready for players to join.
             </Typography>
             <Stack direction="row" spacing={2}>
@@ -230,12 +226,12 @@ export const NewLobbyPage = () => {
                 label={copySuccess} 
                 color="success" 
                 size="small" 
-                sx={{ mt: 2 }} 
+                style={{ marginTop: '16px' }}
               />
             )}
           </Alert>
           
-          <Box sx={{ mt: 3 }}>
+          <Box style={{ marginTop: '24px' }}>
             <Button
               variant="outlined"
               color="primary"
@@ -256,22 +252,19 @@ export const NewLobbyPage = () => {
   const availableGameTitles = gameRegistry.getAvailableGameTitles();
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+    <Container maxWidth="md" style={{ padding: '32px 0' }}>
+      <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
         Host a Lobby
       </Typography>
       
-      <Paper elevation={2} sx={{ p: 3 }}>
-        {/* <Typography variant="h5" component="h2" gutterBottom fontWeight="medium">
-          Host a Lobby
-        </Typography> */}
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <Paper elevation={2} style={{ padding: '24px' }}>
+        <Typography variant="body1" style={{ color: '#666', marginBottom: '24px' }}>
           Create a lobby to invite your friends to join.
         </Typography>
           
         {/* Error Message */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" style={{ marginBottom: '16px' }}>
             {error}
           </Alert>
         )}
@@ -407,17 +400,17 @@ export const NewLobbyPage = () => {
                     onBlur={field.handleBlur}
                     label="Game Title"
                   >
-                    <MenuItem value="">
+                    <Option value="">
                       <em>Select a game...</em>
-                    </MenuItem>
+                    </Option>
                     {availableGameTitles.map((title) => (
-                      <MenuItem key={title} value={title}>
+                      <Option key={title} value={title}>
                         {title}
-                      </MenuItem>
+                      </Option>
                     ))}
                   </Select>
                   {field.state.meta.errors.length > 0 && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    <Typography variant="caption" style={{ color: '#d32f2f', marginTop: '4px', marginLeft: '14px' }}>
                       {field.state.meta.errors[0]}
                     </Typography>
                   )}
@@ -425,14 +418,13 @@ export const NewLobbyPage = () => {
               )}
             />
               
-            <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
+            <Stack direction="row" spacing={2} style={{ paddingTop: '16px' }}>
               <Button 
                 type="submit"
                 variant="contained"
                 color="primary"
                 disabled={isCreating || !form.state.isValid}
-                startIcon={isCreating ? <CircularProgress size={20} /> : null}
-                sx={{ minWidth: 160 }}
+                style={{ minWidth: 160 }}
               >
                 {isCreating ? 'Creating...' : 'Host Game Lobby'}
               </Button>

@@ -1,21 +1,21 @@
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Stack,
-  Typography,
-  Box
-} from '@mui/material';
 import { LobbyOptions } from '~/models/p2p-lobby';
 import { BfgSupportedGameTitle } from '~/models/game-box-definition';
 import { useGameRegistry } from '~/hooks/games-registry/games-registry';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  Stack, 
+  Typography, 
+  FormControl, 
+  Box, 
+  DialogActions, 
+  Button,
+  Checkbox,
+  FormControlLabel,
+  FormGroup
+} from 'bfg-ui-components';
 
 
 interface LobbyHostOptionsDialogProps {
@@ -72,8 +72,8 @@ export const LobbyHostOptionsDialog = ({
         Configure Game Choices
       </DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <Typography variant="body2" color="text.secondary">
+        <Stack spacing={2} style={{ marginTop: '8px' }}>
+          <Typography variant="body2" style={{ color: '#666' }}>
             Select which games will be available for players to choose from in this lobby.
           </Typography>
           
@@ -99,8 +99,8 @@ export const LobbyHostOptionsDialog = ({
           </FormControl>
 
           {tempGameChoices.length === 0 && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" color="warning.main" fontStyle="italic">
+            <Box style={{ marginTop: '16px' }}>
+              <Typography variant="body2" style={{ color: '#f57c00', fontStyle: 'italic' }}>
                 ⚠️ No games selected. Players won't be able to choose a game.
               </Typography>
             </Box>
@@ -108,7 +108,7 @@ export const LobbyHostOptionsDialog = ({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel} color="inherit">
+        <Button onClick={handleCancel}>
           Cancel
         </Button>
         <Button 

@@ -4,16 +4,11 @@ import {
   Stack,
   Button,
   Box,
-  List,
-  ListItem,
-  ListItemText,
-  Paper
-} from "@mui/material"
-import { 
-  CheckCircle, 
+  Paper,
+  CheckCircle,
   Refresh,
   History
-} from "@mui/icons-material"
+} from "bfg-ui-components"
 import { PeerProfilesComponent } from "~/ui/components/peer-profiles-component"
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
@@ -60,42 +55,39 @@ export const P2pConnectionComponent = ({
 
   return (
     <>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-        <CheckCircle sx={{ fontSize: 24, color: 'success.main' }} />
-        <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+      <Stack direction="row" alignItems="center" spacing={2} style={{ marginBottom: '16px' }}>
+        <CheckCircle style={{ color: '#4caf50' }} />
+        <Typography variant="h6" component="h2" style={{ fontWeight: 'bold' }}>
           Connection Status
         </Typography>
       </Stack>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+      <Stack direction="row" alignItems="center" spacing={2} style={{ marginBottom: '16px' }}>
         <Chip 
-          icon={<CheckCircle />}
-          label={connectionStatus}
+          label={`✓ ${connectionStatus}`}
           color="success"
           variant="outlined"
         />
         {onResendLobbyData && (
           <Button
             variant="outlined"
-            startIcon={<Refresh />}
             onClick={onResendLobbyData}
             size="small"
           >
-            Resend Lobby Data
+            <Refresh /> Resend Lobby Data
           </Button>
         )}
         {onRefreshConnection && (
           <Button
             variant="outlined"
             color="warning"
-            startIcon={<Refresh />}
             onClick={onRefreshConnection}
             size="small"
           >
-            Refresh Connection
+            <Refresh /> Refresh Connection
           </Button>
         )}
       </Stack>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" style={{ color: '#666', marginBottom: '16px' }}>
         Current P2P connection status and peer communication controls.
       </Typography>
       
@@ -105,35 +97,33 @@ export const P2pConnectionComponent = ({
       />
       
       {connectionEvents.length > 0 && (
-        <Box sx={{ mt: 3 }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-            <History sx={{ fontSize: 20 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+        <Box style={{ marginTop: '24px' }}>
+          <Stack direction="row" alignItems="center" spacing={1} style={{ marginBottom: '8px' }}>
+            <History />
+            <Typography variant="subtitle2" style={{ fontWeight: 'bold' }}>
               Connection Events
             </Typography>
           </Stack>
-          <Paper variant="outlined" sx={{ maxHeight: 200, overflow: 'auto' }}>
-            <List dense>
+          <Paper variant="outlined" style={{ maxHeight: 200, overflow: 'auto', padding: '8px' }}>
+            <Stack spacing={1}>
               {connectionEvents.slice().reverse().map((event, index) => (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <span>{getEventIcon(event.type)}</span>
-                        <Typography variant="body2">{event.message}</Typography>
-                        <Chip 
-                          label={event.type} 
-                          size="small" 
-                          color={getEventColor(event.type)}
-                          sx={{ ml: 1 }}
-                        />
-                      </Stack>
-                    }
-                    secondary={event.timestamp.toLocaleTimeString()}
-                  />
-                </ListItem>
+                <Box key={index} style={{ padding: '8px', borderBottom: index < connectionEvents.length - 1 ? '1px solid #eee' : 'none' }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <span>{getEventIcon(event.type)}</span>
+                    <Typography variant="body2">{event.message}</Typography>
+                    <Chip 
+                      label={event.type} 
+                      size="small" 
+                      color={getEventColor(event.type)}
+                      style={{ marginLeft: '8px' }}
+                    />
+                  </Stack>
+                  <Typography variant="caption" style={{ color: '#999', marginTop: '4px', display: 'block' }}>
+                    {event.timestamp.toLocaleTimeString()}
+                  </Typography>
+                </Box>
               ))}
-            </List>
+            </Stack>
           </Paper>
         </Box>
       )}

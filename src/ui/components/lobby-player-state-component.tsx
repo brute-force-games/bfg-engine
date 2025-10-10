@@ -7,15 +7,9 @@ import {
   Typography, 
   Button, 
   Stack, 
-  Chip
+  Chip,
+  Gamepad
 } from "bfg-ui-components"
-
-// Icon component
-const Gamepad = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/>
-  </svg>
-);
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
 import { BfgSupportedGameTitle } from "~/models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "~/ui/components/lobby-player-join-game-component"
@@ -135,8 +129,8 @@ export const LobbyPlayerStateComponent = ({
           <Typography variant="h6" component="h2" gutterBottom>
             Player Pool
           </Typography>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+          <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+            <Typography variant="body2" style={{ color: '#666' }}>
               [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
             </Typography>
           </Stack>
@@ -189,7 +183,7 @@ export const LobbyPlayerStateComponent = ({
               );
             })}
             {lobbyState.playerPool.length === 0 && (
-              <Typography variant="body2" color="text.secondary" fontStyle="italic">
+              <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
                 No players in pool
               </Typography>
             )}
