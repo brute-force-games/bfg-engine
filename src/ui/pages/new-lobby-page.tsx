@@ -401,7 +401,7 @@ export const NewLobbyPage = () => {
                     label="Game Title"
                   >
                     <Option value="">
-                      <em>Select a game...</em>
+                      Select a game...
                     </Option>
                     {availableGameTitles.map((title) => (
                       <Option key={title} value={title}>

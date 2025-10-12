@@ -37,12 +37,25 @@ if (!hasExistingData) {
 }
 
 
-
 /**
  * Safely parse profile data from TinyBase store - now just validates the stored object
  */
-const parseRawProfileData = (profileId: PlayerProfileId, rawData: any): PrivatePlayerProfile | null => {
-  const result = PrivatePlayerProfileSchema.safeParse(rawData);
+export const parseRawProfileData = (profileId: PlayerProfileId, rawData: any): PrivatePlayerProfile | null => {
+  // TinyBase stores complex nested objects as JSON strings, so we need to parse the webCryptoWallet field
+  let parsedData = rawData;
+  if (rawData.webCryptoWallet && typeof rawData.webCryptoWallet === 'string') {
+    try {
+      parsedData = {
+        ...rawData,
+        webCryptoWallet: JSON.parse(rawData.webCryptoWallet),
+      };
+    } catch (error) {
+      console.error(`Error parsing webCryptoWallet for ${profileId}:`, error);
+      return null;
+    }
+  }
+  
+  const result = PrivatePlayerProfileSchema.safeParse(parsedData);
   
   if (!result.success) {
     console.error(`Error validating profile data for ${profileId}:`, result.error);
@@ -50,7 +63,7 @@ const parseRawProfileData = (profileId: PlayerProfileId, rawData: any): PrivateP
   }
   
   return result.data;
-};
+}
 
 
 /**
@@ -75,8 +88,14 @@ export const addPlayerProfile = async (
       updatedAt: now,
     };
     
+    // Serialize webCryptoWallet as JSON string for TinyBase storage
+    const storeData = {
+      ...completeProfileData,
+      webCryptoWallet: JSON.stringify(completeProfileData.webCryptoWallet),
+    };
+    
     // Add to store - store the entire profile object
-    playerProfileStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, completeProfileData);
+    playerProfileStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, storeData as any);
     
     return profileId;
   } catch (error) {
@@ -98,13 +117,18 @@ export const updatePlayerProfile = (
       return false;
     }
     
+    // Serialize webCryptoWallet if it's being updated
+    const serializedUpdates = updates.webCryptoWallet
+      ? { ...updates, webCryptoWallet: JSON.stringify(updates.webCryptoWallet) }
+      : updates;
+    
     const updatedProfile = {
       ...existingProfile,
-      ...updates,
+      ...serializedUpdates,
       updatedAt: Date.now(),
     };
     
-    playerProfileStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, updatedProfile);
+    playerProfileStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, updatedProfile as any);
     return true;
   } catch (error) {
     console.error('Error updating player profile:', error);
@@ -226,9 +250,11 @@ export const getPublicProfile = (profileId: PlayerProfileId): PublicPlayerProfil
     id: privateProfile.id,
     handle: privateProfile.handle,
     avatarImageUrl: privateProfile.avatarImageUrl,
-    publicKey: privateProfile.publicKey, // Legacy RSA public key
-    walletAddress: privateProfile.walletAddress,
-    walletPublicKey: privateProfile.walletPublicKey,
+    signingPublicKey: privateProfile.signingPublicKey,
+    encryptionPublicKey: privateProfile.encryptionPublicKey,
+    publicKey: privateProfile.publicKey, // Legacy
+    walletAddress: privateProfile.walletAddress, // Legacy
+    walletPublicKey: privateProfile.walletPublicKey, // Legacy
     identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,
@@ -243,9 +269,11 @@ export const getAllPublicProfiles = (): PublicPlayerProfile[] => {
     id: privateProfile.id,
     handle: privateProfile.handle,
     avatarImageUrl: privateProfile.avatarImageUrl,
-    publicKey: privateProfile.publicKey, // Legacy RSA public key
-    walletAddress: privateProfile.walletAddress,
-    walletPublicKey: privateProfile.walletPublicKey,
+    signingPublicKey: privateProfile.signingPublicKey,
+    encryptionPublicKey: privateProfile.encryptionPublicKey,
+    publicKey: privateProfile.publicKey, // Legacy
+    walletAddress: privateProfile.walletAddress, // Legacy
+    walletPublicKey: privateProfile.walletPublicKey, // Legacy
     identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,

@@ -19,7 +19,21 @@ import { PublicPlayerProfile } from '~/models/player-profile/public-player-profi
  * Safely parse profile data from TinyBase reactive hooks - now just validates the stored object
  */
 const parseRawProfileData = (profileId: string, rawData: any): PrivatePlayerProfile | null => {
-  const result = PrivatePlayerProfileSchema.safeParse(rawData);
+  // TinyBase stores complex nested objects as JSON strings, so we need to parse the webCryptoWallet field
+  let parsedData = rawData;
+  if (rawData.webCryptoWallet && typeof rawData.webCryptoWallet === 'string') {
+    try {
+      parsedData = {
+        ...rawData,
+        webCryptoWallet: JSON.parse(rawData.webCryptoWallet),
+      };
+    } catch (error) {
+      console.error(`Error parsing webCryptoWallet for ${profileId}:`, error);
+      return null;
+    }
+  }
+  
+  const result = PrivatePlayerProfileSchema.safeParse(parsedData);
   
   if (!result.success) {
     console.error(`Error validating profile data for ${profileId}:`, result.error);

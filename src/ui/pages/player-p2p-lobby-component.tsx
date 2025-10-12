@@ -36,6 +36,7 @@ import { LobbyPlayerJoinGameComponent } from "../components/lobby-player-join-ga
 import { LobbyPlayerStateComponent } from "../components/lobby-player-state-component"
 import { GameLobbyId } from "~/models/types/bfg-branded-ids"
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
+import { convertPrivateToPublicProfile } from "~/models/player-profile/utils"
 import { BfgSupportedGameTitle } from "~/models/game-box-definition";
 
 
@@ -49,7 +50,8 @@ export const PlayerP2pLobbyComponent = ({
   playerProfile,
 }: IPlayerP2pLobbyComponentProps) => {
 
-  const lobby = useP2pLobby(lobbyId as GameLobbyId, playerProfile);
+  const publicPlayerProfile = convertPrivateToPublicProfile(playerProfile);
+  const lobby = useP2pLobby(lobbyId as GameLobbyId, publicPlayerProfile);
   console.log('PlayerP2pLobbyComponent: lobby', lobby);
 
   const { sendPlayerMove } = lobby;

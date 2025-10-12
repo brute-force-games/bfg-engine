@@ -18,7 +18,7 @@ import { LobbyPlayerJoinGameComponent } from "~/ui/components/lobby-player-join-
 interface ILobbyPlayerStateComponentProps {
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   lobbyState: GameLobby
-  currentPlayerProfile: PrivatePlayerProfile
+  currentPlayerProfile: PublicPlayerProfile
   lobbyOptions: LobbyOptions
 
   onSelectGameChoice: (gameChoice: BfgSupportedGameTitle) => void

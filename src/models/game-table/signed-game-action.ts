@@ -50,11 +50,11 @@ export const createSignedGameAction = async (
   // Only sign player moves, not host actions
   if (playerProfile && playerId && gameAction.source?.includes('player')) {
     // Use wallet-based signing
-    const { getActiveSigningKey } = await import('~/models/player-profile/private-player-profile');
+    const { getWalletFromProfile } = await import('~/models/player-profile/private-player-profile');
     const { createWalletSignedMove } = await import('~/crypto/crypto-utils');
     
-    // Get the current signing key for the player
-    const signingKey = await getActiveSigningKey(playerProfile);
+    // Get the wallet for the player
+    const wallet = await getWalletFromProfile(playerProfile);
     
     // Create signature for the action
     const moveData = {
@@ -66,7 +66,7 @@ export const createSignedGameAction = async (
       timestamp: gameAction.createdAt,
     };
     
-    const signedMove = await createWalletSignedMove(moveData, signingKey.walletKey);
+    const signedMove = await createWalletSignedMove(wallet, moveData);
     signature = signedMove;
   }
   

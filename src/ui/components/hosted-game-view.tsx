@@ -10,7 +10,7 @@ import { useGameRegistry } from "~/hooks/games-registry/games-registry";
 
 interface HostedGameViewProps {
   myPlayerSeat: GameTableSeat;
-  myPlayerProfile: PrivatePlayerProfile;
+  myPlayerProfile: PublicPlayerProfile;
   hostedGame: GameTable;
   gameActions: DbGameTableAction[];
 

@@ -14,12 +14,13 @@ import { LobbyHostOptionsDialog } from "~/ui/components/dialogs/lobby-host-optio
 import { LobbyPlayerStateComponent } from "~/ui/components/lobby-player-state-component"
 import { BfgSupportedGameTitle } from "~/models/game-box-definition"
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
+import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 
 
 interface IHostedP2pLobbyComponentProps {
   lobbyId: GameLobbyId
-  hostPlayerProfile: PrivatePlayerProfile
+  hostPlayerProfile: PublicPlayerProfile
 
   lobbyOptions: LobbyOptions
   lobbyState: GameLobby

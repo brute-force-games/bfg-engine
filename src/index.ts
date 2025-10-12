@@ -15,3 +15,17 @@ export type { GameTableActionResult } from './models/game-table/table-phase';
 export type { BfgGameSpecificTableAction } from './models/game-table/game-table-action';
 export type { BfgGameSpecificGameState } from './models/game-table/game-table-action';
 export type { BfgGameSpecificAction } from './models/game-table/game-table-action';
+
+// Crypto exports
+export { WebCryptoWallet } from './crypto/web-crypto-wallet';
+export type { SignedMessage, EncryptedMessage, ExportedWallet } from './crypto/web-crypto-wallet';
+export type { IWebCryptoWallet } from './crypto/types';
+export { createWalletSignedMove, verifySignedMove, initializeNewWallet, initializeWalletFromExport } from './crypto/crypto-utils';
+export type { SignedMove } from './crypto/crypto-utils';
+
+// Player profile exports
+export type { PublicPlayerProfile } from './models/player-profile/public-player-profile';
+export type { PrivatePlayerProfile } from './models/player-profile/private-player-profile';
+export { getWalletFromProfile, createPrivatePlayerProfile, createPlayerProfileFromExportedWallet, rotateWalletKeys } from './models/player-profile/private-player-profile';
+export type { ExportedWallet as ProfileExportedWallet } from './models/player-profile/private-player-profile';
+export { PublicJWKSchema, PrivateJWKSchema } from './models/player-profile/public-player-profile';

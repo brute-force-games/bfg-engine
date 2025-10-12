@@ -50,15 +50,15 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
         justifyContent="space-between"
         style={{ padding: '16px' }}
       >
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction="row" alignItems="center" spacing={2}>
           <Avatar 
             src={peerProfile.avatarImageUrl}
-            style={{ width: 32, height: 32, fontSize: '0.875rem' }}
+            style={{ width: 40, height: 40, fontSize: '1rem' }}
           >
             {!peerProfile.avatarImageUrl && getInitials(peerProfile.handle)}
           </Avatar>
           <Box>
-            <Typography variant="subtitle2" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+            <Typography variant="h6" style={{ fontWeight: 600, lineHeight: 1.3, marginBottom: '2px' }}>
               {peerProfile.handle}
             </Typography>
             <Typography variant="caption" style={{ color: '#666' }}>
@@ -136,13 +136,8 @@ const PeerProfileCard = ({ peerProfile }: { peerProfile: PublicPlayerProfile }) 
 };
 
 export const PeerProfilesComponent = ({ peerProfiles }: IPeerProfilesComponentProps) => {
-  const [expanded, setExpanded] = useState(false);
   const peerProfileEntries = Array.from(peerProfiles.entries());
   const hasPeers = peerProfileEntries.length > 0;
-
-  const getInitials = (handle: string) => {
-    return handle.substring(0, 2).toUpperCase();
-  };
 
   if (!hasPeers) {
     return (

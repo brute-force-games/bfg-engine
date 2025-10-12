@@ -1,5 +1,6 @@
 import { GameLobby } from "~/models/p2p-lobby"
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
+import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { 
   Box, 
   Typography, 
@@ -13,7 +14,7 @@ import {
 
 interface ILobbyPlayerJoinGameComponentProps {
   lobbyState: GameLobby
-  currentPlayerProfile?: PrivatePlayerProfile
+  currentPlayerProfile?: PublicPlayerProfile
 }
 
 export const LobbyPlayerJoinGameComponent = ({ 

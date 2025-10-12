@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { HostedP2pLobbyComponent } from "~/ui/components/hosted-p2p-lobby-component"
 import { useHostedLobby, useHostedLobbyActions } from "~/hooks/stores/use-hosted-lobbies-store"
-import { useMyDefaultHostPlayerProfile } from "~/hooks/stores/use-my-player-profiles-store"
+import { useMyDefaultPublicPlayerProfile } from "~/hooks/stores/use-my-player-profiles-store"
 import { GameLobby, LobbyOptions } from "~/models/p2p-lobby"
 import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 import { GameLobbyId, PlayerProfileId } from "~/models/types/bfg-branded-ids"
@@ -15,7 +15,7 @@ export const HostedLobbyPage = ({ lobbyId }: HostedLobbyPageProps) => {
 
   const lobby = useHostedLobby(lobbyId);
   const lobbyActions = useHostedLobbyActions();
-  const myHostPlayerProfile = useMyDefaultHostPlayerProfile();
+  const myHostPlayerProfile = useMyDefaultPublicPlayerProfile();
   const gameRegistry = useGameRegistry();
 
   const [lobbyOptions, setLobbyOptions] = useState<LobbyOptions>(() => {

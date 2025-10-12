@@ -4,7 +4,7 @@ import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 import { useHostedP2pGame } from "~/hooks/p2p/use-hosted-p2p-game"
 import { useGameActions } from "~/hooks/stores/use-game-actions-store"
 import { useHostedGame } from "~/hooks/stores/use-hosted-games-store"
-import { useMyDefaultPlayerProfile } from "~/hooks/stores/use-my-player-profiles-store"
+import { useMyDefaultPublicPlayerProfile } from "~/hooks/stores/use-my-player-profiles-store"
 import { GameTable } from "~/models/game-table/game-table"
 import { GameTableId } from "~/models/types/bfg-branded-ids"
 import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player"
@@ -24,7 +24,7 @@ interface HostedP2pGameComponentProps {
 
 export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentProps) => {
 
-  const hostPlayerProfile = useMyDefaultPlayerProfile();
+  const hostPlayerProfile = useMyDefaultPublicPlayerProfile();
   const gameRegistry = useGameRegistry();
   
   const hostedGame = useHostedGame(gameTableId);

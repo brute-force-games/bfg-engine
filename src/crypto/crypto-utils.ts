@@ -1,7 +1,7 @@
 import { z } from "zod";
+import { WebCryptoWallet, ExportedWallet, SignedMessage } from './web-crypto-wallet';
 
-// Temporary stub for crypto utilities until full implementation
-
+// Legacy SignedMove schema (for backward compatibility)
 export const SignedMoveSchema = z.object({
   move: z.string(),
   signature: z.string(),
@@ -10,41 +10,70 @@ export const SignedMoveSchema = z.object({
 
 export type SignedMove = z.infer<typeof SignedMoveSchema>;
 
-export async function createWalletSignedMove(signingKey: any, moveData: any): Promise<SignedMove> {
-  // Stub implementation
+/**
+ * Create a signed move using the Web Crypto wallet
+ */
+export async function createWalletSignedMove(wallet: WebCryptoWallet, moveData: any): Promise<SignedMove> {
+  const moveStr = JSON.stringify(moveData);
+  const signedMessage = await wallet.sign(moveStr);
+  
   return {
-    move: JSON.stringify(moveData),
-    signature: 'stub-signature',
-    publicKey: 'stub-public-key',
+    move: moveStr,
+    signature: signedMessage.signature,
+    publicKey: signedMessage.publicKey,
   };
 }
 
+/**
+ * Verify a signed move
+ */
 export async function verifySignedMove(signedMove: SignedMove): Promise<boolean> {
-  // Stub implementation
-  return true;
+  try {
+    const signedMessage: SignedMessage = {
+      message: signedMove.move,
+      signature: signedMove.signature,
+      publicKey: signedMove.publicKey,
+      timestamp: Date.now(), // Not validated in this context
+    };
+    
+    return await WebCryptoWallet.verify(signedMessage);
+  } catch (error) {
+    console.error('Error verifying signed move:', error);
+    return false;
+  }
 }
 
+/**
+ * Initialize a new wallet with fresh keys
+ */
 export async function initializeNewWallet() {
+  const wallet = await WebCryptoWallet.create();
+  const exported = await wallet.export();
+  const publicKeys = await wallet.exportPublicKeys();
+  
   return {
-    address: 'stub-address',
-    publicKey: 'stub-public-key',
-    mnemonic: 'stub mnemonic words here',
+    exportedWallet: exported,
+    signingPublicKey: publicKeys.signingPublicKey,
+    encryptionPublicKey: publicKeys.encryptionPublicKey,
   };
 }
 
-export async function initializeWalletFromMnemonic(mnemonic: string) {
+/**
+ * Initialize a wallet from exported keys
+ */
+export async function initializeWalletFromExport(exported: ExportedWallet) {
+  const wallet = await WebCryptoWallet.fromExport(exported);
+  const publicKeys = await wallet.exportPublicKeys();
+  
   return {
-    address: 'stub-address',
-    publicKey: 'stub-public-key',
-    mnemonic,
+    wallet,
+    exportedWallet: exported,
+    signingPublicKey: publicKeys.signingPublicKey,
+    encryptionPublicKey: publicKeys.encryptionPublicKey,
   };
 }
 
-export async function initializeWalletFromPrivateKey(privateKey: string) {
-  return {
-    address: 'stub-address',
-    publicKey: 'stub-public-key',
-    mnemonic: 'stub mnemonic',
-  };
-}
+// Re-export wallet types and classes
+export { WebCryptoWallet } from './web-crypto-wallet';
+export type { ExportedWallet, SignedMessage, EncryptedMessage } from './web-crypto-wallet';
 
