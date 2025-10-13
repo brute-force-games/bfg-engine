@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import { FirstProfilePage } from '../pages/first-profile-page';
 import { useMyPlayerProfiles } from '~/hooks/stores/use-my-player-profiles-store';
-import { FirstProfilePage } from '~/ui/pages/first-profile-page';
 
 
 interface ProfileGuardProps {

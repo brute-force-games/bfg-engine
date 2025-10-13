@@ -4,9 +4,12 @@ export type { GameHostingContextType } from './hooks/games-registry/game-hosting
 export { GameHostingProvider, useGameHosting } from './hooks/games-registry/game-hosting';
 export type { GameTableId, GameFriendId, GameLobbyId, PlayerProfileId } from './models/types/bfg-branded-ids';
 export type { TrysteroConfig } from './p2p/trystero-config';
-export { NewLobbyPage } from './ui/pages/new-lobby-page';
 export { ProfileGuard } from './ui/components/profile-guard';
-export { useMyPlayerProfiles } from './hooks/stores/use-my-player-profiles-store';
+export { P2pConnectionComponent } from './ui/components/p2p-connection-component';
+export { LobbyPlayerJoinGameComponent } from './ui/components/lobby-player-join-game-component';
+export { LobbyPlayerStateComponent } from './ui/components/lobby-player-state-component';
+export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
+export { useMyPlayerProfiles, useMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
 export type { BfgGameEngineProcessor, GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
 export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export type { IBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';

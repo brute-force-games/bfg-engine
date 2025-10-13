@@ -1,0 +1,56 @@
+.stack {
+  display: flex;
+}
+
+.directionRow {
+  flex-direction: row;
+}
+
+.directionColumn {
+  flex-direction: column;
+}
+
+.directionRowReverse {
+  flex-direction: row-reverse;
+}
+
+.directionColumnReverse {
+  flex-direction: column-reverse;
+}
+
+.spacing {
+  gap: 8px;
+}
+
+.spacing-0 {
+  gap: 0;
+}
+
+.spacing-1 {
+  gap: 8px;
+}
+
+.spacing-2 {
+  gap: 16px;
+}
+
+.spacing-3 {
+  gap: 24px;
+}
+
+.spacing-4 {
+  gap: 32px;
+}
+
+.spacing-6 {
+  gap: 48px;
+}
+
+.spacing-8 {
+  gap: 64px;
+}
+
+.divider > * + * {
+  position: relative;
+}
+

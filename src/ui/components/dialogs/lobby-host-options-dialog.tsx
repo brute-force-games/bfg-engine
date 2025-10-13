@@ -15,7 +15,7 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup
-} from 'bfg-ui-components';
+} from '../../bfg-ui'; 
 
 
 interface LobbyHostOptionsDialogProps {

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
-import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_MOVE_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "~/ui/components/constants";
-import { GameTable } from "~/models/game-table/game-table";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { GameTableId, PlayerProfileId } from "~/models/types/bfg-branded-ids"
+import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_MOVE_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants"; 
+import { GameTable } from "../../models/game-table/game-table";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { ConnectionEvent } from "./use-p2p-lobby";
-import { useGameHosting } from "~/index";
+import { useGameHosting } from "../../index";
 
 // Re-export for convenience
 export type { ConnectionEvent };

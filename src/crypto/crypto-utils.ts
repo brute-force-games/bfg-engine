@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { WebCryptoWallet, ExportedWallet, SignedMessage } from './web-crypto-wallet';
+import type { IWebCryptoWallet } from './types';
 
 // Legacy SignedMove schema (for backward compatibility)
 export const SignedMoveSchema = z.object({
@@ -13,7 +14,7 @@ export type SignedMove = z.infer<typeof SignedMoveSchema>;
 /**
  * Create a signed move using the Web Crypto wallet
  */
-export async function createWalletSignedMove(wallet: WebCryptoWallet, moveData: any): Promise<SignedMove> {
+export async function createWalletSignedMove(wallet: IWebCryptoWallet, moveData: any): Promise<SignedMove> {
   const moveStr = JSON.stringify(moveData);
   const signedMessage = await wallet.sign(moveStr);
   

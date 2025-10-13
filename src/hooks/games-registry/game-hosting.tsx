@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import { GameFriendId, GameTableId } from "~/models/types/bfg-branded-ids";
-import { TrysteroConfig } from "~/p2p/trystero-config";
+import { GameFriendId, GameTableId } from "../../models/types/bfg-branded-ids";
+import { TrysteroConfig } from "../../p2p/trystero-config";
 
 
 export interface GameHostingContextType {

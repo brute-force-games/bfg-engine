@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { GameTable, GameTableSchema } from '~/models/game-table/game-table';
+import { GameTableId } from '../models/types/bfg-branded-ids';
+import { GameTable, GameTableSchema } from '../models/game-table/game-table';
 import { clearAllGameActions } from './hosted-game-actions-store';
 import { clearAllHostedLobbies } from './hosted-lobbies-store';
 

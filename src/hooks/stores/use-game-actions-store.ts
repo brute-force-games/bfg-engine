@@ -6,9 +6,9 @@ import {
   addGameAction,
   clearGameActions,
   clearAllGameActions,
-} from '~/tb-store/hosted-game-actions-store';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { DbGameTableAction, DbGameTableActionSchema } from '~/models/game-table/game-table-action';
+} from '../../tb-store/hosted-game-actions-store';
+import { GameTableId } from '../../models/types/bfg-branded-ids';
+import { DbGameTableAction, DbGameTableActionSchema } from '../../models/game-table/game-table-action';
 
 /**
  * React hooks for game actions management with TinyBase

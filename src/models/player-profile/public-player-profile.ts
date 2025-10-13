@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BfgPlayerProfileId } from '~/models/types/bfg-branded-ids';
+import { BfgPlayerProfileId } from '../../models/types/bfg-branded-ids';
 // import { createBrandedJsonSchema } from '~/types/core/branded-values/branded-json';
 
 // Temporary stub until branded-json module is implemented

@@ -1,5 +1,4 @@
 import { GameLobby } from "~/models/p2p-lobby"
-// import { createPlayerGameUrl } from "~/router-links"
 import { BfgGameTableId, PlayerProfileId } from "~/models/types/bfg-branded-ids"
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { asHostStartNewGame } from "~/ops/game-table-ops/as-host-start-game"
@@ -16,7 +15,7 @@ import {
   PersonRemove,
   Gamepad,
   Settings
-} from "bfg-ui-components"
+} from "../bfg-ui" 
 import { useGameHosting } from "~/hooks/games-registry/game-hosting"
 import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePlayerProfileActions } from '~/hooks/stores/use-my-player-profiles-store';
+import { usePlayerProfileActions } from '../../hooks/stores/use-my-player-profiles-store';
 
 /**
  * Page for creating the first player profile

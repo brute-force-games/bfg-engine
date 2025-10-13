@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { IGameRegistry } from "~/hooks/games-registry/games-registry";
-import { BfgSupportedGameTitle, GameDefinition } from "~/models/game-box-definition";
+import { IGameRegistry } from "../hooks/games-registry/games-registry";
+import { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-definition";
 import { 
   BfgGameEngineProcessor as BfgGameEngineProcessorType 
 } from "~/models/game-engine/bfg-game-engines";
@@ -58,6 +58,6 @@ export type BfgGameEngineMetadata<
   GS extends z.ZodTypeAny,
   GA extends z.ZodTypeAny
 > = {
-  // definition: GameDefinition;
+  definition: GameDefinition;
   processor: BfgGameEngineProcessor<GS, GA>;
 }

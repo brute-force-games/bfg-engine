@@ -1,0 +1,165 @@
+.textFieldRoot {
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  vertical-align: top;
+}
+
+.label {
+  display: block;
+  transform-origin: top left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(14px, 16px) scale(1);
+  transition: color 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms,
+              transform 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+  z-index: 1;
+  pointer-events: none;
+  font-size: 1rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.inputWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.input {
+  font: inherit;
+  letter-spacing: inherit;
+  color: currentColor;
+  padding: 16px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 4px;
+  box-sizing: border-box;
+  background: none;
+  height: auto;
+  margin: 0;
+  width: 100%;
+  display: block;
+  min-width: 0;
+  outline: none;
+  transition: border-color 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+}
+
+.input:hover {
+  border-color: rgba(0, 0, 0, 0.87);
+}
+
+.input:focus {
+  border-color: #1976d2;
+  border-width: 2px;
+  padding: 15px 13px;
+}
+
+.input:focus + .label,
+.input:not(:placeholder-shown) + .label,
+.inputFilled + .label {
+  transform: translate(14px, -9px) scale(0.75);
+  background: white;
+  padding: 0 4px;
+}
+
+.input:focus + .label {
+  color: #1976d2;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Error state */
+.error .input {
+  border-color: #d32f2f;
+}
+
+.error .input:focus {
+  border-color: #d32f2f;
+}
+
+.error .label {
+  color: #d32f2f;
+}
+
+/* Helper text */
+.helperText {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  margin-left: 14px;
+  margin-right: 14px;
+}
+
+.error .helperText {
+  color: #d32f2f;
+}
+
+/* Full width */
+.fullWidth {
+  width: 100%;
+}
+
+/* Sizes */
+.small .input {
+  padding: 8px 10px;
+  font-size: 0.875rem;
+}
+
+.small .input:focus {
+  padding: 7px 9px;
+}
+
+.small .label {
+  font-size: 0.875rem;
+  transform: translate(10px, 9px) scale(1);
+}
+
+.small .input:focus + .label,
+.small .input:not(:placeholder-shown) + .label,
+.small .inputFilled + .label {
+  transform: translate(10px, -9px) scale(0.75);
+}
+
+/* Multiline */
+.multiline .input {
+  padding: 16px 14px;
+  resize: vertical;
+}
+
+/* Input adornments */
+.startAdornment {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.endAdornment {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.hasStartAdornment .input {
+  padding-left: 0;
+}
+
+.hasEndAdornment .input {
+  padding-right: 0;
+}
+

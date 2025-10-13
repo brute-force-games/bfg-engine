@@ -1,0 +1,23 @@
+.inputLabel {
+  display: block;
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.inputLabel--disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.inputLabel--error {
+  color: var(--color-error-main);
+}
+
+.inputLabel__required {
+  color: var(--color-error-main);
+}
+

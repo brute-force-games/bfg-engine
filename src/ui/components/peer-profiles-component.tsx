@@ -8,7 +8,7 @@ import {
   Avatar,
   ExpandMore,
   People
-} from "bfg-ui-components";
+} from "../bfg-ui";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
 

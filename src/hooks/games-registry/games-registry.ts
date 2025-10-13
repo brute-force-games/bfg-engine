@@ -1,5 +1,5 @@
-import { BfgSupportedGameTitle, GameDefinition } from "~/models/game-box-definition";
-import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
+import { BfgSupportedGameTitle, GameDefinition } from "../../models/game-box-definition";
+import { BfgGameEngineMetadata } from "../../models/bfg-game-engines";
 
 
 export const GamesRegistry = new Map<BfgSupportedGameTitle, GameDefinition>();

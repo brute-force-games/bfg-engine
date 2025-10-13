@@ -1,5 +1,4 @@
 import { GameLobby } from "~/models/p2p-lobby"
-import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { 
   Box, 
@@ -9,7 +8,7 @@ import {
   Avatar,
   CheckCircle as CheckCircleIcon,
   OpenInNew as OpenInNewIcon
-} from 'bfg-ui-components'
+} from '../bfg-ui'
 
 
 interface ILobbyPlayerJoinGameComponentProps {

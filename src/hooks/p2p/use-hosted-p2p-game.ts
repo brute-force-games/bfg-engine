@@ -1,10 +1,10 @@
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { useP2pGame, ConnectionEvent } from "./use-p2p-game";
-import { GameTable } from "~/models/game-table/game-table";
+import { GameTable } from "../../models/game-table/game-table";
 import { Room } from "trystero";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
-import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "~/ui/components/constants";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
+import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants";
 
 
 interface IHostedP2pGameData {

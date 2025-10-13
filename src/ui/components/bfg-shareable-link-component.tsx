@@ -11,7 +11,7 @@ import {
   ContentCopy,
   Link as LinkIcon,
   OpenInNew
-} from "bfg-ui-components"
+} from "../bfg-ui"
 import { useState } from "react";
 
 

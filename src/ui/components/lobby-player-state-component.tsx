@@ -2,17 +2,9 @@ import { GameLobby, LobbyOptions } from "~/models/p2p-lobby"
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { BfgShareableLinkComponent } from "~/ui/components/bfg-shareable-link-component"
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Stack, 
-  Chip,
-  Gamepad
-} from "bfg-ui-components"
-import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
 import { BfgSupportedGameTitle } from "~/models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "~/ui/components/lobby-player-join-game-component"
+import { Box, Stack, Typography, Chip, Button, Gamepad } from "../bfg-ui"
 
 
 interface ILobbyPlayerStateComponentProps {
@@ -116,7 +108,7 @@ export const LobbyPlayerStateComponent = ({
                 variant={lobbyState.gameTitle === choice ? "contained" : "outlined"}
                 size="small"
                 onClick={() => onSelectGameChoice(choice)}
-                sx={{ minWidth: 'auto' }}
+                style={{ minWidth: 'auto' }}
               >
                 {choice}
               </Button>
@@ -136,7 +128,7 @@ export const LobbyPlayerStateComponent = ({
           </Stack>
           
           {/* Seat Management */}
-          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap style={{ marginBottom: '16px' }}>
             <Button
               variant="contained"
               size="small"

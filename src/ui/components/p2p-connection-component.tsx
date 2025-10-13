@@ -8,7 +8,7 @@ import {
   CheckCircle,
   Refresh,
   History
-} from "bfg-ui-components"
+} from "../bfg-ui"
 import { PeerProfilesComponent } from "~/ui/components/peer-profiles-component"
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids"

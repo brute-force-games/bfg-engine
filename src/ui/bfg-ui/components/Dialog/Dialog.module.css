@@ -1,0 +1,52 @@
+.backdrop {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1300;
+}
+
+.dialog {
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 64px);
+  max-width: 600px;
+  width: calc(100% - 64px);
+  background-color: #fff;
+  box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2),
+              0 24px 38px 3px rgba(0, 0, 0, 0.14),
+              0 9px 46px 8px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+.dialogTitle {
+  margin: 0;
+  padding: 16px 24px;
+  flex: 0 0 auto;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.dialogContent {
+  flex: 1 1 auto;
+  padding: 8px 24px;
+  overflow-y: auto;
+}
+
+.dialogActions {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+

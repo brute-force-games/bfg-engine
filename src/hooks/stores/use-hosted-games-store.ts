@@ -8,9 +8,9 @@ import {
   clearAllHostedGames,
   clearAllStores,
   parseRawHostedGameData,
-} from '~/tb-store/hosted-games-store';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { GameTable } from '~/models/game-table/game-table';
+} from '../../tb-store/hosted-games-store';
+import { GameTableId } from '../../models/types/bfg-branded-ids';
+import { GameTable } from '../../models/game-table/game-table';
 
 /**
  * React hooks for hosted game management with TinyBase

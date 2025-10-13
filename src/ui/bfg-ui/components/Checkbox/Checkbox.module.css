@@ -1,0 +1,32 @@
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-primary-main);
+}
+
+.checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.checkbox--primary {
+  accent-color: var(--color-primary-main);
+}
+
+.checkbox--secondary {
+  accent-color: var(--color-secondary-main);
+}
+
+.checkbox--success {
+  accent-color: var(--color-success-main);
+}
+
+.checkbox--error {
+  accent-color: var(--color-error-main);
+}
+
+.checkbox--warning {
+  accent-color: var(--color-warning-main);
+}
+

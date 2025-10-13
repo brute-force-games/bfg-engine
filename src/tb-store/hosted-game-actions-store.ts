@@ -1,7 +1,7 @@
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { DbGameTableAction, DbGameTableActionSchema } from '~/models/game-table/game-table-action';
+import { GameTableId } from '../models/types/bfg-branded-ids';
+import { DbGameTableAction, DbGameTableActionSchema } from '../models/game-table/game-table-action';
 
 /**
  * TinyBase store for game actions data

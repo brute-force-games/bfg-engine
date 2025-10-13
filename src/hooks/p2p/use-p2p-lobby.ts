@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
-import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "~/models/p2p-details";  
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { GameLobbyId, PlayerProfileId } from "~/models/types/bfg-branded-ids"
-import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "~/ui/components/constants";
+import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../models/p2p-details";  
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
+import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../ui/components/constants";
 import { useGameHosting } from "../games-registry/game-hosting";
 
 

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { PublicPlayerProfileSchema, PublicPlayerProfile, PrivateJWKSchema, PublicJWKSchema } from './public-player-profile';
+import { initializeNewWallet, initializeWalletFromExport } from '../../crypto/crypto-utils';
+import { WebCryptoWallet } from '../../crypto/web-crypto-wallet';
+import { IWebCryptoWallet } from '../../crypto/types';
+
 
 // Type aliases for JWK types
 export type PublicJWK = z.infer<typeof PublicJWKSchema>;
@@ -61,7 +65,6 @@ export const createPrivatePlayerProfile = async (
   avatarImageUrl?: string
 ): Promise<Omit<PrivatePlayerProfile, 'id' | 'createdAt' | 'updatedAt'>> => {
   // Import the crypto utils dynamically to avoid circular dependencies
-  const { initializeNewWallet } = await import('~/crypto/crypto-utils');
   
   const walletData = await initializeNewWallet();
   
@@ -84,7 +87,6 @@ export const createPlayerProfileFromExportedWallet = async (
   avatarImageUrl?: string
 ): Promise<Omit<PrivatePlayerProfile, 'id' | 'createdAt' | 'updatedAt'>> => {
   // Import the crypto utils dynamically to avoid circular dependencies
-  const { initializeWalletFromExport } = await import('~/crypto/crypto-utils');
   
   const walletData = await initializeWalletFromExport(exportedWallet);
   
@@ -104,8 +106,7 @@ export const createPlayerProfileFromExportedWallet = async (
  */
 export const getWalletFromProfile = async (
   profile: PrivatePlayerProfile
-): Promise<import('~/crypto/types').IWebCryptoWallet> => {
-  const { WebCryptoWallet } = await import('~/crypto/crypto-utils');
+): Promise<IWebCryptoWallet> => {
   return await WebCryptoWallet.fromExport(profile.webCryptoWallet);
 };
 
@@ -120,7 +121,6 @@ export const getWalletFromProfile = async (
 export const rotateWalletKeys = async (
   profile: PrivatePlayerProfile
 ): Promise<PrivatePlayerProfile> => {
-  const { initializeNewWallet } = await import('~/crypto/crypto-utils');
   
   const walletData = await initializeNewWallet();
   

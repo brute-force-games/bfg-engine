@@ -2,7 +2,7 @@ import { usePlayerP2pGame } from "~/hooks/p2p/use-player-p2p-game"
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile"
 import { GameTableId } from "~/models/types/bfg-branded-ids"
 import { PlayerGameView } from "../components/player-game-view"
-import { Container, TabsContainerPanel } from "bfg-ui-components"
+import { Container, TabsContainerPanel } from "~/ui/bfg-ui"
 import { P2pConnectionComponent } from "./p2p-connection-component"
 import { BfgGameSpecificGameState } from "~/models/game-table/game-table-action"
 

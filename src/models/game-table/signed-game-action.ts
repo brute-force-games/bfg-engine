@@ -1,8 +1,8 @@
 import { z } from "zod";
-// import { SignedMoveSchema } from "~/crypto/crypto-utils";
-const SignedMoveSchema = z.any(); // Temporary stub
 import { BfgGameTableActionId, BfgGameTableId } from "~/models/types/bfg-branded-ids";
 import { GameTableActionSourceSchema, GameTableActionTypeSchema } from "./game-table-action";
+import { getWalletFromProfile } from "../player-profile/private-player-profile";
+import { createWalletSignedMove } from "~/crypto/crypto-utils";
 
 /**
  * Signed game action - includes digital signature for player moves
@@ -49,11 +49,7 @@ export const createSignedGameAction = async (
   
   // Only sign player moves, not host actions
   if (playerProfile && playerId && gameAction.source?.includes('player')) {
-    // Use wallet-based signing
-    const { getWalletFromProfile } = await import('~/models/player-profile/private-player-profile');
-    const { createWalletSignedMove } = await import('~/crypto/crypto-utils');
     
-    // Get the wallet for the player
     const wallet = await getWalletFromProfile(playerProfile);
     
     // Create signature for the action

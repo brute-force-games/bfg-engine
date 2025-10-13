@@ -27,11 +27,12 @@
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vite-plugin-dts": "^3.7.0"
+    "vite-plugin-dts": "^3.7.0",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "peerDependencies": {
-    "react": "19.2.0",
-    "bfg-ui-components": "^0.1.0"
+    "bfg-ui-components": "^0.1.0",
+    "react": "19.2.0"
   },
   "peerDependenciesMeta": {
     "react": {
