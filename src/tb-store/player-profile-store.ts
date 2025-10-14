@@ -1,9 +1,9 @@
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { PrivatePlayerProfile, PrivatePlayerProfileSchema } from '~/models/player-profile/private-player-profile';
-import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
-import { createPrivatePlayerProfile } from '~/models/player-profile/private-player-profile';
-import { createPlayerProfileId, PlayerProfileId } from '~/models/types/bfg-branded-ids';
+import { PrivatePlayerProfile, PrivatePlayerProfileSchema } from "@bfg-engine/models/player-profile/private-player-profile";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { createPrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
+import { createPlayerProfileId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
 
 
 /**

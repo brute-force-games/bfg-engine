@@ -50,7 +50,7 @@ export const privateToPublicProfile = (privateProfile: PrivatePlayerProfile): Pu
     publicKey: privateProfile.publicKey, // Legacy
     walletAddress: privateProfile.walletAddress, // Legacy
     walletPublicKey: privateProfile.walletPublicKey, // Legacy
-    identityType: privateProfile.identityType,
+    // identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,
   };
@@ -74,7 +74,7 @@ export const createPrivatePlayerProfile = async (
     signingPublicKey: walletData.signingPublicKey as PublicJWK,
     encryptionPublicKey: walletData.encryptionPublicKey as PublicJWK,
     webCryptoWallet: walletData.exportedWallet as ExportedWallet,
-    identityType: 'webcrypto',
+    // identityType: 'webcrypto',
   };
 };
 
@@ -96,7 +96,7 @@ export const createPlayerProfileFromExportedWallet = async (
     signingPublicKey: walletData.signingPublicKey as PublicJWK,
     encryptionPublicKey: walletData.encryptionPublicKey as PublicJWK,
     webCryptoWallet: walletData.exportedWallet as ExportedWallet,
-    identityType: 'webcrypto',
+    // identityType: 'webcrypto',
   };
 };
 

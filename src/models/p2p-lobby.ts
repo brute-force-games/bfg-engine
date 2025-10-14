@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BfgSupportedGameTitleSchema } from "~/models/game-box-definition";
-import { BfgGameLobbyId, BfgGameTableId, BfgPlayerProfileId } from "~/models/types/bfg-branded-ids";
+import { BfgSupportedGameTitleSchema } from "./game-box-definition";
+import { BfgGameLobbyId, BfgGameTableId, BfgPlayerProfileId } from "./types/bfg-branded-ids";
 import { PublicPlayerProfileSchema } from "./player-profile/public-player-profile";
 
 

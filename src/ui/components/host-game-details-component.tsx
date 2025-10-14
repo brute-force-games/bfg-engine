@@ -1,5 +1,5 @@
-import { GameTable } from "~/models/game-table/game-table"
-import { DbGameTableAction } from "~/models/game-table/game-table-action"
+import { GameTable } from "../../models/game-table/game-table"
+import { DbGameTableAction } from "../../models/game-table/game-table-action"
 import { PrettyJsonString } from "../bfg-ui/components/PrettyJson"
 
 

@@ -1,5 +1,5 @@
-import { IGameRegistry } from "~/hooks/games-registry/games-registry";
-import { GameLobby } from "~/models/p2p-lobby";
+import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
+import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 
 
 export const validateLobby = (gameRegistry: IGameRegistry, lobby: GameLobby): boolean => {

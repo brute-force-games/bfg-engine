@@ -1,9 +1,9 @@
-import { GameLobby, LobbyOptions } from "~/models/p2p-lobby"
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
-import { BfgShareableLinkComponent } from "~/ui/components/bfg-shareable-link-component"
-import { BfgSupportedGameTitle } from "~/models/game-box-definition"
-import { LobbyPlayerJoinGameComponent } from "~/ui/components/lobby-player-join-game-component"
+import { GameLobby, LobbyOptions } from "../../models/p2p-lobby"
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids"
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
+import { BfgShareableLinkComponent } from "../../ui/components/bfg-shareable-link-component"
+import { BfgSupportedGameTitle } from "../../models/game-box-definition"
+import { LobbyPlayerJoinGameComponent } from "../../ui/components/lobby-player-join-game-component"
 import { Box, Stack, Typography, Chip, Button, Gamepad } from "../bfg-ui"
 
 

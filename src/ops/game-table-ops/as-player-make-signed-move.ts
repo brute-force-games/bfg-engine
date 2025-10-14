@@ -1,17 +1,17 @@
 // import { z } from "zod";
-// import { getBfgGameMetadata } from "~/models/bfg-game-engines";
+// import { getBfgGameMetadata } from "@bfg-engine/models/bfg-game-engines";
 // import { bfgDb } from "../bfg-db";
-// // import { DbGameTableId } from "~/types/core/branded-values/branded-strings";
+// // import { DbGameTableId } from "@bfg-engine/types/core/branded-values/branded-strings";
 // type DbGameTableId = any; // Temporary stub
-// import { BfgGameTableActionId } from "~/models/types/bfg-branded-ids";
-// import { DbGameTable } from "~/models/game-table/game-table";
+// import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
+// import { DbGameTable } from "@bfg-engine/models/game-table/game-table";
 // import { getLatestAction } from "./order-game-table-actions";
 // import { getPlayerActionSource } from "./player-seat-utils";
-// // import { BfgGameSpecificGameStateTypedJson } from "~/types/core/branded-values/bfg-game-state-typed-json";
+// // import { BfgGameSpecificGameStateTypedJson } from "@bfg-engine/types/core/branded-values/bfg-game-state-typed-json";
 // type BfgGameSpecificGameStateTypedJson = any; // Temporary stub
-// import { BfgGameEngineProcessor } from "~/models/bfg-game-engines";
-// import { createSignedGameAction } from "~/models/game-table/signed-game-action";
-// import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
+// import { BfgGameEngineProcessor } from "@bfg-engine/models/bfg-game-engines";
+// import { createSignedGameAction } from "@bfg-engine/models/game-table/signed-game-action";
+// import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
 
 // /**
 //  * Make a signed move as a player - includes digital signature for authentication

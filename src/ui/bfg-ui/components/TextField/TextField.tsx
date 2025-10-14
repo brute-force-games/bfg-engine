@@ -50,8 +50,8 @@ export const TextField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement
 
     const inputWrapperClassName = classNames(
       styles.inputWrapper,
-      InputProps?.startAdornment && styles.hasStartAdornment,
-      InputProps?.endAdornment && styles.hasEndAdornment
+      !!InputProps?.startAdornment && styles.hasStartAdornment,
+      !!InputProps?.endAdornment && styles.hasEndAdornment
     );
 
     const inputClassName = classNames(

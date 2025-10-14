@@ -1,7 +1,7 @@
-import { GameLobbyId } from "~/models/types/bfg-branded-ids";
+import { GameLobbyId } from "@bfg-engine/models/types/bfg-branded-ids";
 import { useP2pLobby } from "./use-p2p-lobby";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { HostP2pLobbyDetails } from "~/models/p2p-details";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { HostP2pLobbyDetails } from "@bfg-engine/models/p2p-details";
 
 
 interface IPlayerP2pLobbyData {

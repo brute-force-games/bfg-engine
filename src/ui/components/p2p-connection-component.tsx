@@ -9,10 +9,10 @@ import {
   Refresh,
   History
 } from "../bfg-ui"
-import { PeerProfilesComponent } from "~/ui/components/peer-profiles-component"
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
-import { ConnectionEvent } from "~/hooks/p2p/use-p2p-lobby"
+import { PeerProfilesComponent } from "../../ui/components/peer-profiles-component"
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids"
+import { ConnectionEvent } from "../../hooks/p2p/use-p2p-lobby"
 
 
 interface P2pConnectionComponentProps {

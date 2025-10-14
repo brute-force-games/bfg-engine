@@ -32,3 +32,6 @@ export type { PrivatePlayerProfile } from './models/player-profile/private-playe
 export { getWalletFromProfile, createPrivatePlayerProfile, createPlayerProfileFromExportedWallet, rotateWalletKeys } from './models/player-profile/private-player-profile';
 export type { ExportedWallet as ProfileExportedWallet } from './models/player-profile/private-player-profile';
 export { PublicJWKSchema, PrivateJWKSchema } from './models/player-profile/public-player-profile';
+
+// UI Component exports
+export * from './ui/bfg-ui';

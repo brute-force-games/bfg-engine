@@ -1,6 +1,6 @@
-// import { DbGameTableAction } from "~/models/game-table/game-table-action";
+// import { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
 // import { bfgDb } from "../bfg-db";
-// import { DbGameTableId } from "~/types/core/branded-values/branded-strings";
+// import { DbGameTableId } from "@bfg-engine/types/core/branded-values/branded-strings";
 
 
 

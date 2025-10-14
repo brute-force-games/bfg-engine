@@ -1,9 +1,9 @@
-import { GameLobby } from "~/models/p2p-lobby"
-import { BfgGameTableId, PlayerProfileId } from "~/models/types/bfg-branded-ids"
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
-import { asHostStartNewGame } from "~/ops/game-table-ops/as-host-start-game"
+import { GameLobby } from "../../models/p2p-lobby"
+import { BfgGameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
+import { asHostStartNewGame } from "../../ops/game-table-ops/as-host-start-game"
 import { useState } from "react"
-import { BfgShareableLinkComponent } from "~/ui/components/bfg-shareable-link-component"
+import { BfgShareableLinkComponent } from "../../ui/components/bfg-shareable-link-component"
 import { 
   Box, 
   Typography, 
@@ -16,8 +16,8 @@ import {
   Gamepad,
   Settings
 } from "../bfg-ui" 
-import { useGameHosting } from "~/hooks/games-registry/game-hosting"
-import { useGameRegistry } from "~/hooks/games-registry/games-registry"
+import { useGameHosting } from "../../hooks/games-registry/game-hosting"
+import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 
 
 interface ILobbyHostStateComponentProps {

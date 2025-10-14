@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FirstProfilePage } from '../pages/first-profile-page';
-import { useMyPlayerProfiles } from '~/hooks/stores/use-my-player-profiles-store';
-
+import { useMyPlayerProfiles } from '../../hooks/stores/use-my-player-profiles-store';
 
 interface ProfileGuardProps {
   children: React.ReactNode;

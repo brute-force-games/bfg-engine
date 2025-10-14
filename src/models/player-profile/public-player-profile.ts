@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BfgPlayerProfileId } from '../../models/types/bfg-branded-ids';
-// import { createBrandedJsonSchema } from '~/types/core/branded-values/branded-json';
+// import { createBrandedJsonSchema } from "@bfg-engine/types/core/branded-values/branded-json";
 
 // Temporary stub until branded-json module is implemented
 const createBrandedJsonSchema = <T extends z.ZodBranded<z.ZodTypeAny, string>>(schema: T) => schema;
@@ -88,7 +88,7 @@ export const PublicPlayerProfileSchema = z.object({
   walletPublicKey: z.string().optional(), // Legacy BCH public key
   
   // Identity type to determine which authentication method to use
-  identityType: z.enum(['rsa', 'wallet', 'webcrypto']).default('webcrypto'),
+  // identityType: z.enum(['rsa', 'wallet', 'webcrypto']).default('webcrypto'),
   
   // Metadata - using numbers (milliseconds since epoch)
   createdAt: z.number(),

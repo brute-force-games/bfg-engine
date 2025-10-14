@@ -1,7 +1,7 @@
-import { GameLobby } from "~/models/p2p-lobby";
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
+import { GameLobby } from "@bfg-engine/models/p2p-lobby";
+import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
 import { validateLobby } from "./lobby-utils";
-import { IGameRegistry } from "~/hooks/games-registry/games-registry";
+import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
 
 
 export const playerLeaveSeat = async (gameRegistry: IGameRegistry, lobby: GameLobby, playerId: PlayerProfileId): Promise<GameLobby | null> => {

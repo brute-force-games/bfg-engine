@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { BfgGameTableActionId, BfgGameTableId } from "~/models/types/bfg-branded-ids";
+import { BfgGameTableActionId, BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-ids";
 import { GameTableActionSourceSchema, GameTableActionTypeSchema } from "./game-table-action";
 import { getWalletFromProfile } from "../player-profile/private-player-profile";
-import { createWalletSignedMove } from "~/crypto/crypto-utils";
+import { createWalletSignedMove } from "@bfg-engine/crypto/crypto-utils";
 
 /**
  * Signed game action - includes digital signature for player moves

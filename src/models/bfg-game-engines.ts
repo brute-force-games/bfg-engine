@@ -3,7 +3,7 @@ import { IGameRegistry } from "../hooks/games-registry/games-registry";
 import { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-definition";
 import { 
   BfgGameEngineProcessor as BfgGameEngineProcessorType 
-} from "~/models/game-engine/bfg-game-engines";
+} from "@bfg-engine/models/game-engine/bfg-game-engines";
 
 
 export interface BfgGameMetadata {

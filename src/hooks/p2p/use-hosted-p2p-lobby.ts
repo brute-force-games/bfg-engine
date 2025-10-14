@@ -1,8 +1,8 @@
-import { GameLobbyId } from "~/models/types/bfg-branded-ids";
+import { GameLobbyId } from "@bfg-engine/models/types/bfg-branded-ids";
 import { useP2pLobby, ConnectionEvent } from "./use-p2p-lobby";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { HostP2pLobbyDetails } from "~/models/p2p-details";
-import { P2P_LOBBY_DETAILS_ACTION_KEY } from "~/ui/components/constants";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { HostP2pLobbyDetails } from "@bfg-engine/models/p2p-details";
+import { P2P_LOBBY_DETAILS_ACTION_KEY } from "@bfg-engine/ui/components/constants";
 import { IP2pLobby } from "./use-p2p-lobby";
 
 

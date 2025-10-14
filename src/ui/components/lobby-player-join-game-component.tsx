@@ -1,5 +1,5 @@
-import { GameLobby } from "~/models/p2p-lobby"
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
+import { GameLobby } from "../../models/p2p-lobby"
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { 
   Box, 
   Typography, 

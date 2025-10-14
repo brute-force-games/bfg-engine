@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { LobbyOptions } from '~/models/p2p-lobby';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { useGameRegistry } from '~/hooks/games-registry/games-registry';
+import { LobbyOptions } from "@bfg-engine/models/p2p-lobby";
+import { BfgSupportedGameTitle } from "@bfg-engine/models/game-box-definition";
+import { useGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
 import { 
   Dialog, 
   DialogTitle, 

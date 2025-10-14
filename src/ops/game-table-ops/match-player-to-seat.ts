@@ -1,5 +1,5 @@
-// import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
-// import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
+// import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
+// import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 
 
 // export const isPlayerAtGameTable = (playerId: PlayerProfileId, gameTable: GameTable): boolean => {

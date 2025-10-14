@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
-import { BfgGameEngineProcessor } from "~/models/game-engine/bfg-game-engines";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
-import { useGameRegistry } from "~/hooks/games-registry/games-registry";
+import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
+import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engines";
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 
 
 interface HostedGameViewProps {
