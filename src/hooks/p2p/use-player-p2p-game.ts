@@ -1,12 +1,12 @@
-import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
-import { GameTableId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
+import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile";
+import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { useP2pGame, ConnectionEvent } from "./use-p2p-game";
-// import { BfgGameSpecificGameStateTypedJson } from "@bfg-engine/types/core/branded-values/bfg-game-state-typed-json";
+// import { BfgGameSpecificGameStateTypedJson } from "~/types/core/branded-values/bfg-game-state-typed-json";
 type BfgGameSpecificGameStateTypedJson = any; // Temporary stub
-import { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
-import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { matchPlayerToSeat } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
-import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
+import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
+import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils";
+import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 
 
 interface IPlayerP2pGame {

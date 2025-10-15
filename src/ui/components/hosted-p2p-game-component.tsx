@@ -1,20 +1,21 @@
-import { Container, Groups, TabsContainerPanel, Wifi } from "../bfg-ui"
+import { Container, TabsContainerPanel, Groups, Wifi } from "../../ui/bfg-ui"
 import { useCallback, useEffect } from "react"
-import { HostedGameView } from "./hosted-game-view"
-import { asHostApplyMoveFromPlayer } from "../../ops/game-table-ops/as-host-apply-move-from-player"
-import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils"
+import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { useHostedP2pGame } from "../../hooks/p2p/use-hosted-p2p-game"
 import { useGameActions } from "../../hooks/stores/use-game-actions-store"
 import { useHostedGame } from "../../hooks/stores/use-hosted-games-store"
-import { useMyDefaultPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store"
+import { useMyDefaultPublicPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store"
 import { GameTable } from "../../models/game-table/game-table"
-import { useGameRegistry } from "../../hooks/games-registry/games-registry"
+import { GameTableId } from "../../models/types/bfg-branded-ids"
+import { asHostApplyMoveFromPlayer } from "../../ops/game-table-ops/as-host-apply-move-from-player"
+import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils"
 import { addGameAction } from "../../tb-store/hosted-game-actions-store"
 import { updateHostedGame } from "../../tb-store/hosted-games-store"
-import { GameTableId } from "../../models/types/bfg-branded-ids"
-import { PlayerGameView } from "./player-game-view"
-import { P2pConnectionComponent } from "./p2p-connection-component"
-import { HostedGameDetailsComponent } from "./host-game-details-component"
+import { P2pConnectionComponent } from "../../ui/components/p2p-connection-component"
+import { PlayerGameView } from "../../ui/components/player-game-view"
+import { HostedGameView } from "../../ui/components/hosted-game-view"
+import { HostedGameDetailsComponent } from "../../ui/components/host-game-details-component"
+
 
 
 interface HostedP2pGameComponentProps {
@@ -24,8 +25,9 @@ interface HostedP2pGameComponentProps {
 
 export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentProps) => {
 
-  const hostPlayerProfile = useMyDefaultPlayerProfile();
+  const hostPlayerProfile = useMyDefaultPublicPlayerProfile();
   const gameRegistry = useGameRegistry();
+  
   const hostedGame = useHostedGame(gameTableId);
   const gameActions = useGameActions(gameTableId);
 
@@ -61,15 +63,10 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
     return <div>You are not at this game table</div>;
   }
 
-  // const gameTitle = hostedGame.gameTitle;
-  // const gameMetadata = registry.getGameMetadata(gameTitle);
-  // const gameEngine = gameMetadata.processor as BfgGameEngineProcessor<
-  //   z.infer<typeof gameMetadata.processor["gameStateJsonSchema"]>,
-  //   z.infer<typeof gameMetadata.processor["gameActionJsonSchema"]>
-  // >;
-
+  // Get game metadata and validate the move with the schema
   const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
   const gameActionSchema = gameMetadata.processor.gameActionJsonSchema;
+  
 
   const doSendGameData = useCallback(() => {
     if (hostedGame && gameActions) {
@@ -91,23 +88,34 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
   }, [doSendGameData])
 
   // Handle peer connections
-  room.onPeerJoin(_peer => {
+  room.onPeerJoin((_peer: string) => {
     doSendGameData();
   })
 
   const handlePlayerMove = async (move: unknown) => {
-
-    const parseResult = gameActionSchema.safeParse(move);
-    if (!parseResult.success) {
-      console.error('Invalid player move', parseResult.error);
-      return;
+    // Parse JSON string to object if needed
+    let moveData = move;
+    if (typeof move === 'string') {
+      try {
+        moveData = JSON.parse(move);
+      } catch (e) {
+        console.error('❌ Failed to parse move JSON:', e);
+        console.error('Move data:', move);
+        return;
+      }
     }
 
+    // Validate and parse the move using the game's action schema
+    const parseResult = gameActionSchema.safeParse(moveData);
+    
+    if (!parseResult.success) {
+      console.error('❌ Invalid move received:', parseResult.error);
+      console.error('Move data:', moveData);
+      return;
+    }
+    
     const validatedMove = parseResult.data;
-
-    // const actionJson = move as BfgGameSpecificGameStateTypedJson<BfgSupportedGameTitle>;
-    // const playerMoveJson = gameEngine.parseGameSpecificActionJson(actionJson);
-    // console.log('HOST RECEIVED playerMoveJson', playerMoveJson);
+    console.log('✅ HOST RECEIVED validated move:', validatedMove);
     
     const moveResult = await asHostApplyMoveFromPlayer(gameRegistry, hostedGame, gameActions, hostPlayerProfile.id, validatedMove);
     if (moveResult) {
@@ -138,7 +146,7 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
   // )
 
   return (
-    <Container maxWidth="lg" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
+    <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
       <TabsContainerPanel
         tabs={[
           {
