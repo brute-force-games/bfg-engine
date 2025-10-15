@@ -5,6 +5,7 @@ import { TrysteroConfig } from "../../models/trystero-config";
 
 export interface GameHostingContextType {
   getTrysteroConfig(): TrysteroConfig;
+  getBaseUrl(): string;
   createJoinGameUrl: (gameTableId: GameTableId) => string;
   createFriendUrl: (friendId: GameFriendId) => string;
   createHostedGameUrl: (gameTableId: GameTableId) => string;
@@ -14,6 +15,9 @@ export interface GameHostingContextType {
 export const GameHostingContext = createContext<GameHostingContextType>({
   getTrysteroConfig: () => {
     throw new Error('getTrysteroConfig not implemented');
+  },
+  getBaseUrl: () => {
+    throw new Error('getBaseUrl not implemented');
   },
   createJoinGameUrl: () => {
     throw new Error('createJoinGameUrl not implemented');

@@ -22,6 +22,7 @@ import { useHostedLobbyActions } from '../../hooks/stores/use-hosted-lobbies-sto
 import { BfgGameLobbyId } from '../../models/types/bfg-branded-ids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../models/game-box-definition';
 import { useGameRegistry } from '../../hooks/games-registry/games-registry';
+import { useGameHosting } from '../../hooks/games-registry/game-hosting';
 
 
 // Form validation schema with enhanced Zod validation
@@ -50,6 +51,7 @@ export const NewLobbyPage = () => {
 
   const hostedLobbyActions = useHostedLobbyActions();
   const registry = useGameRegistry();
+  const gameHosting = useGameHosting();
 
   // Calculate default lobby name (safe even if profile is null)
   const defaultLobbyName = defaultPlayerProfile ? `${defaultPlayerProfile.handle}'s Lobby` : '';
@@ -67,7 +69,8 @@ export const NewLobbyPage = () => {
   const copyJoinLink = async () => {
     if (!createdLobbyId) return;
     
-    const joinUrl = `${window.location.origin}/join-lobby/${createdLobbyId}`;
+    const baseUrl = gameHosting.getBaseUrl();
+    const joinUrl = `${baseUrl}/join-lobby/${createdLobbyId}`;
     
     try {
       await navigator.clipboard.writeText(joinUrl);

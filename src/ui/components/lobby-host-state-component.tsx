@@ -96,9 +96,11 @@ export const LobbyHostStateComponent = ({
   })
 
   const isGameStarted = lobbyState.gameLink !== undefined;
+
+  const baseUrl = gameHosting.getBaseUrl();
   
   const hostingLink = lobbyState.gameTableId ? 
-    `${window.location.origin}/hosted-games/${lobbyState.gameTableId}` :
+    `${baseUrl}/hosted-games/${lobbyState.gameTableId}` :
     '';
 
   const lobbyValidLabel = lobbyState.isLobbyValid ? 
@@ -109,7 +111,7 @@ export const LobbyHostStateComponent = ({
     '' :
     `[${lobbyState.minNumPlayers} - ${lobbyState.maxNumPlayers} players]`;
 
-  const joinLobbyLink = `${window.location.origin}/join-lobby/${lobbyState.id}`;
+  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
 
   if (isGameStarted) {
     return (

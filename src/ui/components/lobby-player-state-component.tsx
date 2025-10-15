@@ -5,6 +5,7 @@ import { BfgShareableLinkComponent } from "../../ui/components/bfg-shareable-lin
 import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "../../ui/components/lobby-player-join-game-component"
 import { Box, Stack, Typography, Chip, Button, Gamepad } from "../bfg-ui"
+import { useGameHosting } from "../../hooks/games-registry/game-hosting"
 
 
 interface ILobbyPlayerStateComponentProps {
@@ -34,8 +35,10 @@ export const LobbyPlayerStateComponent = ({
     `${lobbyState.minNumPlayers} players` :
     `${lobbyState.minNumPlayers} - ${lobbyState.maxNumPlayers} players`;
 
+  const gameHosting = useGameHosting();
+  const baseUrl = gameHosting.getBaseUrl();
   
-  const joinLobbyLink = `${window.location.origin}/join-lobby/${lobbyState.id}`;
+  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
 
   const getPlayerProfile = (playerId: PlayerProfileId) => {
     const playerProfile = playerProfiles.get(playerId);
