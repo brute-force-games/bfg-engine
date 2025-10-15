@@ -164,16 +164,6 @@ export const HostedP2pLobbyComponent = ({
               />
             )
           },
-          // {
-          //   title: "Player Lobby",
-          //   icon: <Groups />,
-          //   content: (
-          //     <LobbyPlayerTabPanelComponent 
-          //       lobbyState={lobbyState}
-          //       currentPlayerProfile={hostPlayerProfile}
-          //     />
-          //   )
-          // },
           {
             title: "Player Lobby",
             icon: <Groups />,
@@ -202,7 +192,7 @@ export const HostedP2pLobbyComponent = ({
                 onRefreshConnection={refreshConnection}
               />
             )
-          }
+          },
         ]}
         tabColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
         ariaLabel="hosted lobby tabs"
