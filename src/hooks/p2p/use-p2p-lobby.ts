@@ -75,6 +75,11 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
   useEffect(() => {
     console.log('🚀 P2P lobby connection initialized');
     addConnectionEvent('initialized', 'P2P lobby connection initialized', 0);
+
+    return () => {
+      console.log('🔌 Leaving P2P lobby room');
+      // room.leave();
+    }
   }, []);
 
   

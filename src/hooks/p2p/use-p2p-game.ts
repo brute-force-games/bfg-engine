@@ -77,6 +77,11 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   // Initialize connection event on mount
   useEffect(() => {
     addConnectionEvent('initialized', 'P2P game connection initialized', 0);
+
+    return () => {
+      console.log('🔌 Leaving P2P game room');
+      // room.leave();
+    }
   }, []);
 
 

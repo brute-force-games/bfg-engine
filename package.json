@@ -31,7 +31,6 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "peerDependencies": {
-    "bfg-ui-components": "^0.1.0",
     "react": "19.2.0"
   },
   "peerDependenciesMeta": {
@@ -42,6 +41,6 @@
   "dependencies": {
     "@tanstack/react-form": "^1.23.5",
     "tinybase": "^6.7.0",
-    "trystero": "^0.21.8"
+    "trystero": "^0.22.0"
   }
 }

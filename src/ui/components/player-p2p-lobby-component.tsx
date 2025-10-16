@@ -12,6 +12,7 @@ import { PrivatePlayerProfile } from "../../models/player-profile/private-player
 import { P2pConnectionComponent } from "./p2p-connection-component"
 import { LobbyPlayerJoinGameComponent } from "./lobby-player-join-game-component"
 import { LobbyPlayerStateComponent } from "./lobby-player-state-component"
+import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 
 
 interface IPlayerP2pLobbyComponentProps {
@@ -47,7 +48,7 @@ export const PlayerP2pLobbyComponent = ({
   const lobbyState = lobby.lobbyDetails?.lobbyState;
   const lobbyOptions = lobby.lobbyDetails?.lobbyOptions;
 
-  const onSelectGameChoice = (gameChoice: BfgSupportedGameTitles) => {
+  const onSelectGameChoice = (gameChoice: BfgSupportedGameTitle) => {
     sendPlayerMove({ move: 'set-game-choice', gameChoice: gameChoice });
   }
   const onTakeSeat = () => {
