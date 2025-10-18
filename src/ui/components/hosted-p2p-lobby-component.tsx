@@ -15,6 +15,7 @@ import { LobbyPlayerStateComponent } from "../../ui/components/lobby-player-stat
 import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
+import { HostedLobbyTabId } from "./bfg-tabs"
 
 
 interface IHostedP2pLobbyComponentProps {
@@ -28,6 +29,8 @@ interface IHostedP2pLobbyComponentProps {
 
   setLobbyOptions: (lobbyOptions: LobbyOptions) => void
   setLobbyPlayerPool: (playerPool: PlayerProfileId[]) => void
+
+  activeTabId: HostedLobbyTabId;
 }
 
 export const HostedP2pLobbyComponent = ({
@@ -38,7 +41,8 @@ export const HostedP2pLobbyComponent = ({
   updateLobbyState,
   setLobbyPlayerPool,
   setLobbyOptions,
-}: IHostedP2pLobbyComponentProps) => {
+  activeTabId,
+  }: IHostedP2pLobbyComponentProps) => {
   const [isLobbyOptionsDialogOpen, setIsLobbyOptionsDialogOpen] = useState(false);
   
   const hostedP2pLobby = useHostedP2pLobby(lobbyId, hostPlayerProfile);
@@ -150,9 +154,11 @@ export const HostedP2pLobbyComponent = ({
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
       <TabsContainerPanel
+        activeTabId={activeTabId}
         tabs={[
           {
             title: "Lobby Admin",
+            id: 'lobby-admin',
             icon: <Groups />,
             content: (
               <LobbyHostStateComponent
@@ -166,6 +172,7 @@ export const HostedP2pLobbyComponent = ({
           },
           {
             title: "Player Lobby",
+            id: 'player-lobby',
             icon: <Groups />,
             content: (
               <LobbyPlayerStateComponent
@@ -181,6 +188,7 @@ export const HostedP2pLobbyComponent = ({
           },
           {
             title: "P2P",
+            id: 'p2p',
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
@@ -195,7 +203,7 @@ export const HostedP2pLobbyComponent = ({
           },
         ]}
         tabColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        ariaLabel="hosted lobby tabs"
+        // ariaLabel="hosted lobby tabs"
       />
       
       <LobbyHostOptionsDialog

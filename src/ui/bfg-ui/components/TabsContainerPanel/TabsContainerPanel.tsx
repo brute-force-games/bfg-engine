@@ -1,6 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { Box } from "../Box";
-import { Tabs, Tab } from "../Tabs";
 import { Card } from "../Card";
 import { Paper } from "../Paper";
 
@@ -31,27 +30,32 @@ export const TabPanel = (props: TabPanelProps) => {
 };
 
 export interface TabInfo {
-  title: string;
+  id: string;
+  // title: string;
   icon?: React.ReactElement;
   content: ReactNode;
 }
 
 export interface TabsContainerPanelProps {
   tabs: TabInfo[];
+  activeTabId: string;
   tabColor?: string;
-  ariaLabel?: string;
+  // ariaLabel?: string;
 }
 
 export const TabsContainerPanel = ({
   tabs,
+  activeTabId,
   tabColor = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  ariaLabel = "tabs"
+  // ariaLabel = "tabs"
 }: TabsContainerPanelProps) => {
-  const [tabValue, setTabValue] = useState(0);
+  // const [tabValue, setTabValue] = useState(0);
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  // const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+  //   setTabValue(newValue);
+  // };
+
+  const tabValue = tabs.findIndex(tab => tab.id === activeTabId) ?? -1;
 
   return (
     <Card elevation={2}>
@@ -63,11 +67,11 @@ export const TabsContainerPanel = ({
           borderRadius: '4px 4px 0 0'
         }}
       >
-        <Tabs
+        {/* <Tabs
           value={tabValue}
-          onChange={handleTabChange}
-        >
-          {tabs.map((tab, index) => (
+          // onChange={handleTabChange}
+        > */}
+          {/* {tabs.map((tab, index) => (
             <Tab
               key={index}
               icon={tab.icon}
@@ -75,12 +79,12 @@ export const TabsContainerPanel = ({
               id={`tab-${index}`}
               aria-controls={`tabpanel-${index}`}
             />
-          ))}
-        </Tabs>
+          ))} */}
+        {/* </Tabs> */}
       </Paper>
 
       {tabs.map((tab, index) => (
-        <TabPanel key={index} value={tabValue} index={index}>
+        <TabPanel key={index} value={ tabValue} index={index}>
           {tab.content}
         </TabPanel>
       ))}

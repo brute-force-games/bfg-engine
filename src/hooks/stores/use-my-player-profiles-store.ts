@@ -61,6 +61,22 @@ export const useMyDefaultProfileId = () => {
   return useValue(TB_DEFAULT_PROFILE_ID_KEY, playerProfileStore);
 };
 
+
+/**
+ * Hook to get the default player profile with reactive updates
+ */
+export const useRiskyMyDefaultPlayerProfile = () => {
+  const defaultId = useMyDefaultProfileId();
+  const rawProfiles = useTable(TB_PLAYER_PROFILES_TABLE_KEY, playerProfileStore);
+  
+  if (!defaultId || typeof defaultId !== 'string' || !rawProfiles[defaultId]) {
+    return null;
+  }
+  
+  return parseRawProfileData(defaultId, rawProfiles[defaultId]);
+};
+
+
 /**
  * Hook to get the default player profile with reactive updates
  */
@@ -69,7 +85,8 @@ export const useMyDefaultPlayerProfile = () => {
   const rawProfiles = useTable(TB_PLAYER_PROFILES_TABLE_KEY, playerProfileStore);
   
   if (!defaultId || typeof defaultId !== 'string' || !rawProfiles[defaultId]) {
-    return null;
+    // return null;
+    throw new Error('Default player profile not found');
   }
   
   return parseRawProfileData(defaultId, rawProfiles[defaultId]);

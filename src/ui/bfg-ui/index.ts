@@ -30,7 +30,7 @@ export * from './components/PrettyJson';
 export * from './components/Select';
 export * from './components/Stack';
 export * from './components/Switch';
-export * from './components/Tabs';
+// export * from './components/Tabs';
 export * from './components/TabsContainerPanel';
 export * from './components/TextField';
 export * from './components/Toolbar';

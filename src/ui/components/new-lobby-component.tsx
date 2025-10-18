@@ -39,7 +39,7 @@ const createLobbyFormSchema = z.object({
 type CreateLobbyFormData = z.infer<typeof createLobbyFormSchema>;
 
 
-export const NewLobbyPage = () => {
+export const NewLobbyComponent = () => {
   
   const defaultPlayerProfile = useMyDefaultPlayerProfile();
   

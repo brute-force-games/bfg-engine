@@ -7,6 +7,7 @@ export { Gamepad } from './Gamepad';
 export { Groups } from './Groups';
 export { History } from './History';
 export { Link } from './Link';
+export { MenuIcon } from './Menu';
 export { OpenInNew } from './OpenInNew';
 export { People } from './People';
 export { PersonRemove } from './PersonRemove';

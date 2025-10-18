@@ -5,14 +5,17 @@ import { PlayerGameView } from "../components/player-game-view"
 import { Container, TabsContainerPanel } from "../bfg-ui"
 import { P2pConnectionComponent } from "./p2p-connection-component"
 import { BfgGameSpecificGameState } from "../../models/game-table/game-table-action"
+import { PlayerGameTabId } from "./bfg-tabs"
+import { PlayerGameDetailsComponent } from "./player-game-details-component"
 
 
 interface IPlayerP2pGameComponentProps {
   gameTableId: GameTableId
   playerProfile: PrivatePlayerProfile
+  activeTabId: PlayerGameTabId
 }
 
-export const PlayerP2pGameComponent = ({ gameTableId, playerProfile }: IPlayerP2pGameComponentProps) => {
+export const PlayerP2pGameComponent = ({ gameTableId, playerProfile, activeTabId }: IPlayerP2pGameComponentProps) => {
 
   const p2pGame = usePlayerP2pGame(gameTableId, playerProfile);
 
@@ -34,9 +37,11 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile }: IPlayerP2
     return (
       <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
         <TabsContainerPanel
+          activeTabId={activeTabId}
           tabs={[
             {
-              title: "Loading Game",
+              id: "player-game",
+              // title: "Loading Game",
               icon: <span>👥</span>,
               content: (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
@@ -55,7 +60,23 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile }: IPlayerP2
               )
             },
             {
-              title: "P2P Debug",
+              id: "player-game-details",
+              // title: "Game Details",
+              icon: <span>📊</span>,
+              content: (
+                <PlayerGameDetailsComponent
+                  // gameTable={gameTable}
+                  // gameActions={gameActions}
+                />
+                // <GameDetailsComponent
+                //   gameTable={gameTable}
+                //   gameActions={gameActions}
+                // />
+              )
+            },
+            {
+              id: "player-p2p-game-details",
+              // title: "P2P Debug",
               icon: <span>📡</span>,
               content: (
                 <P2pConnectionComponent
@@ -69,7 +90,7 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile }: IPlayerP2
             }
           ]}
           tabColor="linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)"
-          ariaLabel="loading game tabs"
+          // ariaLabel="loading game tabs"
         />
       </Container>
     );
@@ -79,70 +100,64 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile }: IPlayerP2
     sendPlayerMove(move);
   }
 
-  const newView = true;
-
-  if (newView) {
-    return (
-      <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
-        <TabsContainerPanel
-          tabs={[
-            {
-              title: "Player Game",
-              icon: <span>🎮</span>,
-              content: (
-                <PlayerGameView
-                  myPlayerProfile={playerProfile}
-                  myPlayerSeat={myPlayerSeat}
-                  gameTable={gameTable}
-                  gameActions={gameActions}
-                  onPlayerGameAction={onPlayerGameAction}
-                />
-        
-                // <GamePlayerStateComponent
-                  // playerProfiles={lobby.playerProfiles}
-                  // lobbyState={lobbyState}
-                  // currentPlayerProfile={playerProfile}
-                  // lobbyOptions={lobbyOptions}
-                  // onSelectGameChoice={onSelectGameChoice}
-                  // onTakeSeat={onTakeSeat}
-                  // onLeaveSeat={onLeaveSeat}
-                // />
-              )
-            },
-            {
-              title: "P2P",
-              icon: <span>📡</span>,
-              content: (
-                <P2pConnectionComponent
-                  connectionStatus={p2pGame.connectionStatus}
-                  connectionEvents={p2pGame.connectionEvents}
-                  peerProfiles={p2pGame.peerProfiles}
-                  playerProfiles={p2pGame.playerProfiles}
-                  onRefreshConnection={p2pGame.refreshConnection}
-                />
-              )
-            }
-          ]}
-          tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
-          ariaLabel="player lobby tabs"
-        />
-      </Container>
-    )
-  }
 
   return (
-    <>
-      <PlayerGameView
-        myPlayerProfile={playerProfile}
-        myPlayerSeat={myPlayerSeat}
-        gameTable={gameTable}
-        gameActions={gameActions}
-        onPlayerGameAction={onPlayerGameAction}
+    <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
+      <TabsContainerPanel
+        activeTabId={activeTabId}
+        tabs={[
+          {
+            id: "player-game",
+            icon: <span>🎮</span>,
+            content: (
+              <PlayerGameView
+                myPlayerProfile={playerProfile}
+                myPlayerSeat={myPlayerSeat}
+                gameTable={gameTable}
+                gameActions={gameActions}
+                onPlayerGameAction={onPlayerGameAction}
+              />
+      
+              // <GamePlayerStateComponent
+                // playerProfiles={lobby.playerProfiles}
+                // lobbyState={lobbyState}
+                // currentPlayerProfile={playerProfile}
+                // lobbyOptions={lobbyOptions}
+                // onSelectGameChoice={onSelectGameChoice}
+                // onTakeSeat={onTakeSeat}
+                // onLeaveSeat={onLeaveSeat}
+              // />
+            )
+          },
+          {
+            id: "player-game-details",
+            icon: <span>📊</span>,
+            content: (
+              // <div>Player Game Details</div>
+              <PlayerGameDetailsComponent
+                // gameTable={gameTable}
+                // gameActions={gameActions}
+              />
+            )
+          },
+          {
+            id: "player-p2p-game-details",
+            // title: "P2P",
+            icon: <span>📡</span>,
+            content: (
+              <P2pConnectionComponent
+                connectionStatus={p2pGame.connectionStatus}
+                connectionEvents={p2pGame.connectionEvents}
+                peerProfiles={p2pGame.peerProfiles}
+                playerProfiles={p2pGame.playerProfiles}
+                onRefreshConnection={p2pGame.refreshConnection}
+              />
+            )
+          }
+        ]}
+        tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
+        // ariaLabel="player lobby tabs"
       />
-      {/* <PeerProfilesComponent
-        peerProfiles={peerProfiles}
-        playerProfiles={playerProfiles}
-      /> */}
-    </>
+    </Container>
   )
 }

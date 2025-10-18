@@ -1,12 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   useMyPlayerProfiles, 
-  useMyDefaultPlayerProfile, 
+  useRiskyMyDefaultPlayerProfile, 
   usePlayerProfileActions 
 } from '../../hooks/stores/use-my-player-profiles-store';
 import { PrivatePlayerProfile } from '../../models/player-profile/private-player-profile';
 import { PlayerProfileId } from '../../models/types/bfg-branded-ids';
 import { CryptoTestDialog } from '../../ui/components/dialogs/crypto-test-dialog';
+import { NoActivityAppBar } from '../components/app-bars/no-activity-app-bar';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  Checkbox,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Stack,
+  TextField,
+  Typography,
+} from '../bfg-ui';
 
 interface PlayerProfileCardProps {
   profile: PrivatePlayerProfile;
@@ -30,166 +48,87 @@ const PlayerProfileCard = ({
   };
   
   return (
-    <div style={{
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      padding: '16px',
-      margin: '8px',
-      backgroundColor: '#fff',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      minWidth: '300px',
-      maxWidth: '400px'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor: '#007bff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          marginRight: '12px',
-          fontSize: '18px'
-        }}>
-          👤
-        </div>
-        <div>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>
-            {profile.handle}
-          </h3>
-          {isDefault && (
-            <span style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: 'bold'
-            }}>
-              ⭐ Default
-            </span>
+    <Card style={{ minWidth: '300px', maxWidth: '400px', margin: '8px' }}>
+      <Stack spacing={2}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          {profile.avatarImageUrl ? (
+            <Avatar src={profile.avatarImageUrl} alt={profile.handle} size="large" />
+          ) : (
+            <Avatar size="large">👤</Avatar>
           )}
-        </div>
-      </div>
-      
-      {profile.avatarImageUrl && (
-        <div style={{ marginBottom: '12px' }}>
-          <img 
-            src={profile.avatarImageUrl} 
-            alt={`${profile.handle} avatar`}
-            style={{ 
-              width: '60px', 
-              height: '60px', 
-              borderRadius: '50%', 
-              objectFit: 'cover' 
-            }}
-          />
-        </div>
-      )}
-      
-      <div style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
-        <div>Created: {new Date(profile.createdAt).toLocaleDateString()}</div>
-        <div>Updated: {new Date(profile.updatedAt).toLocaleDateString()}</div>
-      </div>
-      
-      {/* Seed Words Section */}
-      <div style={{ marginBottom: '12px' }}>
-        <button
-          onClick={toggleSeedWords}
-          style={{
-            padding: '6px 12px',
-            backgroundColor: showSeedWords ? '#dc3545' : '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            marginBottom: '8px'
-          }}
-        >
-          {showSeedWords ? '🔒 Hide Seed Words' : '🔑 Show Seed Words'}
-        </button>
+          <Stack spacing={0}>
+            <Typography variant="h6">
+              {profile.handle}
+            </Typography>
+            {isDefault && (
+              <Chip label="⭐ Default" color="primary" size="small" />
+            )}
+          </Stack>
+        </Stack>
         
-        {showSeedWords && (
-          <div style={{
-            backgroundColor: '#fff3cd',
-            color: '#856404',
-            padding: '12px',
-            borderRadius: '4px',
-            border: '1px solid #ffeaa7',
-            marginBottom: '8px'
-          }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '12px' }}>
-              ⚠️ SECURITY WARNING
-            </div>
-            <div style={{ fontSize: '11px', marginBottom: '8px' }}>
-              Never share these seed words with anyone. Anyone with these words can access your profile and funds.
-            </div>
-            {/* <div style={{
-              backgroundColor: '#f8f9fa',
-              padding: '8px',
-              borderRadius: '4px',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              wordBreak: 'break-all',
-              border: '1px solid #dee2e6'
-            }}>
-              {profile.walletMnemonic}
-            </div> */}
-          </div>
-        )}
-      </div>
-      
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => onSetDefault(profile.id as PlayerProfileId)}
-          disabled={isDefault}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: isDefault ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isDefault ? 'not-allowed' : 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          {isDefault ? '⭐ Default' : 'Set as Default'}
-        </button>
+        <Stack spacing={0}>
+          <Typography variant="body2" color="secondary">
+            Created: {new Date(profile.createdAt).toLocaleDateString()}
+          </Typography>
+          <Typography variant="body2" color="secondary">
+            Updated: {new Date(profile.updatedAt).toLocaleDateString()}
+          </Typography>
+        </Stack>
         
-        <button
-          onClick={() => onTestCrypto(profile)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          🔐 Test Crypto
-        </button>
+        {/* Seed Words Section */}
+        <Stack spacing={1}>
+          <Button
+            onClick={toggleSeedWords}
+            variant="contained"
+            color={showSeedWords ? 'error' : 'secondary'}
+            size="small"
+          >
+            {showSeedWords ? '🔒 Hide Seed Words' : '🔑 Show Seed Words'}
+          </Button>
+          
+          {showSeedWords && (
+            <Alert severity="warning">
+              <Typography variant="body2" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                ⚠️ SECURITY WARNING
+              </Typography>
+              <Typography variant="caption">
+                Never share these seed words with anyone. Anyone with these words can access your profile and funds.
+              </Typography>
+            </Alert>
+          )}
+        </Stack>
         
-        <button
-          onClick={() => onDelete(profile.id as PlayerProfileId)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Button
+            onClick={() => onSetDefault(profile.id as PlayerProfileId)}
+            disabled={isDefault}
+            variant="contained"
+            color="primary"
+            size="small"
+          >
+            {isDefault ? '⭐ Default' : 'Set as Default'}
+          </Button>
+          
+          <Button
+            onClick={() => onTestCrypto(profile)}
+            variant="contained"
+            color="success"
+            size="small"
+          >
+            🔐 Test Crypto
+          </Button>
+          
+          <Button
+            onClick={() => onDelete(profile.id as PlayerProfileId)}
+            variant="contained"
+            color="error"
+            size="small"
+          >
+            Delete
+          </Button>
+        </Stack>
+      </Stack>
+    </Card>
   );
 };
 
@@ -203,11 +142,19 @@ interface AddProfileDialogProps {
 const AddProfileDialog = ({ open, onClose, onSubmit, existingProfiles }: AddProfileDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasNoProfiles = existingProfiles.length === 0;
   const [formData, setFormData] = useState({
     handle: '',
     avatarImageUrl: '',
-    isDefault: false,
+    isDefault: hasNoProfiles,
   });
+
+  // Update isDefault when dialog opens or profile count changes
+  useEffect(() => {
+    if (open) {
+      setFormData(prev => ({ ...prev, isDefault: hasNoProfiles }));
+    }
+  }, [open, hasNoProfiles]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,7 +178,7 @@ const AddProfileDialog = ({ open, onClose, onSubmit, existingProfiles }: AddProf
         avatarImageUrl: formData.avatarImageUrl.trim() || undefined,
         isDefault: formData.isDefault
       });
-      setFormData({ handle: '', avatarImageUrl: '', isDefault: false });
+      setFormData({ handle: '', avatarImageUrl: '', isDefault: hasNoProfiles });
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create profile');
@@ -242,163 +189,89 @@ const AddProfileDialog = ({ open, onClose, onSubmit, existingProfiles }: AddProf
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setFormData({ handle: '', avatarImageUrl: '', isDefault: false });
+      setFormData({ handle: '', avatarImageUrl: '', isDefault: hasNoProfiles });
       setError(null);
       onClose();
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '24px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-        maxWidth: '500px',
-        width: '90%',
-        maxHeight: '90vh',
-        overflow: 'auto'
-      }}>
-        <h2 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>Add New Player Profile</h2>
-        
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div style={{
-              backgroundColor: '#f8d7da',
-              color: '#721c24',
-              padding: '12px',
-              borderRadius: '4px',
-              marginBottom: '16px',
-              border: '1px solid #f5c6cb'
-            }}>
-              {error}
-            </div>
-          )}
-          
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>
-              Profile Handle *
-            </label>
-            <input
-              type="text"
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Add New Player Profile</DialogTitle>
+      
+      <DialogContent>
+        <form onSubmit={handleSubmit} id="add-profile-form">
+          <Stack spacing={3}>
+            {error && (
+              <Alert severity="error">{error}</Alert>
+            )}
+            
+            <TextField
+              label="Profile Handle"
               value={formData.handle}
               onChange={(e) => setFormData({ ...formData, handle: e.target.value })}
               disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
               placeholder="Enter your player handle"
               required
+              fullWidth
             />
-          </div>
-          
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>
-              Avatar Image URL (optional)
-            </label>
-            <input
+            
+            <TextField
+              label="Avatar Image URL (optional)"
               type="url"
               value={formData.avatarImageUrl}
               onChange={(e) => setFormData({ ...formData, avatarImageUrl: e.target.value })}
               disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
               placeholder="https://example.com/avatar.jpg"
+              fullWidth
             />
-          </div>
-          
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={formData.isDefault}
-                onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-                disabled={isSubmitting}
-                style={{ marginRight: '8px' }}
-              />
-              Set as default profile
-            </label>
-          </div>
-          
-          <div style={{
-            backgroundColor: '#d1ecf1',
-            color: '#0c5460',
-            padding: '12px',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            border: '1px solid #bee5eb'
-          }}>
-            This profile will be created with cryptographic keys for secure move signing. 
-            All data is stored locally on your device.
-          </div>
-          
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '16px'
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !formData.handle.trim()}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: isSubmitting || !formData.handle.trim() ? '#ccc' : '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting || !formData.handle.trim() ? 'not-allowed' : 'pointer',
-                fontSize: '16px'
-              }}
-            >
-              {isSubmitting ? 'Creating...' : 'Create Profile'}
-            </button>
-          </div>
+            
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isDefault}
+                  onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
+                  disabled={isSubmitting || hasNoProfiles}
+                />
+              }
+              label={hasNoProfiles ? "Set as default profile (required for first profile)" : "Set as default profile"}
+              disabled={hasNoProfiles}
+            />
+            
+            <Alert severity="info">
+              This profile will be created with cryptographic keys for secure move signing. 
+              All data is stored locally on your device.
+            </Alert>
+          </Stack>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+      
+      <DialogActions>
+        <Button
+          onClick={handleClose}
+          disabled={isSubmitting}
+          variant="outlined"
+          color="secondary"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          form="add-profile-form"
+          disabled={isSubmitting || !formData.handle.trim()}
+          variant="contained"
+          color="primary"
+        >
+          {isSubmitting ? 'Creating...' : 'Create Profile'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
 export const MyPlayerProfilesPage = () => {
   const profiles = useMyPlayerProfiles();
-  const defaultProfile = useMyDefaultPlayerProfile();
+  const defaultProfile = useRiskyMyDefaultPlayerProfile();
   const { addProfile, removeProfile, setDefault, clearAll } = usePlayerProfileActions();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -443,132 +316,89 @@ export const MyPlayerProfilesPage = () => {
   const hasDefaultProfile = !!defaultProfile;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '32px', marginBottom: '24px', color: '#333' }}>
-        My Player Profiles
-      </h1>
-      
-      <div style={{
-        backgroundColor: '#d1ecf1',
-        color: '#0c5460',
-        padding: '16px',
-        borderRadius: '4px',
-        marginBottom: '24px',
-        border: '1px solid #bee5eb'
-      }}>
-        Player profiles are stored locally on your device with cryptographic keys for secure move signing.
-        No server storage is used - all data remains private to you.
-      </div>
-
-      {!hasProfiles && (
-        <div style={{
-          backgroundColor: '#fff3cd',
-          color: '#856404',
-          padding: '16px',
-          borderRadius: '4px',
-          marginBottom: '24px',
-          border: '1px solid #ffeaa7'
-        }}>
-          No player profiles found. Create your first profile to get started.
-        </div>
-      )}
-
-      {hasProfiles && !hasDefaultProfile && (
-        <div style={{
-          backgroundColor: '#fff3cd',
-          color: '#856404',
-          padding: '16px',
-          borderRadius: '4px',
-          marginBottom: '24px',
-          border: '1px solid #ffeaa7'
-        }}>
-          No default player profile set. Please set one as your default profile.
-        </div>
-      )}
-
-      {/* {hasDefaultProfile && (
-        <div style={{
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          padding: '16px',
-          borderRadius: '4px',
-          marginBottom: '24px',
-          border: '1px solid #c3e6cb'
-        }}>
-          Default profile: <strong>{defaultProfile.handle}</strong>
-        </div>
-      )} */}
-
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-        <button
-          onClick={() => setShowAddDialog(true)}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
-        >
-          ➕ Add Profile
-        </button>
+    <>
+      <NoActivityAppBar />
+      <Container maxWidth="xl">
+        <Stack spacing={3}>
+          <Typography variant="h1" gutterBottom>
+            My Player Profiles
+          </Typography>
         
-        {hasProfiles && (
-          <button
-            onClick={handleClearAll}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            🗑️ Clear All Profiles
-          </button>
+        <Alert severity="info">
+          Player profiles are stored locally on your device with cryptographic keys for secure move signing.
+          No server storage is used - all data remains private to you.
+        </Alert>
+
+        {!hasProfiles && (
+          <Alert severity="warning">
+            No player profiles found. Create your first profile to get started.
+          </Alert>
         )}
-      </div>
 
-      {hasProfiles && (
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '16px',
-          justifyContent: 'flex-start'
-        }}>
-          {profiles.map((profile) => (
-            <PlayerProfileCard
-              key={profile.id}
-              profile={profile}
-              isDefault={defaultProfile?.id === profile.id}
-              onSetDefault={handleSetDefault}
-              onDelete={handleDeleteProfile}
-              onTestCrypto={handleTestCrypto}
-            />
-          ))}
-        </div>
-      )}
+        {hasProfiles && !hasDefaultProfile && (
+          <Alert severity="warning">
+            No default player profile set. Please set one as your default profile.
+          </Alert>
+        )}
 
-      <AddProfileDialog
-        open={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
-        onSubmit={handleAddProfile}
-        existingProfiles={profiles}
-      />
+        <Stack direction="row" spacing={2}>
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            variant="contained"
+            color="primary"
+            size="large"
+          >
+            ➕ Add Profile
+          </Button>
+          
+          {hasProfiles && (
+            <Button
+              onClick={handleClearAll}
+              variant="contained"
+              color="error"
+              size="large"
+            >
+              🗑️ Clear All Profiles
+            </Button>
+          )}
+        </Stack>
 
-      {selectedProfileForCryptoTest && (
-        <CryptoTestDialog
-          open={showCryptoTestDialog}
-          onClose={handleCloseCryptoTestDialog}
-          profile={selectedProfileForCryptoTest}
+        {hasProfiles && (
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: '16px',
+            justifyContent: 'flex-start'
+          }}>
+            {profiles.map((profile) => (
+              <PlayerProfileCard
+                key={profile.id}
+                profile={profile}
+                isDefault={defaultProfile?.id === profile.id}
+                onSetDefault={handleSetDefault}
+                onDelete={handleDeleteProfile}
+                onTestCrypto={handleTestCrypto}
+              />
+            ))}
+          </div>
+        )}
+
+        <AddProfileDialog
+          open={showAddDialog}
+          onClose={() => setShowAddDialog(false)}
+          onSubmit={handleAddProfile}
+          existingProfiles={profiles}
         />
-      )}
-    </div>
+
+        {selectedProfileForCryptoTest && (
+          <CryptoTestDialog
+            open={showCryptoTestDialog}
+            onClose={handleCloseCryptoTestDialog}
+            profile={selectedProfileForCryptoTest}
+          />
+        )}
+      </Stack>
+    </Container>
+    </>
   );
 };

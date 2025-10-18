@@ -13,16 +13,19 @@ import { P2pConnectionComponent } from "./p2p-connection-component"
 import { LobbyPlayerJoinGameComponent } from "./lobby-player-join-game-component"
 import { LobbyPlayerStateComponent } from "./lobby-player-state-component"
 import { BfgSupportedGameTitle } from "../../models/game-box-definition"
+import { JoinLobbyTabId } from "./bfg-tabs"
 
 
 interface IPlayerP2pLobbyComponentProps {
   lobbyId: GameLobbyId
   playerProfile: PrivatePlayerProfile
+  activeTabId: JoinLobbyTabId
 }
 
 export const PlayerP2pLobbyComponent = ({
   lobbyId,
   playerProfile,
+  activeTabId,
 }: IPlayerP2pLobbyComponentProps) => {
 
   const lobby = useP2pLobby(lobbyId as GameLobbyId, playerProfile);
@@ -94,9 +97,11 @@ export const PlayerP2pLobbyComponent = ({
   return (
     <Container maxWidth="lg" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
       <TabsContainerPanel
+        activeTabId={activeTabId}
         tabs={[
           {
             title: "Player Lobby",
+            id: "player-lobby",
             icon: <Groups />,
             content: (
               <LobbyPlayerStateComponent
@@ -112,6 +117,7 @@ export const PlayerP2pLobbyComponent = ({
           },
           {
             title: "P2P",
+            id: "p2p",
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
@@ -125,7 +131,7 @@ export const PlayerP2pLobbyComponent = ({
           }
         ]}
         tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
-        ariaLabel="player lobby tabs"
+        // ariaLabel="player lobby tabs"
       />
     </Container>
   )

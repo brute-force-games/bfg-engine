@@ -4,6 +4,7 @@ import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engines";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
+import { Container, Typography, Stack, Box } from "../bfg-ui";
 
 
 interface PlayerGameViewProps {
@@ -21,7 +22,7 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
   const latestAction = gameActions[gameActions.length - 1];
   
   if (!latestAction) {
-    return <div>No game actions yet...</div>;
+    return <Typography variant="body1">No game actions yet...</Typography>;
   }
   
   const gameTitle = gameTable.gameTitle;
@@ -53,16 +54,20 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
 
   if (!gameMetadata) {
     return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Loading Game Metadata...</h1>
-        <div className="text-gray-600">Loading game metadata...</div>
-      </div>
+      <Container sx={{ padding: 3 }}>
+        <Stack spacing={3}>
+          <Typography variant="h3">Loading Game Metadata...</Typography>
+          <Typography variant="body1" color="text.secondary">
+            Loading game metadata...
+          </Typography>
+        </Stack>
+      </Container>
     )
   }
 
   return (
-    <div>
+    <Box>
       {gameRepresentation}
-    </div>
+    </Box>
   );
-}
+};

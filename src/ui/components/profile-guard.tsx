@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FirstProfilePage } from '../pages/first-profile-page';
 import { useMyPlayerProfiles } from '../../hooks/stores/use-my-player-profiles-store';
+import { Box, Typography } from '../bfg-ui';
+
 
 interface ProfileGuardProps {
   children: React.ReactNode;
@@ -29,9 +31,14 @@ export const ProfileGuard = ({ children }: ProfileGuardProps) => {
   // Show loading state while checking for profiles
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
+      <Box style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh' 
+      }}>
+        <Typography variant="h6">Loading...</Typography>
+      </Box>
     );
   }
 

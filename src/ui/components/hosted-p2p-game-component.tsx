@@ -15,15 +15,20 @@ import { P2pConnectionComponent } from "../../ui/components/p2p-connection-compo
 import { PlayerGameView } from "../../ui/components/player-game-view"
 import { HostedGameView } from "../../ui/components/hosted-game-view"
 import { HostedGameDetailsComponent } from "../../ui/components/host-game-details-component"
+import { HostedGameTabId } from "./bfg-tabs"
 
 
 
 interface HostedP2pGameComponentProps {
   gameTableId: GameTableId
+  activeTabId: HostedGameTabId
 }
 
 
-export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentProps) => {
+export const HostedP2pGameComponent = ({
+  gameTableId,
+  activeTabId,
+}: HostedP2pGameComponentProps) => {
 
   const hostPlayerProfile = useMyDefaultPublicPlayerProfile();
   const gameRegistry = useGameRegistry();
@@ -148,9 +153,11 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
       <TabsContainerPanel
+        activeTabId={activeTabId}
         tabs={[
           {
-            title: "Hosted Game",
+            id: "game-admin",
+            // title: "Hosted Game",
             icon: <Groups />,
             content: (
               <HostedGameView
@@ -165,7 +172,8 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
             )
           },
           {
-            title: "Player Game",
+            id: "player-game",
+            // title: "Player Game",
             icon: <Groups />,
             content: (
               <PlayerGameView
@@ -179,7 +187,8 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
             )
           },
           {
-            title: "Host Details",
+            id: "hosted-game-details",
+            // title: "Host Details",
             icon: <Groups />,
             content: (
               <HostedGameDetailsComponent
@@ -189,7 +198,8 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
             )
           },
           {
-            title: "P2P",
+            id: "host-p2p-details",
+            // title: "P2P",
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
@@ -204,7 +214,7 @@ export const HostedP2pGameComponent = ({ gameTableId }: HostedP2pGameComponentPr
           },
         ]}
         tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
-        ariaLabel="player lobby tabs"
+        // ariaLabel="player lobby tabs"
       />
     </Container>
   )

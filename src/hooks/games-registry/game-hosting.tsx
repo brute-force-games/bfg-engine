@@ -4,6 +4,7 @@ import { TrysteroConfig } from "../../models/trystero-config";
 
 
 export interface GameHostingContextType {
+  getSiteTitle(): string;
   getTrysteroConfig(): TrysteroConfig;
   getBaseUrl(): string;
   createJoinGameUrl: (gameTableId: GameTableId) => string;
@@ -13,6 +14,9 @@ export interface GameHostingContextType {
 }
 
 export const GameHostingContext = createContext<GameHostingContextType>({
+  getSiteTitle: () => {
+    throw new Error('getSiteTitle not implemented');
+  },
   getTrysteroConfig: () => {
     throw new Error('getTrysteroConfig not implemented');
   },

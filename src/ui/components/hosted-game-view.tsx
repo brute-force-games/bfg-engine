@@ -5,6 +5,7 @@ import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engine
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
+import { Typography, Stack, Box } from "../bfg-ui";
 
 
 interface HostedGameViewProps {
@@ -25,7 +26,7 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   const latestAction = gameActions[gameActions.length - 1];
   
   if (!latestAction) {
-    return <div>No game actions yet...</div>;
+    return <Typography variant="body1">No game actions yet...</Typography>;
   }
   
   const gameTitle = hostedGame.gameTitle;
@@ -66,14 +67,16 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   // }).createGameStateHostComponent(hostedGame, gameSpecificState, latestGameSpecificAction, onPlayerMoveAction);
 
   return (
-    <div>
-      <div>BFG Table Phase: {hostedGame.tablePhase}</div>
-      {hostRepresentation}
+    <Stack spacing={2}>
+      <Typography variant="body1">BFG Table Phase: {hostedGame.tablePhase}</Typography>
+      <Box>
+        {hostRepresentation}
+      </Box>
       
       {/* <PeerProfilesComponent
         peerProfiles={peerProfiles}
         playerProfiles={playerProfiles}
       /> */}
-    </div>
+    </Stack>
   );
-}
+};

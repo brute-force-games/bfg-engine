@@ -5,15 +5,16 @@ import { useMyDefaultPublicPlayerProfile } from "../../hooks/stores/use-my-playe
 import { LobbyOptions, GameLobby } from "../../models/p2p-lobby";
 import { useHostedLobby } from "../../hooks/stores/use-hosted-lobbies-store"
 import { useHostedLobbyActions } from "../../hooks/stores/use-hosted-lobbies-store"
-import { HostedP2pLobbyComponent } from "../../ui/components/hosted-p2p-lobby-component"
+import { HostedP2pLobbyComponent } from "./hosted-p2p-lobby-component"
+import { HostedLobbyTabId } from "./bfg-tabs";
 
 
-
-interface HostedLobbyPageProps {
+interface HostedLobbyComponentProps {
   lobbyId: GameLobbyId;
+  activeTabId: HostedLobbyTabId;
 }
 
-export const HostedLobbyPage = ({ lobbyId }: HostedLobbyPageProps) => {
+export const  HostedLobbyComponent = ({ lobbyId, activeTabId }: HostedLobbyComponentProps) => {
 
   const lobby = useHostedLobby(lobbyId);
   const lobbyActions = useHostedLobbyActions();
@@ -90,6 +91,7 @@ export const HostedLobbyPage = ({ lobbyId }: HostedLobbyPageProps) => {
       updateLobbyState={setLobbyState}
       setLobbyOptions={setLobbyOptions}
       setLobbyPlayerPool={setLobbyPlayerPool}
+      activeTabId={activeTabId}
     />
   )
 }
