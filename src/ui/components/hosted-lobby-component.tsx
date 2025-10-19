@@ -14,7 +14,10 @@ interface HostedLobbyComponentProps {
   activeTabId: HostedLobbyTabId;
 }
 
-export const  HostedLobbyComponent = ({ lobbyId, activeTabId }: HostedLobbyComponentProps) => {
+export const  HostedLobbyComponent = ({
+  lobbyId,
+  activeTabId,
+}: HostedLobbyComponentProps) => {
 
   const lobby = useHostedLobby(lobbyId);
   const lobbyActions = useHostedLobbyActions();
@@ -74,13 +77,6 @@ export const  HostedLobbyComponent = ({ lobbyId, activeTabId }: HostedLobbyCompo
       </div>
     )
   }
-
-  // return (
-  //   <div>
-  //     <h1>Hosted Lobby x</h1>
-  //     <p>Lobby ID: {lobbyId}</p>
-  //   </div>
-  // )
 
   return (
     <HostedP2pLobbyComponent

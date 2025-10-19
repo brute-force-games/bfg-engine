@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { getPlayerActionSource } from "./player-seat-utils";
-import { GameTable } from "@bfg-engine/models/game-table/game-table";
-import { TablePhase } from "@bfg-engine/models/game-table/table-phase";
-import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
+import { GameTable } from "../../models/game-table/game-table";
+import { TablePhase } from "../../models/game-table/table-phase";
+import { IGameRegistry } from "../../hooks/games-registry/games-registry";
 
 
 export type HostApplyMoveFromPlayerResult = {

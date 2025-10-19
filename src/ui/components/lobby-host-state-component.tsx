@@ -18,6 +18,8 @@ import {
 } from "../bfg-ui" 
 import { useGameHosting } from "../../hooks/games-registry/game-hosting"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
+import { PlayerProfileChip } from "./player-profile-chip"
+import { validateLobby } from "../../ops/game-lobby-ops/lobby-utils"
 
 
 interface ILobbyHostStateComponentProps {
@@ -71,29 +73,41 @@ export const LobbyHostStateComponent = ({
     }
   }
 
-  const playerPoolHandles = lobbyState.playerPool.map(playerId => {
-    const playerProfile = playerProfiles.get(playerId);
-    if (!playerProfile) {
-      return (
-        <Chip 
-          key={playerId}
-          label={`${playerId} (name not available)`}
-          variant="outlined"
-          color="error"
-          size="small"
-        />
-      );
-    }
+  // const playerPoolChips = lobbyState.playerPool.map(playerId => {
+  //   const playerProfile = playerProfiles.get(playerId);
+  //   const playerIsMe = playerId === lobbyState.gameHostPlayerProfile.id;
+
+  //   if (!playerProfile) {
+  //     return (
+  //       <Chip 
+  //         key={playerId}
+  //         label={`${playerId} (name not available)`}
+  //         variant="outlined"
+  //         color="error"
+  //         size="small"
+  //       />
+  //     );
+  //   }
+  //   return (
+  //     <Chip 
+  //       key={playerId}
+  //       label={playerProfile.handle}
+  //       variant="filled"
+  //       color="primary"
+  //       size="small"
+  //     />
+  //   )
+  // })
+
+  const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
     return (
-      <Chip 
-        key={playerId}
-        label={playerProfile.handle}
-        variant="filled"
-        color="primary"
-        size="small"
+      <PlayerProfileChip
+        playerProfileId={playerProfileId}
+        playerProfiles={playerProfiles}
+        myPlayerProfile={lobbyState.gameHostPlayerProfile}
       />
-    )
-  })
+    );
+  });
 
   const isGameStarted = lobbyState.gameLink !== undefined;
 
@@ -148,7 +162,7 @@ export const LobbyHostStateComponent = ({
                 </Typography>
               </Stack>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {playerPoolHandles.length > 0 ? playerPoolHandles : (
+                {playerPoolChips.length > 0 ? playerPoolChips : (
                   <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
                     No players in pool
                   </Typography>
@@ -160,6 +174,10 @@ export const LobbyHostStateComponent = ({
       </Stack>
     )
   }
+
+  const invalidLobbyReasons = lobbyState.isLobbyValid ? 
+    [] :
+    validateLobby(gameRegistry, lobbyState);
 
 
   return (
@@ -185,9 +203,16 @@ export const LobbyHostStateComponent = ({
               hosted by {lobbyState.gameHostPlayerProfile.handle}
             </Typography>
           {!lobbyState.isLobbyValid && (
-            <Alert severity="warning" style={{ marginTop: '8px' }}>
-              Lobby configuration is invalid. Please check your settings.
-            </Alert>
+            <>
+              <Alert severity="warning" style={{ marginTop: '8px' }}>
+                Lobby configuration is invalid.
+              </Alert>
+              <ul>
+                {invalidLobbyReasons.map(reason => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </>
           )}
         </Box>
 
@@ -236,7 +261,7 @@ export const LobbyHostStateComponent = ({
             </Typography>
           </Stack>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {playerPoolHandles.length > 0 ? playerPoolHandles : (
+                {playerPoolChips.length > 0 ? playerPoolChips : (
                   <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
                     No players in pool
                   </Typography>

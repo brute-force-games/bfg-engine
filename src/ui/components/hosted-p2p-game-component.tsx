@@ -136,28 +136,15 @@ export const HostedP2pGameComponent = ({
     console.log('Received player move from peer:', peer, move);
     await handlePlayerMove(move);
   })
-
-
-  // return (
-  //   <HostedGameView
-  //     myPlayerProfile={hostPlayerProfile}
-  //     onPlayerGameAction={handlePlayerMove}
-  //     myPlayerSeat={myPlayerSeat}
-  //     hostedGame={hostedGame}
-  //     gameActions={gameActions}
-  //     peerProfiles={peerProfiles}
-  //     playerProfiles={playerProfiles}
-  //   />
-  // )
+  
 
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
-      <TabsContainerPanel
+      <TabsContainerPanel<HostedGameTabId>
         activeTabId={activeTabId}
         tabs={[
           {
             id: "game-admin",
-            // title: "Hosted Game",
             icon: <Groups />,
             content: (
               <HostedGameView
@@ -173,7 +160,6 @@ export const HostedP2pGameComponent = ({
           },
           {
             id: "player-game",
-            // title: "Player Game",
             icon: <Groups />,
             content: (
               <PlayerGameView
@@ -188,7 +174,6 @@ export const HostedP2pGameComponent = ({
           },
           {
             id: "hosted-game-details",
-            // title: "Host Details",
             icon: <Groups />,
             content: (
               <HostedGameDetailsComponent
@@ -199,7 +184,6 @@ export const HostedP2pGameComponent = ({
           },
           {
             id: "host-p2p-details",
-            // title: "P2P",
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
@@ -214,7 +198,6 @@ export const HostedP2pGameComponent = ({
           },
         ]}
         tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
-        // ariaLabel="player lobby tabs"
       />
     </Container>
   )

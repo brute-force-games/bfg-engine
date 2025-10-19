@@ -10,13 +10,10 @@ import {
   parseRawHostedLobbyData,
   GameLobbyUpdateFields,
   updateHostedLobbyPlayerPool,
-} from "@bfg-engine/tb-store/hosted-lobbies-store";
-import { GameLobbyId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { GameLobby } from "@bfg-engine/models/p2p-lobby";
+} from "../../tb-store/hosted-lobbies-store";
+import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { GameLobby } from "../../models/p2p-lobby";
 
-/**
- * React hooks for hosted lobby management with TinyBase
- */
 
 /**
  * Hook to get all hosted lobbies with reactive updates

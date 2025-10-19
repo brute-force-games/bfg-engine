@@ -11,6 +11,10 @@ export const LobbyOptionsSchema = z.object({
 export type LobbyOptions = z.infer<typeof LobbyOptionsSchema>;
 
 
+export const InvalidLobbyReasonSchema = z.string().brand("InvalidLobbyReason");
+export type InvalidLobbyReason = z.infer<typeof InvalidLobbyReasonSchema>;
+
+
 export const LobbySchema = z.object({
   id: BfgGameLobbyId.idSchema,
   createdAt: z.number(),
@@ -19,6 +23,7 @@ export const LobbySchema = z.object({
   lobbyName: z.string(),
   currentStatusDescription: z.string(),
   isLobbyValid: z.boolean(),
+  // invalidLobbyReasons: z.array(InvalidLobbyReasonSchema),
 
   gameTitle: BfgSupportedGameTitleSchema.optional(),
 

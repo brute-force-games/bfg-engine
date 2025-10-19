@@ -16,6 +16,7 @@ import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { HostedLobbyTabId } from "./bfg-tabs"
+import { PeerIdSchema } from "../../hooks/p2p/p2p-types"
 
 
 interface IHostedP2pLobbyComponentProps {
@@ -46,10 +47,15 @@ export const HostedP2pLobbyComponent = ({
   const [isLobbyOptionsDialogOpen, setIsLobbyOptionsDialogOpen] = useState(false);
   
   const hostedP2pLobby = useHostedP2pLobby(lobbyId, hostPlayerProfile);
-  const { p2pLobby, connectionStatus, connectionEvents, peerProfiles, sendLobbyData, refreshConnection } = hostedP2pLobby;
-  const { room, getPlayerMove, playerProfiles } = p2pLobby;
   const gameRegistry = useGameRegistry();
 
+  const { p2pLobby, connectionStatus, connectionEvents, peerProfiles, sendLobbyData, refreshConnection } = hostedP2pLobby;
+  const { room, getPlayerMove, playerProfiles } = p2pLobby;
+  
+  const playerAndHostProfiles = new Map<PlayerProfileId, PublicPlayerProfile>([
+    ...playerProfiles.entries(), 
+    [hostPlayerProfile.id, hostPlayerProfile]]
+  );
 
   const doSendLobbyData = useCallback(() => {
     if (lobbyState) {
@@ -112,12 +118,13 @@ export const HostedP2pLobbyComponent = ({
 
 
   getPlayerMove(async (move: PlayerP2pLobbyMove, peer: string) => {
-    const playerId = peerProfiles.get(peer)?.id;
-    if (!playerId) {
-      console.error('Player ID not found for peer:', peer);
+    const peerId = PeerIdSchema.parse(peer);
+    const playerProfileId = peerProfiles.get(peerId)?.id;
+    if (!playerProfileId) {
+      console.error('Player profile ID not found for peer:', peer);
       return;
     }
-    await applyPlayerMove(move, playerId);
+    await applyPlayerMove(move, playerProfileId);
   })
 
   const onSetLobbyOptions = (lobbyOptions: LobbyOptions) => {
@@ -139,30 +146,26 @@ export const HostedP2pLobbyComponent = ({
 
   const onSelectGameChoice = async (gameChoice: BfgSupportedGameTitle) => {
     await applyPlayerMove({ move: 'set-game-choice', gameChoice: gameChoice }, hostPlayerProfile.id);
-    // sendPlayerMove({ move: 'set-game-choice', gameChoice: gameChoice });
   }
   const onTakeSeat = async () => {
     await applyPlayerMove({ move: 'take-seat' }, hostPlayerProfile.id);
-    // sendPlayerMove({ move: 'take-seat' });
   }
   const onLeaveSeat = async () => {
     await applyPlayerMove({ move: 'leave-seat' }, hostPlayerProfile.id);
-    // sendPlayerMove({ move: 'leave-seat' });
   }
 
 
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
-      <TabsContainerPanel
+      <TabsContainerPanel<HostedLobbyTabId>
         activeTabId={activeTabId}
         tabs={[
           {
-            title: "Lobby Admin",
             id: 'lobby-admin',
             icon: <Groups />,
             content: (
               <LobbyHostStateComponent
-                playerProfiles={playerProfiles}
+                playerProfiles={playerAndHostProfiles}
                 lobbyState={lobbyState}
                 updateLobbyState={updateLobbyState}
                 setLobbyPlayerPool={setLobbyPlayerPool}
@@ -171,12 +174,11 @@ export const HostedP2pLobbyComponent = ({
             )
           },
           {
-            title: "Player Lobby",
             id: 'player-lobby',
             icon: <Groups />,
             content: (
               <LobbyPlayerStateComponent
-                playerProfiles={playerProfiles}
+                playerProfiles={playerAndHostProfiles}
                 lobbyState={lobbyState}
                 currentPlayerProfile={hostPlayerProfile}
                 lobbyOptions={lobbyOptions}
@@ -187,15 +189,14 @@ export const HostedP2pLobbyComponent = ({
             )
           },
           {
-            title: "P2P",
-            id: 'p2p',
+            id: 'host-p2p-lobby-details',
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
                 connectionStatus={connectionStatus}
                 connectionEvents={connectionEvents}
                 peerProfiles={peerProfiles}
-                playerProfiles={playerProfiles}
+                playerProfiles={playerAndHostProfiles}
                 onResendLobbyData={doSendLobbyData}
                 onRefreshConnection={refreshConnection}
               />

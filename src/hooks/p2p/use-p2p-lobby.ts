@@ -5,21 +5,15 @@ import { PublicPlayerProfile } from "../../models/player-profile/public-player-p
 import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../ui/components/constants";
 import { useGameHosting } from "../games-registry/game-hosting";
+import { ConnectionEvent, PeerId, PeerIdSchema } from "./p2p-types";
 
-
-export interface ConnectionEvent {
-  type: 'initialized' | 'peer-joined' | 'peer-left' | 'auto-refresh' | 'join-error'
-  timestamp: Date
-  peerCount: number
-  message: string
-}
 
 export interface IP2pLobby {
   room: Room
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peerProfiles: Map<string, PublicPlayerProfile>
+  peerProfiles: Map<PeerId, PublicPlayerProfile>
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   lobbyDetails: HostP2pLobbyDetails | null
@@ -27,7 +21,7 @@ export interface IP2pLobby {
   getPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: string) => void) => void
 
   sendPlayerMove: (move: PlayerP2pLobbyMove) => void
-  getPlayerMove: (callback: (move: PlayerP2pLobbyMove, peer: string) => void) => void
+  getPlayerMove: (callback: (move: PlayerP2pLobbyMove, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }
@@ -36,7 +30,7 @@ export interface IP2pLobby {
 export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerProfile): IP2pLobby => {
   
   const [lobbyDetails, setLobbyDetails] = useState<HostP2pLobbyDetails | null>(null)
-  const [peerProfiles, setPeerProfiles] = useState<Map<string, PublicPlayerProfile>>(new Map())
+  const [peerProfiles, setPeerProfiles] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
   const gameHosting = useGameHosting();
@@ -52,7 +46,7 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
     console.error('Join error:', error)
     addConnectionEvent('join-error', `Join error: ${error.error}`, 0);
   });
-  console.log('room', room)
+  console.log('joined p2p lobby room', room)
 
   const addConnectionEvent = (type: ConnectionEvent['type'], message: string, peerCount: number) => {
     const event: ConnectionEvent = {
@@ -84,21 +78,25 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
 
   
   room.onPeerJoin(peer => {
-    console.log('Peer joined:', peer)
-    sendPlayerProfile(myPlayerProfile, peer);
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('Peer joined:', peerId)
+    sendPlayerProfile(myPlayerProfile, peerId);
     setPeerProfiles(prev => {
-      const updated = new Map(prev).set(peer, myPlayerProfile);
+      const updated = new Map(prev).set(peerId, myPlayerProfile);
       const newCount = updated.size;
-      addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
+      const peerHandle = peerProfiles.get(peerId)?.handle ?? peerId;
+      const eventMessage = `Peer ${peerHandle} joined (total: ${newCount})`;
+      addConnectionEvent('peer-joined', eventMessage, newCount);
       return updated;
     });
   })
 
   room.onPeerLeave(peer => {
-    console.log('Peer left:', peer)
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('Peer left:', peerId)
     setPeerProfiles(prev => {
       const updated = new Map(prev)
-      updated.delete(peer)
+      updated.delete(peerId)
       const newCount = updated.size;
       addConnectionEvent('peer-left', `Peer left (total: ${newCount})`, newCount);
       return updated;
@@ -106,12 +104,18 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
   })
 
   getPublicHostData((publicHostData: HostP2pLobbyDetails, peer: string) => {
-    console.log('getPublicHostData - ', peer, publicHostData)
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('getPublicHostData - ', peerId, publicHostData)
     setLobbyDetails(publicHostData)
+    const hostPlayerProfile = publicHostData.hostPlayerProfile;
+    if (hostPlayerProfile) {
+      setPeerProfiles(prev => new Map(prev).set(peerId, hostPlayerProfile));
+    }
   })
 
   getPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
-    setPeerProfiles(prev => new Map(prev).set(peer, playerProfile))
+    const peerId = PeerIdSchema.parse(peer);
+    setPeerProfiles(prev => new Map(prev).set(peerId, playerProfile))
   })
 
   const playerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
@@ -135,7 +139,12 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
     playerProfiles,
     getPlayerProfile,
     sendPlayerMove,
-    getPlayerMove,
+    getPlayerMove: (callback: (move: PlayerP2pLobbyMove, peer: PeerId) => void) => {
+      getPlayerMove((move: PlayerP2pLobbyMove, peer: string) => {
+        const peerId = PeerIdSchema.parse(peer);
+        callback(move, peerId);
+      });
+    },
     refreshConnection,
   }
 }

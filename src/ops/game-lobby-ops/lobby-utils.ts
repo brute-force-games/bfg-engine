@@ -1,10 +1,11 @@
-import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
-import { GameLobby } from "@bfg-engine/models/p2p-lobby";
+import { IGameRegistry } from "../../hooks/games-registry/games-registry";
+import { InvalidLobbyReason, GameLobby, InvalidLobbyReasonSchema } from "../../models/p2p-lobby";
 
 
-export const validateLobby = (gameRegistry: IGameRegistry, lobby: GameLobby): boolean => {
+export const validateLobby = (gameRegistry: IGameRegistry, lobby: GameLobby): InvalidLobbyReason[] => {
+
   if (!lobby.gameTitle) {
-    return false;
+    return [InvalidLobbyReasonSchema.parse("Game selection is required")];
   }
 
   const numPlayers = lobby.playerPool.length;
@@ -12,5 +13,12 @@ export const validateLobby = (gameRegistry: IGameRegistry, lobby: GameLobby): bo
   const gameDefinition = gameRegistry.getGameDefinition(lobby.gameTitle);
   
   const isValidNumberOfPlayers = numPlayers >= gameDefinition.minNumPlayersForGame && numPlayers <= gameDefinition.maxNumPlayersForGame;
-  return isValidNumberOfPlayers;
+  if (!isValidNumberOfPlayers) {
+    if (gameDefinition.minNumPlayersForGame === gameDefinition.maxNumPlayersForGame) {
+      return [InvalidLobbyReasonSchema.parse(`${lobby.gameTitle} requires ${gameDefinition.minNumPlayersForGame} players`)];
+    }
+    return [InvalidLobbyReasonSchema.parse(`${lobby.gameTitle} requires ${gameDefinition.minNumPlayersForGame} to ${gameDefinition.maxNumPlayersForGame} players`)];
+  }
+
+  return [];
 }

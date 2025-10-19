@@ -1,12 +1,12 @@
 import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile";
 import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
-import { useP2pGame, ConnectionEvent } from "./use-p2p-game";
-// import { BfgGameSpecificGameStateTypedJson } from "~/types/core/branded-values/bfg-game-state-typed-json";
+import { useP2pGame } from "./use-p2p-game";
 type BfgGameSpecificGameStateTypedJson = any; // Temporary stub
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
 import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { ConnectionEvent, PeerId } from "./p2p-types";
 
 
 interface IPlayerP2pGame {
@@ -16,7 +16,7 @@ interface IPlayerP2pGame {
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
 
-  peerProfiles: Map<string, PublicPlayerProfile>
+  peerProfiles: Map<PeerId, PublicPlayerProfile>
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   myPlayerSeat: GameTableSeat | undefined;
@@ -28,13 +28,16 @@ interface IPlayerP2pGame {
 }
 
 
-export const usePlayerP2pGame = (gameTableId: GameTableId, playerProfile: PrivatePlayerProfile): IPlayerP2pGame | null => {
+export const usePlayerP2pGame = (
+  gameTableId: GameTableId,
+  myPlayerProfile: PrivatePlayerProfile,
+): IPlayerP2pGame | null => {
 
-  const p2pGame = useP2pGame(gameTableId, playerProfile);
+  const p2pGame = useP2pGame(gameTableId, myPlayerProfile);
 
   const { gameTable } = p2pGame;
 
-  const myPlayerSeat = matchPlayerToSeat(playerProfile.id, gameTable);
+  const myPlayerSeat = matchPlayerToSeat(myPlayerProfile.id, gameTable);
 
   return {
     ...p2pGame,

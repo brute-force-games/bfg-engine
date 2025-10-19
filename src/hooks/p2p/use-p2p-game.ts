@@ -5,11 +5,8 @@ import { GameTable } from "../../models/game-table/game-table";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
-import { ConnectionEvent } from "./use-p2p-lobby";
 import { useGameHosting } from "../../index";
-
-// Re-export for convenience
-export type { ConnectionEvent };
+import { ConnectionEvent, PeerId, PeerIdSchema } from "./p2p-types";
 
 
 export interface IP2pGame {
@@ -17,14 +14,14 @@ export interface IP2pGame {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peerProfiles: Map<string, PublicPlayerProfile>
+  peerProfiles: Map<PeerId, PublicPlayerProfile>
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
 
   sendPlayerMove: (move: unknown) => void
-  getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
+  getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }
@@ -34,7 +31,7 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   
   const [gameTable, setGameTable] = useState<GameTable | null>(null)
   const [gameActions, setGameActions] = useState<DbGameTableAction[]>([])
-  const [peerProfiles, setPeerProfiles] = useState<Map<string, PublicPlayerProfile>>(new Map())
+  const [peerProfiles, setPeerProfiles] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
   // Create room - gets recreated on every render
@@ -50,7 +47,7 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     console.error('Join error:', error)
     addConnectionEvent('join-error', `Join error: ${error.error}`, 0);
   });
-  console.log('room', room)
+  console.log('joined p2p game room', room)
 
   const addConnectionEvent = (type: ConnectionEvent['type'], message: string, peerCount: number) => {
     const event: ConnectionEvent = {
@@ -86,10 +83,11 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
 
 
   room.onPeerJoin(peer => {
-    console.log('Peer joined:', peer)
-    sendPlayerProfile(myPlayerProfile, peer);
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('Peer joined:', peerId)
+    sendPlayerProfile(myPlayerProfile, peerId);
     setPeerProfiles(prev => {
-      const updated = new Map(prev).set(peer, myPlayerProfile);
+      const updated = new Map(prev).set(peerId, myPlayerProfile);
       const newCount = updated.size;
       addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
       return updated;
@@ -97,10 +95,11 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   })
 
   room.onPeerLeave(peer => {
-    console.log('Peer left:', peer)
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('Peer left:', peerId)
     setPeerProfiles(prev => {
       const updated = new Map(prev)
-      updated.delete(peer)
+      updated.delete(peerId)
       const newCount = updated.size;
       addConnectionEvent('peer-left', `Peer left (total: ${newCount})`, newCount);
       return updated;
@@ -118,7 +117,8 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   })
 
   getPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
-    setPeerProfiles(prev => new Map(prev).set(peer, playerProfile))
+    const peerId = PeerIdSchema.parse(peer);
+    setPeerProfiles(prev => new Map(prev).set(peerId, playerProfile))
   })
 
   const playerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
@@ -143,7 +143,12 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     peerProfiles,
     playerProfiles,
     sendPlayerMove,
-    getPlayerMove,
+    getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => {
+      getPlayerMove((move: unknown, peer: string) => {
+        const peerId = PeerIdSchema.parse(peer);
+        callback(move, peerId);
+      });
+    },
     refreshConnection,
   }
 }

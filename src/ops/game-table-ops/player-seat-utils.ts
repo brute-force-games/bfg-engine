@@ -1,6 +1,7 @@
-import { GameTableActionSource } from "@bfg-engine/models/game-table/game-table-action";
-import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
+import { GameTableActionSource } from "../../models/game-table/game-table-action";
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { GameTable } from "../../models/game-table/game-table";
+import { GameTableSeat } from "../../models/game-table/game-table";
 
 
 export const getPlayerActionSource = (

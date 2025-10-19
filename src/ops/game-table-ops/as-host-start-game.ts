@@ -1,11 +1,11 @@
-import { BfgGameTableActionId, GameTableId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
-import { GameTable } from "@bfg-engine/models/game-table/game-table";
-import { GameLobby } from "@bfg-engine/models/p2p-lobby";
-import { addHostedGame } from "@bfg-engine/tb-store/hosted-games-store";
-import { addGameAction } from "@bfg-engine/tb-store/hosted-game-actions-store";
-import { createInitialGameData } from "@bfg-engine/models/bfg-game-engines";
-import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
+import { BfgGameTableActionId, GameTableId } from "../../models/types/bfg-branded-ids";
+import { DbGameTableAction } from "../../models/game-table/game-table-action";
+import { GameTable } from "../../models/game-table/game-table";
+import { GameLobby } from "../../models/p2p-lobby";
+import { addHostedGame } from "../../tb-store/hosted-games-store";
+import { addGameAction } from "../../tb-store/hosted-game-actions-store";
+import { createInitialGameData } from "../../models/bfg-game-engines";
+import { IGameRegistry } from "../../hooks/games-registry/games-registry";
 
 
 const createNewGameTableFromLobbyState = (lobbyState: GameLobby, newGameTableId: GameTableId): GameTable => {

@@ -1,7 +1,7 @@
-import { GameLobby } from "@bfg-engine/models/p2p-lobby";
-import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { IGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry";
-import { BfgSupportedGameTitle } from "@bfg-engine/models/game-box-definition";
+import { GameLobby } from "../../models/p2p-lobby";
+import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { IGameRegistry } from "../../hooks/games-registry/games-registry";
+import { BfgSupportedGameTitle } from "../../models/game-box-definition";
 
 
 export const playerSetGameChoice = async (gameRegistry: IGameRegistry, lobby: GameLobby, playerId: PlayerProfileId, gameChoice: BfgSupportedGameTitle): Promise<GameLobby | null> => {

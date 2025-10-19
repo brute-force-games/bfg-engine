@@ -6,6 +6,7 @@ import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "../../ui/components/lobby-player-join-game-component"
 import { Box, Stack, Typography, Chip, Button, Gamepad } from "../bfg-ui"
 import { useGameHosting } from "../../hooks/games-registry/game-hosting"
+import { PlayerProfileChip } from "./player-profile-chip"
 
 
 interface ILobbyPlayerStateComponentProps {
@@ -40,18 +41,18 @@ export const LobbyPlayerStateComponent = ({
   
   const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
 
-  const getPlayerProfile = (playerId: PlayerProfileId) => {
-    const playerProfile = playerProfiles.get(playerId);
-    if (playerProfile) {
-      return playerProfile;
-    }
+  // const getPlayerProfile = (playerId: PlayerProfileId) => {
+  //   const playerProfile = playerProfiles.get(playerId);
+  //   if (playerProfile) {
+  //     return playerProfile;
+  //   }
 
-    if (currentPlayerProfile.id === playerId) {
-      return currentPlayerProfile;
-    }
+  //   if (currentPlayerProfile.id === playerId) {
+  //     return currentPlayerProfile;
+  //   }
 
-    return playerProfile;
-  }
+  //   return playerProfile;
+  // }
 
   const gameLink = lobbyState.gameLink;
 
@@ -63,6 +64,16 @@ export const LobbyPlayerStateComponent = ({
       />
     )
   }
+
+  const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
+    return (
+      <PlayerProfileChip
+        playerProfileId={playerProfileId}
+        playerProfiles={playerProfiles}
+        myPlayerProfile={currentPlayerProfile}
+      />
+    );
+  });
   
   return (
     <Box>
@@ -153,7 +164,7 @@ export const LobbyPlayerStateComponent = ({
           </Stack>
           
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {lobbyState.playerPool.map(playerId => {
+            {/* {lobbyState.playerPool.map(playerId => {
               const playerProfile = getPlayerProfile(playerId);
               if (!playerProfile) {
                 return (
@@ -176,12 +187,16 @@ export const LobbyPlayerStateComponent = ({
                   size="small"
                 />
               );
-            })}
-            {lobbyState.playerPool.length === 0 && (
-              <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
-                No players in pool
-              </Typography>
-            )}
+            })} */}
+            {
+              playerPoolChips.length > 0 ? 
+                playerPoolChips :
+                (
+                  <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
+                    No players in pool
+                  </Typography>
+                ) 
+            }
           </Stack>
         </Box>
         

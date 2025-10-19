@@ -6,7 +6,7 @@ import {
   Typography,
   Wifi} from "../bfg-ui"
 import { TabsContainerPanel } from "../bfg-ui"
-import { GameLobbyId } from "../../models/types/bfg-branded-ids"
+import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { useP2pLobby } from "../../hooks/p2p/use-p2p-lobby"
 import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile"
 import { P2pConnectionComponent } from "./p2p-connection-component"
@@ -14,21 +14,22 @@ import { LobbyPlayerJoinGameComponent } from "./lobby-player-join-game-component
 import { LobbyPlayerStateComponent } from "./lobby-player-state-component"
 import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { JoinLobbyTabId } from "./bfg-tabs"
+import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
 
 
 interface IPlayerP2pLobbyComponentProps {
   lobbyId: GameLobbyId
-  playerProfile: PrivatePlayerProfile
+  myPlayerProfile: PrivatePlayerProfile
   activeTabId: JoinLobbyTabId
 }
 
 export const PlayerP2pLobbyComponent = ({
   lobbyId,
-  playerProfile,
+  myPlayerProfile,
   activeTabId,
 }: IPlayerP2pLobbyComponentProps) => {
 
-  const lobby = useP2pLobby(lobbyId as GameLobbyId, playerProfile);
+  const lobby = useP2pLobby(lobbyId as GameLobbyId, myPlayerProfile);
   console.log('PlayerP2pLobbyComponent: lobby', lobby);
 
   const { sendPlayerMove } = lobby;
@@ -88,26 +89,30 @@ export const PlayerP2pLobbyComponent = ({
     return (
       <LobbyPlayerJoinGameComponent
         lobbyState={lobbyState}
-        currentPlayerProfile={playerProfile}
+        currentPlayerProfile={myPlayerProfile}
       />
     )
   }
 
+  const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
+    [
+      ...lobby.playerProfiles.entries(),
+      [myPlayerProfile.id, myPlayerProfile]
+    ]);
 
   return (
     <Container maxWidth="lg" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
-      <TabsContainerPanel
+      <TabsContainerPanel<JoinLobbyTabId>
         activeTabId={activeTabId}
         tabs={[
           {
-            title: "Player Lobby",
             id: "player-lobby",
             icon: <Groups />,
             content: (
               <LobbyPlayerStateComponent
-                playerProfiles={lobby.playerProfiles}
+                playerProfiles={allPlayerProfiles}
                 lobbyState={lobbyState}
-                currentPlayerProfile={playerProfile}
+                currentPlayerProfile={myPlayerProfile}
                 lobbyOptions={lobbyOptions}
                 onSelectGameChoice={onSelectGameChoice}
                 onTakeSeat={onTakeSeat}
@@ -116,15 +121,14 @@ export const PlayerP2pLobbyComponent = ({
             )
           },
           {
-            title: "P2P",
-            id: "p2p",
+            id: "player-p2p-lobby-details",
             icon: <Wifi />,
             content: (
               <P2pConnectionComponent
                 connectionStatus={lobby.connectionStatus}
                 connectionEvents={lobby.connectionEvents}
                 peerProfiles={lobby.peerProfiles}
-                playerProfiles={lobby.playerProfiles}
+                playerProfiles={allPlayerProfiles}
                 onRefreshConnection={lobby.refreshConnection}
               />
             )

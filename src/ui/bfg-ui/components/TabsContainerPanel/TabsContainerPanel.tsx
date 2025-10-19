@@ -1,94 +1,74 @@
 import { ReactNode } from "react";
-import { Box } from "../Box";
 import { Card } from "../Card";
-import { Paper } from "../Paper";
 
-interface TabPanelProps {
-  children?: ReactNode;
-  index: number;
-  value: number;
-}
 
-export const TabPanel = (props: TabPanelProps) => {
-  const { children, value, index, ...other } = props;
+// interface TabPanelProps<TTabId extends string = string> {
+//   children?: ReactNode;
+//   index: number;
+//   value: number;
+// }
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box style={{ padding: '24px' }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-};
+// export const TabPanel = <TTabId extends string = string>(props: TabPanelProps<TTabId>) => {
+//   const { children, value, index, ...other } = props;
 
-export interface TabInfo {
-  id: string;
+//   return (
+//     <div
+//       role="tabpanel"
+//       hidden={value !== index}
+//       id={`tabpanel-${index}`}
+//       aria-labelledby={`tab-${index}`}
+//       {...other}
+//     >
+//       {value === index && (
+//         <Box style={{ padding: '24px' }}>
+//           {children}
+//         </Box>
+//       )}
+//     </div>
+//   );
+// };
+
+export interface TabInfo<TTabId extends string = string> {
+  id: TTabId;
   // title: string;
   icon?: React.ReactElement;
   content: ReactNode;
 }
 
-export interface TabsContainerPanelProps {
-  tabs: TabInfo[];
-  activeTabId: string;
+export interface TabsContainerPanelProps<TTabId extends string = string> {
+  tabs: TabInfo<TTabId>[];
+  // tabPanels: Map<TTabId, ReactNode>;
+  activeTabId: TTabId;
   tabColor?: string;
   // ariaLabel?: string;
 }
 
-export const TabsContainerPanel = ({
+export const TabsContainerPanel = <TTabId extends string = string>({
   tabs,
   activeTabId,
-  tabColor = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  // ariaLabel = "tabs"
-}: TabsContainerPanelProps) => {
-  // const [tabValue, setTabValue] = useState(0);
+}: TabsContainerPanelProps<TTabId>) => {
 
-  // const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-  //   setTabValue(newValue);
-  // };
+  const tabIndex   = tabs.findIndex(tab => tab.id === activeTabId) ?? -1;
 
-  const tabValue = tabs.findIndex(tab => tab.id === activeTabId) ?? -1;
+  if (tabIndex === -1) {
+    throw new Error(`Tab with id ${activeTabId} not found`);
+  }
+
+  const tabPanel = tabs[tabIndex].content;
 
   return (
     <Card elevation={2}>
-      <Paper 
-        elevation={1} 
-        style={{ 
-          background: tabColor,
-          color: 'white',
-          borderRadius: '4px 4px 0 0'
-        }}
-      >
-        {/* <Tabs
-          value={tabValue}
-          // onChange={handleTabChange}
-        > */}
-          {/* {tabs.map((tab, index) => (
-            <Tab
-              key={index}
-              icon={tab.icon}
-              label={tab.title}
-              id={`tab-${index}`}
-              aria-controls={`tabpanel-${index}`}
-            />
-          ))} */}
-        {/* </Tabs> */}
-      </Paper>
-
-      {tabs.map((tab, index) => (
-        <TabPanel key={index} value={ tabValue} index={index}>
-          {tab.content}
-        </TabPanel>
-      ))}
+      {tabPanel}
     </Card>
-  );
-};
+  )
 
+  // return (
+  //   <Card elevation={2}>
+  //     {tabs.map((tab, index) => (
+  //       <TabPanel key={index} value={ tabValue} index={index}>
+  //         {tab.content}
+  //       </TabPanel>
+  //     ))}
+  //   </Card>
+  // )
+}

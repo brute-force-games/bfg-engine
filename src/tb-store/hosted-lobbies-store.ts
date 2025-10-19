@@ -3,7 +3,7 @@ import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
 import { GameLobbyId, PlayerProfileId } from '../models/types/bfg-branded-ids';
 import { GameLobby, LobbySchema } from '../models/p2p-lobby';
-import { PublicPlayerProfileJsonStrSchema, PublicPlayerProfileSchema } from '../models/player-profile/public-player-profile';
+import { PublicPlayerProfileJsonStr, PublicPlayerProfileJsonStrSchema, PublicPlayerProfileSchema } from '../models/player-profile/public-player-profile';
 
 
 /**
@@ -88,7 +88,7 @@ export const addHostedLobby = async (lobby: GameLobby): Promise<boolean> => {
 
     console.log('addHostedLobby: validationResult', validationResult);
 
-    const gameHostPlayerProfileJsonStr = JSON.stringify(lobby.gameHostPlayerProfile);
+    const gameHostPlayerProfileJsonStr = JSON.stringify(lobby.gameHostPlayerProfile) as PublicPlayerProfileJsonStr;
     const playerPoolCsvStr = lobby.playerPool.join(',');
 
     const tbLobby: TbStoreLobby = {

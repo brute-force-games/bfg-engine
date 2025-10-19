@@ -1,23 +1,24 @@
 import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { useP2pGame, ConnectionEvent } from "./use-p2p-game";
+import { useP2pGame } from "./use-p2p-game";
 import { GameTable } from "../../models/game-table/game-table";
 import { Room } from "trystero";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants";
+import { ConnectionEvent, PeerId } from "./p2p-types";
 
 
 interface IHostedP2pGameData {
   room: Room
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
-  peerProfiles: Map<string, PublicPlayerProfile>
+  peerProfiles: Map<PeerId, PublicPlayerProfile>
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   sendGameTableData: (gameTable: GameTable) => void
   sendGameActionsData: (gameActions: DbGameTableAction[]) => void
 
-  getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
+  getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }
