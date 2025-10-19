@@ -23,6 +23,7 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@types/node": "^20.10.5",
+    "@types/qrcode": "^1.5.5",
     "@vitejs/plugin-react": "^4.2.1",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "@tanstack/react-form": "^1.23.5",
+    "qrcode": "^1.5.4",
     "tinybase": "^6.7.0",
     "trystero": "^0.22.0"
   }

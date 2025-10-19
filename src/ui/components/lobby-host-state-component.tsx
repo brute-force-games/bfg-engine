@@ -210,6 +210,7 @@ export const LobbyHostStateComponent = ({
           variant="standard"
           linkLabel="Join Lobby Link"
           linkUrl={joinLobbyLink}
+          showQrCode={true}
         />
 
         {/* Player Pool */}

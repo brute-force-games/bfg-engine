@@ -12,6 +12,7 @@ export { OpenInNew } from './OpenInNew';
 export { People } from './People';
 export { PersonRemove } from './PersonRemove';
 export { PlayArrow } from './PlayArrow';
+export { QrCode } from './QrCode';
 export { Refresh } from './Refresh';
 export { Settings } from './Settings';
 export { Wifi } from './Wifi';
