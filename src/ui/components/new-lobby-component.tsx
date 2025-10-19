@@ -15,7 +15,7 @@ import {
   TextField,
   Typography,
 } from '../bfg-ui';
-import { useMyDefaultPlayerProfile } from '../../hooks/stores/use-my-player-profiles-store';
+import { useRiskyMyDefaultPlayerProfile } from '../../hooks/stores/use-my-player-profiles-store';
 import { GameLobby } from '../../models/p2p-lobby';
 import { convertPrivateToPublicProfile } from '../../models/player-profile/utils';
 import { useHostedLobbyActions } from '../../hooks/stores/use-hosted-lobbies-store';
@@ -41,7 +41,7 @@ type CreateLobbyFormData = z.infer<typeof createLobbyFormSchema>;
 
 export const NewLobbyComponent = () => {
   
-  const defaultPlayerProfile = useMyDefaultPlayerProfile();
+  const defaultPlayerProfile = useRiskyMyDefaultPlayerProfile();
   
   // Form state
   const [isCreating, setIsCreating] = useState<boolean>(false);
