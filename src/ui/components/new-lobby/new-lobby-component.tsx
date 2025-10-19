@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form';
 import { 
   Alert,
   Box,
   Button,
-  Chip,
   Container,
   Option,
   Paper,
@@ -14,15 +12,15 @@ import {
   Stack,
   TextField,
   Typography,
-} from '../bfg-ui';
-import { useRiskyMyDefaultPlayerProfile } from '../../hooks/stores/use-my-player-profiles-store';
-import { GameLobby } from '../../models/p2p-lobby';
-import { convertPrivateToPublicProfile } from '../../models/player-profile/utils';
-import { useHostedLobbyActions } from '../../hooks/stores/use-hosted-lobbies-store';
-import { BfgGameLobbyId } from '../../models/types/bfg-branded-ids';
-import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../models/game-box-definition';
-import { useGameRegistry } from '../../hooks/games-registry/games-registry';
-import { useGameHosting } from '../../hooks/games-registry/game-hosting';
+} from '../../bfg-ui';
+import { useRiskyMyDefaultPlayerProfile } from '../../../hooks/stores/use-my-player-profiles-store';
+import { GameLobby } from '../../../models/p2p-lobby';
+import { convertPrivateToPublicProfile } from '../../../models/player-profile/utils';
+import { useHostedLobbyActions } from '../../../hooks/stores/use-hosted-lobbies-store';
+import { BfgGameLobbyId } from '../../../models/types/bfg-branded-ids';
+import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
+import { useGameRegistry } from '../../../hooks/games-registry/games-registry';
+import { LobbyReadyComponent } from './lobby-ready-component';
 
 
 // Form validation schema with enhanced Zod validation
@@ -47,11 +45,11 @@ export const NewLobbyComponent = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [createdLobbyId, setCreatedLobbyId] = useState<string | null>(null);
-  const [copySuccess, setCopySuccess] = useState<string>('');
+  // const [copySuccess, setCopySuccess] = useState<string>('');
 
   const hostedLobbyActions = useHostedLobbyActions();
   const registry = useGameRegistry();
-  const gameHosting = useGameHosting();
+  // const gameHosting = useGameHosting();
 
   // Calculate default lobby name (safe even if profile is null)
   const defaultLobbyName = defaultPlayerProfile ? `${defaultPlayerProfile.handle}'s Lobby` : '';
@@ -66,28 +64,28 @@ export const NewLobbyComponent = () => {
     },
   });
 
-  const copyJoinLink = async () => {
-    if (!createdLobbyId) return;
+  // const copyJoinLink = async () => {
+  //   if (!createdLobbyId) return;
     
-    const baseUrl = gameHosting.getBaseUrl();
-    const joinUrl = `${baseUrl}/join-lobby/${createdLobbyId}`;
+  //   const baseUrl = gameHosting.getBaseUrl();
+  //   const joinUrl = `${baseUrl}/join-lobby/${createdLobbyId}`;
     
-    try {
-      await navigator.clipboard.writeText(joinUrl);
-      setCopySuccess('Join link copied to clipboard!');
-      // Clear the success message after 3 seconds
-      setTimeout(() => setCopySuccess(''), 3000);
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-      setCopySuccess('Failed to copy link. Please copy manually.');
-    }
-  };
+  //   try {
+  //     await navigator.clipboard.writeText(joinUrl);
+  //     setCopySuccess('Join link copied to clipboard!');
+  //     // Clear the success message after 3 seconds
+  //     setTimeout(() => setCopySuccess(''), 3000);
+  //   } catch (err) {
+  //     console.error('Failed to copy link:', err);
+  //     setCopySuccess('Failed to copy link. Please copy manually.');
+  //   }
+  // };
 
   const handleSubmit = async (formData: CreateLobbyFormData) => {
     try {
       // Clear previous messages
       setError('');
-      setCopySuccess('');
+      // setCopySuccess('');
       setCreatedLobbyId(null);
       setIsCreating(true);
       
@@ -174,78 +172,86 @@ export const NewLobbyComponent = () => {
   // Show lobby creation success if a lobby was just created
   if (createdLobbyId) {
     return (
-      <Container maxWidth="md" style={{ paddingTop: 32, paddingBottom: 32 }}>
-        <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
-          Host a Lobby
-        </Typography>
+      <LobbyReadyComponent
+        createdLobbyId={createdLobbyId}
+        // copyJoinLink={copyJoinLink}
+        // copySuccess={copySuccess}
+        // form={form}
+      />
+    )
+    // return (
+    //   <Container maxWidth="md" style={{ paddingTop: 32, paddingBottom: 32 }}>
+    //     <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
+    //       Host a Lobby
+    //     </Typography>
         
-        <Paper elevation={2} style={{ padding: 24 }}>
-          <Alert severity="success" style={{ marginBottom: 24 }}>
-            <Typography variant="h6" gutterBottom>
-              Lobby Created Successfully!
-            </Typography>
-            <Typography variant="body2" style={{ marginBottom: 16 }}>
-              Your lobby has been created and is ready for players to join.
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Link
-                to="/hosted-lobby/$lobbyId"
-                params={{ lobbyId: createdLobbyId }}
-                style={{ textDecoration: 'none' }}
-              >
-                <Button
-                  variant="contained"
-                  color="primary"
-                >
-                  Go to Hosted Lobby
-                </Button>
-              </Link>
-              <Link
-                to="/join-lobby/$lobbyId"
-                params={{ lobbyId: createdLobbyId }}
-                style={{ textDecoration: 'none' }}
-              >
-                <Button
-                  variant="contained"
-                  color="warning"
-                >
-                  Go to Player Lobby
-                </Button>
-              </Link>
-              <Button
-                onClick={copyJoinLink}
-                variant="contained"
-                color="secondary"
-              >
-                Copy Join Link
-              </Button>
-            </Stack>
-            {copySuccess && (
-              <Chip 
-                label={copySuccess} 
-                color="success" 
-                size="small" 
-                style={{ marginTop: 16 }} 
-              />
-            )}
-          </Alert>
+    //     <Paper elevation={2} style={{ padding: 24 }}>
+    //       <Alert severity="success" style={{ marginBottom: 24 }}>
+    //         <Typography variant="h6" gutterBottom>
+    //           Lobby Created Successfully!
+    //         </Typography>
+    //         <Typography variant="body2" style={{ marginBottom: 16 }}>
+    //           Your lobby has been created and is ready for players to join.
+    //         </Typography>
+    //         <Stack direction="row" spacing={2}>
+    //           <Link
+    //             to="/hosted-lobby/$lobbyId"
+    //             params={{ lobbyId: createdLobbyId }}
+    //             style={{ textDecoration: 'none' }}
+    //           >
+    //             <Button
+    //               variant="contained"
+    //               color="primary"
+    //             >
+    //               Go to Hosted Lobby
+    //             </Button>
+    //           </Link>
+    //           <Link
+    //             to="/join-lobby/$lobbyId"
+    //             params={{ lobbyId: createdLobbyId }}
+    //             style={{ textDecoration: 'none' }}
+    //           >
+    //             <Button
+    //               variant="contained"
+    //               color="warning"
+    //             >
+    //               Go to Player Lobby
+    //             </Button>
+    //           </Link>
+    //           <Button
+    //             onClick={copyJoinLink}
+    //             variant="contained"
+    //             color="secondary"
+    //           >
+    //             Copy Join Link
+    //           </Button>
+    //         </Stack>
+    //         {copySuccess && (
+    //           <Chip 
+    //             label={copySuccess} 
+    //             color="success" 
+    //             size="small" 
+    //             style={{ marginTop: 16 }} 
+    //           />
+    //         )}
+    //       </Alert>
           
-          <Box style={{ marginTop: 24 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                setCreatedLobbyId(null);
-                setCopySuccess('');
-                form.reset();
-              }}
-            >
-              Create Another Lobby
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-    );
+    //       <Box style={{ marginTop: 24 }}>
+    //         <Button
+    //           variant="outlined"
+    //           color="primary"
+    //           onClick={() => {
+    //             setCreatedLobbyId(null);
+    //             setCopySuccess('');
+    //             form.reset();
+    //           }}
+    //         >
+    //           Create Another Lobby
+    //         </Button>
+    //       </Box>
+    //     </Paper>
+    //   </Container>
+    // );
   }
 
   const availableGameTitles = registry.getAvailableGameTitles();
@@ -257,9 +263,6 @@ export const NewLobbyComponent = () => {
       </Typography>
       
       <Paper elevation={2} style={{ padding: 24 }}>
-        {/* <Typography variant="h5" component="h2" gutterBottom style={{ fontWeight: 'medium' }}>
-          Host a Lobby
-        </Typography> */}
         <Typography variant="body1" style={{ marginBottom: 24 }}>
           Create a lobby to invite your friends to join.
         </Typography>
@@ -280,42 +283,7 @@ export const NewLobbyComponent = () => {
             form.handleSubmit();
           }}
         >
-          <Stack spacing={3}>
-              {/* <form.Field
-                name="selectedGame"
-                validators={{
-                  onChange: ({ value }) => {
-                    const result = createLobbyFormSchema.shape.selectedGame.safeParse(value);
-                    return result.success ? undefined : result.error.errors[0]?.message;
-                  },
-                }}
-                children={(field: any) => (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Game
-                    </label>
-                    <select 
-                      className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
-                        field.state.meta.errors.length > 0 
-                          ? 'border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:ring-blue-500'
-                      }`}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    >
-                      <option value="">Select a game...</option>
-                      {availableGameTitles.map((title) => (
-                        <option key={title} value={title}>{title}</option>
-                      ))}
-                    </select>
-                    {field.state.meta.errors.length > 0 && (
-                      <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
-                    )}
-                  </div>
-                )}
-              /> */}
-              
+          <Stack spacing={3}>              
             <form.Field
               name="lobbyName"
               validators={{
@@ -346,45 +314,6 @@ export const NewLobbyComponent = () => {
                 />
               )}
             />
-              
-              {/* <form.Field
-                name="maxPlayers"
-                validators={{
-                  onChange: ({ value }) => {
-                    const result = createLobbyFormSchema.shape.maxPlayers.safeParse(value);
-                    return result.success ? undefined : result.error.errors[0]?.message;
-                  },
-                }}
-                children={(field: any) => (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Max Players
-                    </label>
-                    <select 
-                      className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
-                        field.state.meta.errors.length > 0 
-                          ? 'border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:ring-blue-500'
-                      }`}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    >
-                      <option value="2">2 Players</option>
-                      <option value="3">3 Players</option>
-                      <option value="4">4 Players</option>
-                      <option value="5">5 Players</option>
-                      <option value="6">6 Players</option>
-                      <option value="7">7 Players</option>
-                      <option value="8">8 Players</option>
-                    </select>
-                    {field.state.meta.errors.length > 0 && (
-                      <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
-                    )}
-                  </div>
-                )}
-              /> */}
-
             <form.Field
               name="gameTitle"
               validators={{
@@ -429,15 +358,6 @@ export const NewLobbyComponent = () => {
               >
                 {isCreating ? 'Creating...' : 'Host Game Lobby'}
               </Button>
-              {/* <Button 
-                type="button"
-                variant="outlined"
-                color="secondary"
-                disabled={isCreating}
-                onClick={() => form.reset()}
-              >
-                Cancel
-              </Button> */}
             </Stack>
           </Stack>
         </Box>
