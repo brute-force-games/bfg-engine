@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Container,
   Option,
   Paper,
@@ -21,6 +22,7 @@ import { BfgGameLobbyId } from '../../../models/types/bfg-branded-ids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
 import { useGameRegistry } from '../../../hooks/games-registry/games-registry';
 import { LobbyReadyComponent } from './lobby-ready-component';
+import { validateLobby } from '~/ops/game-lobby-ops/lobby-utils';
 
 
 // Form validation schema with enhanced Zod validation
@@ -32,6 +34,7 @@ const createLobbyFormSchema = z.object({
     .transform((val) => val.trim()),
   gameTitle: BfgSupportedGameTitleSchema
     .optional(),
+  joinLobbyAsPlayer: z.boolean(),
 });
 
 type CreateLobbyFormData = z.infer<typeof createLobbyFormSchema>;
@@ -58,34 +61,17 @@ export const NewLobbyComponent = () => {
   const form = useForm({
     defaultValues: {
       lobbyName: defaultLobbyName,
+      joinLobbyAsPlayer: true,
     } as CreateLobbyFormData,
     onSubmit: async ({ value }: { value: CreateLobbyFormData }) => {
       await handleSubmit(value);
     },
   });
 
-  // const copyJoinLink = async () => {
-  //   if (!createdLobbyId) return;
-    
-  //   const baseUrl = gameHosting.getBaseUrl();
-  //   const joinUrl = `${baseUrl}/join-lobby/${createdLobbyId}`;
-    
-  //   try {
-  //     await navigator.clipboard.writeText(joinUrl);
-  //     setCopySuccess('Join link copied to clipboard!');
-  //     // Clear the success message after 3 seconds
-  //     setTimeout(() => setCopySuccess(''), 3000);
-  //   } catch (err) {
-  //     console.error('Failed to copy link:', err);
-  //     setCopySuccess('Failed to copy link. Please copy manually.');
-  //   }
-  // };
-
   const handleSubmit = async (formData: CreateLobbyFormData) => {
     try {
       // Clear previous messages
       setError('');
-      // setCopySuccess('');
       setCreatedLobbyId(null);
       setIsCreating(true);
       
@@ -130,14 +116,22 @@ export const NewLobbyComponent = () => {
         lobbyName: formData.lobbyName,
         gameHostPlayerProfile: publicHostPlayerProfile,
         gameTitle: formData.gameTitle,
-        playerPool: [],
+        playerPool: formData.joinLobbyAsPlayer ? [defaultPlayerProfile.id] : [],
         maxNumPlayers,
         minNumPlayers,
         isLobbyValid: false,
         updatedAt: now,
       };
 
-      await hostedLobbyActions.addLobby(newLobby);
+      const invalidLobbyReasons = validateLobby(registry, newLobby);
+      const isLobbyValid = invalidLobbyReasons.length === 0;
+
+      const validatedNewLobby = {
+        ...newLobby,
+        isLobbyValid,
+      } satisfies GameLobby;
+
+      await hostedLobbyActions.addLobby(validatedNewLobby);
 
       setCreatedLobbyId(newLobbyId);
 
@@ -174,84 +168,8 @@ export const NewLobbyComponent = () => {
     return (
       <LobbyReadyComponent
         createdLobbyId={createdLobbyId}
-        // copyJoinLink={copyJoinLink}
-        // copySuccess={copySuccess}
-        // form={form}
       />
     )
-    // return (
-    //   <Container maxWidth="md" style={{ paddingTop: 32, paddingBottom: 32 }}>
-    //     <Typography variant="h3" component="h1" gutterBottom style={{ fontWeight: 'bold' }}>
-    //       Host a Lobby
-    //     </Typography>
-        
-    //     <Paper elevation={2} style={{ padding: 24 }}>
-    //       <Alert severity="success" style={{ marginBottom: 24 }}>
-    //         <Typography variant="h6" gutterBottom>
-    //           Lobby Created Successfully!
-    //         </Typography>
-    //         <Typography variant="body2" style={{ marginBottom: 16 }}>
-    //           Your lobby has been created and is ready for players to join.
-    //         </Typography>
-    //         <Stack direction="row" spacing={2}>
-    //           <Link
-    //             to="/hosted-lobby/$lobbyId"
-    //             params={{ lobbyId: createdLobbyId }}
-    //             style={{ textDecoration: 'none' }}
-    //           >
-    //             <Button
-    //               variant="contained"
-    //               color="primary"
-    //             >
-    //               Go to Hosted Lobby
-    //             </Button>
-    //           </Link>
-    //           <Link
-    //             to="/join-lobby/$lobbyId"
-    //             params={{ lobbyId: createdLobbyId }}
-    //             style={{ textDecoration: 'none' }}
-    //           >
-    //             <Button
-    //               variant="contained"
-    //               color="warning"
-    //             >
-    //               Go to Player Lobby
-    //             </Button>
-    //           </Link>
-    //           <Button
-    //             onClick={copyJoinLink}
-    //             variant="contained"
-    //             color="secondary"
-    //           >
-    //             Copy Join Link
-    //           </Button>
-    //         </Stack>
-    //         {copySuccess && (
-    //           <Chip 
-    //             label={copySuccess} 
-    //             color="success" 
-    //             size="small" 
-    //             style={{ marginTop: 16 }} 
-    //           />
-    //         )}
-    //       </Alert>
-          
-    //       <Box style={{ marginTop: 24 }}>
-    //         <Button
-    //           variant="outlined"
-    //           color="primary"
-    //           onClick={() => {
-    //             setCreatedLobbyId(null);
-    //             setCopySuccess('');
-    //             form.reset();
-    //           }}
-    //         >
-    //           Create Another Lobby
-    //         </Button>
-    //       </Box>
-    //     </Paper>
-    //   </Container>
-    // );
   }
 
   const availableGameTitles = registry.getAvailableGameTitles();
@@ -272,8 +190,7 @@ export const NewLobbyComponent = () => {
           <Alert severity="error" style={{ marginBottom: 16 }}>
             {error}
           </Alert>
-        )}
-        
+        )}        
           
         <Box
           component="form"
@@ -345,6 +262,22 @@ export const NewLobbyComponent = () => {
                     </Typography>
                   )}
                 </div>
+              )}
+            />
+            <form.Field
+              name="joinLobbyAsPlayer"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = createLobbyFormSchema.shape.joinLobbyAsPlayer.safeParse(value);
+                  return result.success ? undefined : result.error.errors[0]?.message;
+                },
+              }}
+              children={(field: any) => (
+                <Checkbox
+                  checked={field.state.value || false}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  label="Join lobby as player"
+                />
               )}
             />
               
