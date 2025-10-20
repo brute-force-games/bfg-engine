@@ -19,7 +19,9 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@bfg-engine": ["./src"],
+      "@bfg-engine/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],
