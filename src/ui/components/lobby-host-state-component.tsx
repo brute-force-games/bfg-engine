@@ -116,6 +116,10 @@ export const LobbyHostStateComponent = ({
   const hostingLink = lobbyState.gameTableId ? 
     `${baseUrl}/hosted-games/${lobbyState.gameTableId}` :
     '';
+      
+  const observerLink = lobbyState.gameTableId ?
+    `${baseUrl}/games/${lobbyState.gameTableId}/observe` :
+    '';
 
   const lobbyValidLabel = lobbyState.isLobbyValid ? 
     '[Valid]' :
@@ -137,13 +141,6 @@ export const LobbyHostStateComponent = ({
         {(lobbyState.gameLink || hostingLink) && (
           <Box>
             <Stack spacing={1}>
-              {lobbyState.gameLink && (
-                <BfgShareableLinkComponent
-                  variant="standard"
-                  linkLabel="Player Game Link"
-                  linkUrl={lobbyState.gameLink}
-                />
-              )}
               {hostingLink && (
                 <BfgShareableLinkComponent
                   variant="standard"
@@ -151,12 +148,28 @@ export const LobbyHostStateComponent = ({
                   linkUrl={hostingLink}
                 />
               )}
+              {lobbyState.gameLink && (
+                <BfgShareableLinkComponent
+                  variant="standard"
+                  linkLabel="Player Game Link"
+                  linkUrl={lobbyState.gameLink}
+                />
+              )}
+              {observerLink && (
+                <BfgShareableLinkComponent
+                  variant="standard"
+                  linkLabel="Observer Game Link"
+                  linkUrl={observerLink}
+                  showQrCode={true}
+                />
+              )}
+
             </Stack>
             <Box>
-              <Typography variant="h6" component="h2" gutterBottom>
-                Player Pool
-              </Typography>
               <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+                <Typography variant="h6" component="h2" gutterBottom>
+                  Player Pool
+                </Typography>
                 <Typography variant="body2" style={{ color: '#666' }}>
                   [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
                 </Typography>

@@ -1,14 +1,12 @@
-import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile";
 import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { useP2pGame } from "./use-p2p-game";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
-import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils";
+import { GameTable } from "../../models/game-table/game-table";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { ConnectionEvent, PeerId } from "./p2p-types";
 
 
-interface IPlayerP2pGame {
+interface IObserverP2pGame {
   connectionStatus: string;
   connectionEvents: ConnectionEvent[];
   
@@ -18,28 +16,17 @@ interface IPlayerP2pGame {
   peerProfiles: Map<PeerId, PublicPlayerProfile>
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
-  myPlayerSeat: GameTableSeat | undefined;
-
-  sendPlayerMove: (move: unknown) => void
   getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
   
   refreshConnection: () => void
 }
 
 
-export const usePlayerP2pGame = (
-  gameTableId: GameTableId,
-  myPlayerProfile: PrivatePlayerProfile,
-): IPlayerP2pGame | null => {
+export const useObserverP2pGame = (gameTableId: GameTableId): IObserverP2pGame | null => {
 
-  const p2pGame = useP2pGame(gameTableId, myPlayerProfile);
-
-  const { gameTable } = p2pGame;
-
-  const myPlayerSeat = matchPlayerToSeat(myPlayerProfile.id, gameTable);
+  const p2pGame = useP2pGame(gameTableId, null);
 
   return {
     ...p2pGame,
-    myPlayerSeat,
-  };
+  } as IObserverP2pGame;
 }

@@ -9,6 +9,7 @@ export { P2pConnectionComponent } from './ui/components/p2p-connection-component
 export { LobbyPlayerJoinGameComponent } from './ui/components/lobby-player-join-game-component';
 export { LobbyPlayerStateComponent } from './ui/components/lobby-player-state-component';
 export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
+export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
 export type { BfgGameEngineProcessor, GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
 export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';

@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
-import { useMyDefaultPublicPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store";
+import { useRiskyMyDefaultPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store";
+import { convertPrivateToPublicProfile } from "../../models/player-profile/utils";
 import { LobbyOptions, GameLobby } from "../../models/p2p-lobby";
 import { useHostedLobby } from "../../hooks/stores/use-hosted-lobbies-store"
 import { useHostedLobbyActions } from "../../hooks/stores/use-hosted-lobbies-store"
@@ -21,7 +22,8 @@ export const  HostedLobbyComponent = ({
 
   const lobby = useHostedLobby(lobbyId);
   const lobbyActions = useHostedLobbyActions();
-  const myHostPlayerProfile = useMyDefaultPublicPlayerProfile();
+  const hostPrivateProfile = useRiskyMyDefaultPlayerProfile();
+  const myHostPlayerProfile = hostPrivateProfile ? convertPrivateToPublicProfile(hostPrivateProfile) : null;
   const gameRegistry = useGameRegistry();
 
   console.log('HostedLobbyPage - lobbyId:', lobbyId);

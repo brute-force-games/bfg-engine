@@ -65,10 +65,6 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   const [sendPlayerProfile, getPlayerProfile] = room.makeAction<PublicPlayerProfile>(P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY)
   const [sendPlayerMove, getPlayerMove] = room.makeAction<any>(P2P_GAME_PLAYER_MOVE_DATA_ACTION_KEY)
 
-  if (!myPlayerProfile) {
-    throw new Error('My player profile is required');
-  }
-
   const connectionStatus = `Connected to ${peerProfiles.size} peers`;
 
   // Initialize connection event on mount
@@ -85,13 +81,25 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
   room.onPeerJoin(peer => {
     const peerId = PeerIdSchema.parse(peer);
     console.log('Peer joined:', peerId)
-    sendPlayerProfile(myPlayerProfile, peerId);
-    setPeerProfiles(prev => {
-      const updated = new Map(prev).set(peerId, myPlayerProfile);
-      const newCount = updated.size;
-      addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
-      return updated;
-    });
+    
+    // Only send player profile if we have one (observers don't send profiles)
+    if (myPlayerProfile) {
+      sendPlayerProfile(myPlayerProfile, peerId);
+      setPeerProfiles(prev => {
+        const updated = new Map(prev).set(peerId, myPlayerProfile);
+        const newCount = updated.size;
+        addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
+        return updated;
+      });
+    } else {
+      // Observer mode - just track peer count
+      setPeerProfiles(prev => {
+        const updated = new Map(prev);
+        const newCount = updated.size + 1;
+        addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
+        return updated;
+      });
+    }
   })
 
   room.onPeerLeave(peer => {

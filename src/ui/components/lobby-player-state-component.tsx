@@ -41,19 +41,6 @@ export const LobbyPlayerStateComponent = ({
   
   const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
 
-  // const getPlayerProfile = (playerId: PlayerProfileId) => {
-  //   const playerProfile = playerProfiles.get(playerId);
-  //   if (playerProfile) {
-  //     return playerProfile;
-  //   }
-
-  //   if (currentPlayerProfile.id === playerId) {
-  //     return currentPlayerProfile;
-  //   }
-
-  //   return playerProfile;
-  // }
-
   const gameLink = lobbyState.gameLink;
 
   if (gameLink) {
@@ -132,10 +119,10 @@ export const LobbyPlayerStateComponent = ({
 
         {/* Player Pool */}
         <Box>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Player Pool
-          </Typography>
           <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Player Pool
+            </Typography>
             <Typography variant="body2" style={{ color: '#666' }}>
               [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
             </Typography>
@@ -164,30 +151,6 @@ export const LobbyPlayerStateComponent = ({
           </Stack>
           
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {/* {lobbyState.playerPool.map(playerId => {
-              const playerProfile = getPlayerProfile(playerId);
-              if (!playerProfile) {
-                return (
-                  <Chip 
-                    key={playerId}
-                    label={`${playerId} (name not available)`}
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                  />
-                );
-              }
-              const isCurrentPlayer = playerId === playerProfile.id;
-              return (
-                <Chip 
-                  key={playerId}
-                  label={playerProfile.handle}
-                  variant={isCurrentPlayer ? "filled" : "outlined"}
-                  color={isCurrentPlayer ? "primary" : "default"}
-                  size="small"
-                />
-              );
-            })} */}
             {
               playerPoolChips.length > 0 ? 
                 playerPoolChips :
@@ -206,6 +169,7 @@ export const LobbyPlayerStateComponent = ({
             variant="standard"
             linkLabel="Join Lobby Link"
             linkUrl={joinLobbyLink}
+            showQrCode={true}
           />
         </Box>
       </Stack>

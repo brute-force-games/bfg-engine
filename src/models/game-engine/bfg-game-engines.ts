@@ -22,7 +22,7 @@ export type BfgGameEngineRendererFactory<
   GA extends z.ZodTypeAny
 > = {
   createGameStateRepresentationComponent: (
-    playerSeat: GameTableSeat,
+    playerSeat: GameTableSeat | null,
     gameState: z.infer<GS>,
     mostRecentAction: z.infer<GA>
   ) => React.ReactNode;

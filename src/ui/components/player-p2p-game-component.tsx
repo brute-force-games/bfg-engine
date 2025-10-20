@@ -15,7 +15,11 @@ interface IPlayerP2pGameComponentProps {
   activeTabId: PlayerGameTabId
 }
 
-export const PlayerP2pGameComponent = ({ gameTableId, playerProfile, activeTabId }: IPlayerP2pGameComponentProps) => {
+export const PlayerP2pGameComponent = ({
+  gameTableId,
+  playerProfile,
+  activeTabId
+}: IPlayerP2pGameComponentProps) => {
 
   const p2pGame = usePlayerP2pGame(gameTableId, playerProfile);
 
@@ -25,7 +29,15 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile, activeTabId
 
   const { gameTable, gameActions, myPlayerSeat, sendPlayerMove } = p2pGame;
 
-  if (!gameTable || !gameActions || !myPlayerSeat) {
+  console.log("🔍 PlayerP2pGameComponent Debug Info:")
+  console.log("  gameTable:", gameTable)
+  console.log("  gameActions:", gameActions)
+  console.log("  myPlayerSeat:", myPlayerSeat)
+  console.log("  connectionStatus:", p2pGame.connectionStatus)
+  console.log("  peerCount:", p2pGame.peerProfiles.size)
+  console.log("  connectionEvents:", p2pGame.connectionEvents)
+
+  if (!gameTable || !gameActions) {
     console.log("🔍 PlayerP2pGameComponent Debug Info:")
     console.log("  gameTable:", gameTable)
     console.log("  gameActions:", gameActions)
@@ -62,14 +74,7 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile, activeTabId
               id: "player-game-details",
               icon: <span>📊</span>,
               content: (
-                <PlayerGameDetailsComponent
-                  // gameTable={gameTable}
-                  // gameActions={gameActions}
-                />
-                // <GameDetailsComponent
-                //   gameTable={gameTable}
-                //   gameActions={gameActions}
-                // />
+                <PlayerGameDetailsComponent />
               )
             },
             {
@@ -90,6 +95,10 @@ export const PlayerP2pGameComponent = ({ gameTableId, playerProfile, activeTabId
         />
       </Container>
     );
+  }
+
+  if (!myPlayerSeat) {
+    return <div>You are not in a seat. Please join a seat to play.</div>;
   }
 
   const onPlayerGameAction = (move: BfgGameSpecificGameState) => {

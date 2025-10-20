@@ -4,7 +4,8 @@ import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { useHostedP2pGame } from "../../hooks/p2p/use-hosted-p2p-game"
 import { useGameActions } from "../../hooks/stores/use-game-actions-store"
 import { useHostedGame } from "../../hooks/stores/use-hosted-games-store"
-import { useMyDefaultPublicPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store"
+import { useRiskyMyDefaultPlayerProfile } from "../../hooks/stores/use-my-player-profiles-store"
+import { convertPrivateToPublicProfile } from "../../models/player-profile/utils"
 import { GameTable } from "../../models/game-table/game-table"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { asHostApplyMoveFromPlayer } from "../../ops/game-table-ops/as-host-apply-move-from-player"
@@ -30,7 +31,8 @@ export const HostedP2pGameComponent = ({
   activeTabId,
 }: HostedP2pGameComponentProps) => {
 
-  const hostPlayerProfile = useMyDefaultPublicPlayerProfile();
+  const hostPrivateProfile = useRiskyMyDefaultPlayerProfile();
+  const hostPlayerProfile = hostPrivateProfile ? convertPrivateToPublicProfile(hostPrivateProfile) : null;
   const gameRegistry = useGameRegistry();
   
   const hostedGame = useHostedGame(gameTableId);
