@@ -12,7 +12,9 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "routes:generate": "tsr generate",
+    "routes:watch": "tsr watch"
   },
   "keywords": [
     "game-engine",
@@ -41,6 +43,7 @@
   },
   "dependencies": {
     "@tanstack/react-form": "^1.23.5",
+    "@tanstack/react-router": "^1.132.2",
     "qrcode": "^1.5.4",
     "tinybase": "^6.7.0",
     "trystero": "^0.22.0"

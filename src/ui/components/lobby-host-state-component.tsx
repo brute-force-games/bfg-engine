@@ -1,4 +1,4 @@
-import { GameLobby } from "../../models/p2p-lobby"
+import { GameLobby, LobbyOptions } from "../../models/p2p-lobby"
 import { BfgGameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { asHostStartNewGame } from "../../ops/game-table-ops/as-host-start-game"
@@ -20,6 +20,7 @@ import { useGameHosting } from "../../hooks/games-registry/game-hosting"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { PlayerProfileChip } from "./player-profile-chip"
 import { validateLobby } from "../../ops/game-lobby-ops/lobby-utils"
+import { LobbyHostOptionsDialog } from "./dialogs/lobby-host-options-dialog"
 
 
 interface ILobbyHostStateComponentProps {
@@ -27,7 +28,9 @@ interface ILobbyHostStateComponentProps {
   lobbyState: GameLobby
   updateLobbyState: (lobbyState: GameLobby) => void
   setLobbyPlayerPool: (playerPool: PlayerProfileId[]) => void
-  onOpenLobbyOptionsDialog?: () => void
+
+  lobbyOptions: LobbyOptions
+  setLobbyOptions: (lobbyOptions: LobbyOptions) => void
 }
 
 export const LobbyHostStateComponent = ({
@@ -35,13 +38,16 @@ export const LobbyHostStateComponent = ({
   lobbyState,
   updateLobbyState,
   setLobbyPlayerPool,
-  onOpenLobbyOptionsDialog,
+  lobbyOptions,
+  setLobbyOptions,
 }: ILobbyHostStateComponentProps) => {
 
   const gameHosting = useGameHosting();
   const gameRegistry = useGameRegistry();
   
   const [isStartingGame, setIsStartingGame] = useState(false);
+  const [isLobbyOptionsDialogOpen, setIsLobbyOptionsDialogOpen] = useState(false);
+
 
   const startGame = async () => {
     if (!lobbyState.gameTitle) {
@@ -73,6 +79,10 @@ export const LobbyHostStateComponent = ({
     }
   }
 
+  // console.log('lobbyState', lobbyState);
+
+  // const playerPool = lobbyState.playerPool ?? [];
+
   // const playerPoolChips = lobbyState.playerPool.map(playerId => {
   //   const playerProfile = playerProfiles.get(playerId);
   //   const playerIsMe = playerId === lobbyState.gameHostPlayerProfile.id;
@@ -99,15 +109,20 @@ export const LobbyHostStateComponent = ({
   //   )
   // })
 
+  // console.log('playerPool', playerProfiles, lobbyState.gameHostPlayerProfile);
+
+  console.log("LOBBY STATE", lobbyState);
+
   const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
     return (
       <PlayerProfileChip
+        key={playerProfileId}
         playerProfileId={playerProfileId}
         playerProfiles={playerProfiles}
         myPlayerProfile={lobbyState.gameHostPlayerProfile}
       />
     );
-  });
+  }) ?? [];
 
   const isGameStarted = lobbyState.gameLink !== undefined;
 
@@ -133,58 +148,60 @@ export const LobbyHostStateComponent = ({
 
   if (isGameStarted) {
     return (
-      <Stack spacing={2}>
-        <Typography variant="h6" component="h2" gutterBottom>
-          <i>{lobbyState.gameTitle}</i> will start once you open the Hosting Link! Players should join using the player link.
-        </Typography>
+      <>
+        <Stack spacing={2}>
+          <Typography variant="h6" component="h2" gutterBottom>
+            <i>{lobbyState.gameTitle}</i> will start once you open the Hosting Link! Players should join using the player link.
+          </Typography>
 
-        {(lobbyState.gameLink || hostingLink) && (
-          <Box>
-            <Stack spacing={1}>
-              {hostingLink && (
-                <BfgShareableLinkComponent
-                  variant="standard"
-                  linkLabel="Hosting Link"
-                  linkUrl={hostingLink}
-                />
-              )}
-              {lobbyState.gameLink && (
-                <BfgShareableLinkComponent
-                  variant="standard"
-                  linkLabel="Player Game Link"
-                  linkUrl={lobbyState.gameLink}
-                />
-              )}
-              {observerLink && (
-                <BfgShareableLinkComponent
-                  variant="standard"
-                  linkLabel="Observer Game Link"
-                  linkUrl={observerLink}
-                  showQrCode={true}
-                />
-              )}
-
-            </Stack>
+          {(lobbyState.gameLink || hostingLink) && (
             <Box>
-              <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
-                <Typography variant="h6" component="h2" gutterBottom>
-                  Player Pool
-                </Typography>
-                <Typography variant="body2" style={{ color: '#666' }}>
-                  [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {playerPoolChips.length > 0 ? playerPoolChips : (
-                  <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
-                    No players in pool
-                  </Typography>
+              <Stack spacing={1}>
+                {hostingLink && (
+                  <BfgShareableLinkComponent
+                    variant="standard"
+                    linkLabel="Hosting Link"
+                    linkUrl={hostingLink}
+                  />
                 )}
+                {lobbyState.gameLink && (
+                  <BfgShareableLinkComponent
+                    variant="standard"
+                    linkLabel="Player Game Link"
+                    linkUrl={lobbyState.gameLink}
+                  />
+                )}
+                {observerLink && (
+                  <BfgShareableLinkComponent
+                    variant="standard"
+                    linkLabel="Observer Game Link"
+                    linkUrl={observerLink}
+                    showQrCode={true}
+                  />
+                )}
+
               </Stack>
+              <Box>
+                <Stack direction="row" spacing={1} style={{ alignItems: 'center', marginBottom: '8px' }}>
+                  <Typography variant="h6" component="h2" gutterBottom>
+                    Player Pool
+                  </Typography>
+                  <Typography variant="body2" style={{ color: '#666' }}>
+                    [{lobbyState.playerPool.length}/{lobbyState.maxNumPlayers}]
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {playerPoolChips.length > 0 ? playerPoolChips : (
+                    <Typography variant="body2" style={{ color: '#666', fontStyle: 'italic' }}>
+                      No players in pool
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
             </Box>
-          </Box>
-        )}
-      </Stack>
+          )}
+        </Stack>
+      </>
     )
   }
 
@@ -302,17 +319,15 @@ export const LobbyHostStateComponent = ({
             >
               <Clear /> Clear Game
             </Button>
-            {onOpenLobbyOptionsDialog && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={onOpenLobbyOptionsDialog}
-                disabled={isGameStarted}
-                style={{ minWidth: 'auto', padding: '4px 8px' }}
-              >
-                <Settings /> Configure
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setIsLobbyOptionsDialogOpen(true)}
+              disabled={isGameStarted}
+              style={{ minWidth: 'auto', padding: '4px 8px' }}
+            >
+              <Settings /> Configure
+            </Button>
           </Stack>
           <Stack direction="row" spacing={1} flexWrap="wrap" style={{ alignItems: 'center' }}>
             <Gamepad style={{ color: '#1976d2' }} />
@@ -336,6 +351,13 @@ export const LobbyHostStateComponent = ({
           </Alert>
         )}
       </Stack>
+      <LobbyHostOptionsDialog
+        open={isLobbyOptionsDialogOpen}
+        onClose={() => setIsLobbyOptionsDialogOpen(false)}
+        onSave={setLobbyOptions}
+        initialLobbyOptions={lobbyOptions}
+        selectedGameChoice={lobbyState.gameTitle ?? null}
+      />
     </>
   )
 }

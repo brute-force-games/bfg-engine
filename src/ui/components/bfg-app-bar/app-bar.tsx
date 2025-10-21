@@ -12,7 +12,7 @@ interface BruteForceGamesAppBarProps<TTabId extends string = string> {
   tabsConfig: {
     tabItems: readonly AppBarTabItem<TTabId>[];
     activeTabId: TTabId;
-    onTabChange: (tabId: TTabId) => void;
+    onTabChange?: (tabId: TTabId) => void;
   } | null;
 }
 
@@ -94,12 +94,13 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
                   {siteTitle}
                 </Link>
               </MenuItem>
+              
               {props.tabsConfig?.tabItems.map((tabItem) => {
                 const isActive = props.tabsConfig?.activeTabId === tabItem.id;
                 return (
                   <MenuItem 
                     key={tabItem.id} 
-                    onClick={handleNavMenuClose}
+                    onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
                     style={{
                       backgroundColor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                       fontWeight: isActive ? 'bold' : 'normal'
@@ -112,7 +113,7 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
                       </Link>
                     ) : (
                       <Box 
-                        onClick={() => props.tabsConfig?.onTabChange(tabItem.id)}
+                        onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
                         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                       >
                         {tabItem.icon}
@@ -179,7 +180,7 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
                     backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                     outline: 'none'
                   }}
-                  onClick={() => props.tabsConfig?.onTabChange(tabItem.id)}
+                  onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
                 >
                   {tabItem.icon}
                   {tabItem.label}

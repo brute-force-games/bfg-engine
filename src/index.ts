@@ -6,6 +6,7 @@ export type { GameTableId, GameFriendId, GameLobbyId, PlayerProfileId } from './
 export type { TrysteroConfig } from './p2p/trystero-config';
 export { ProfileGuard } from './ui/components/profile-guard';
 export { P2pConnectionComponent } from './ui/components/p2p-connection-component';
+export { P2pHostedLobbyContextProvider, useP2pHostedLobbyContext } from './hooks/p2p/hosted-p2p-lobby-context';
 export { LobbyPlayerJoinGameComponent } from './ui/components/lobby-player-join-game-component';
 export { LobbyPlayerStateComponent } from './ui/components/lobby-player-state-component';
 export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
@@ -36,3 +37,6 @@ export { PublicJWKSchema, PrivateJWKSchema } from './models/player-profile/publi
 
 // UI Component exports
 export * from './ui/bfg-ui';
+
+// BFG Routes - for combining with app routes
+export { combineBfgRoutesWithAppRoutes, getBfgRouteChildren } from './bfg-routes'

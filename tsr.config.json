@@ -1,0 +1,7 @@
+{
+  "routesDirectory": "./src/bfg-routes",
+  "generatedRouteTree": "./src/bfg-routes/bfg-routeTree.gen.ts",
+  "routeFileIgnorePrefix": "-",
+  "quoteStyle": "single"
+}
+

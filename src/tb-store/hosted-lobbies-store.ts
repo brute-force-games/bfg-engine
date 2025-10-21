@@ -115,6 +115,9 @@ export const updateHostedLobby = (
   lobbyId: GameLobbyId,
   updates: GameLobbyUpdateFields
 ): boolean => {
+
+  console.log('updateHostedLobby: updates', updates);
+
   try {
     const existingLobby = hostedLobbiesStore.getRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId);
     if (!existingLobby) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../models/p2p-details";  
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { PrivatePlayerProfile, privateToPublicProfile } from "../../models/player-profile/private-player-profile";
 import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../ui/components/constants";
 import { useGameHosting } from "../games-registry/game-hosting";
@@ -14,7 +15,9 @@ export interface IP2pLobby {
   connectionEvents: ConnectionEvent[]
 
   peerProfiles: Map<PeerId, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+
+  myPlayerProfile: PublicPlayerProfile
+  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   lobbyDetails: HostP2pLobbyDetails | null
 
@@ -27,7 +30,7 @@ export interface IP2pLobby {
 }
 
 
-export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerProfile): IP2pLobby => {
+export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PrivatePlayerProfile): IP2pLobby => {
   
   const [lobbyDetails, setLobbyDetails] = useState<HostP2pLobbyDetails | null>(null)
   const [peerProfiles, setPeerProfiles] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
@@ -129,14 +132,18 @@ export const useP2pLobby = (lobbyId: GameLobbyId, myPlayerProfile: PublicPlayerP
     // Room will be recreated on next render automatically
   };
 
+  const myPublicPlayerProfile = privateToPublicProfile(myPlayerProfile);
   
   return {
     room,
     lobbyDetails,
     connectionStatus: connectionStatus,
     connectionEvents,
+
+    myPlayerProfile: myPublicPlayerProfile,
     peerProfiles,
-    playerProfiles,
+    otherPlayerProfiles: playerProfiles,
+    
     getPlayerProfile,
     sendPlayerMove,
     getPlayerMove: (callback: (move: PlayerP2pLobbyMove, peer: PeerId) => void) => {

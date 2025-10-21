@@ -80,7 +80,7 @@ export const useRiskyMyDefaultPlayerProfile = () => {
 /**
  * Hook to get the default player profile with reactive updates
  */
-export const useMyDefaultPlayerProfile = () => {
+export const useMyDefaultPlayerProfile = (): PrivatePlayerProfile | null => {
   const defaultId = useMyDefaultProfileId();
   const rawProfiles = useTable(TB_PLAYER_PROFILES_TABLE_KEY, playerProfileStore);
   

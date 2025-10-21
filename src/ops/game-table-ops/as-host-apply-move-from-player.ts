@@ -34,8 +34,10 @@ export const asHostApplyMoveFromPlayer = async <GameSpecificAction extends z.Zod
 
   const latestAction = gameActions[gameActions.length - 1];
 
-  const initialGameState = selectedGameEngine.parseGameSpecificGameStateJson?.(
-    latestAction.actionOutcomeGameStateJson) ?? latestAction.actionOutcomeGameStateJson;
+  // const initialGameState = selectedGameEngine.parseGameSpecificGameStateJson?.(
+  //   latestAction.actionOutcomeGameStateJson) ?? latestAction.actionOutcomeGameStateJson;
+
+  const initialGameState = latestAction.actionOutcomeGameStateJson;
 
   console.log("MAKE MOVE - INITIAL GAME STATE", initialGameState);
 

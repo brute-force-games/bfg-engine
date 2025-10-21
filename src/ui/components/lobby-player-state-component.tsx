@@ -4,16 +4,16 @@ import { PublicPlayerProfile } from "../../models/player-profile/public-player-p
 import { BfgShareableLinkComponent } from "../../ui/components/bfg-shareable-link-component"
 import { BfgSupportedGameTitle } from "../../models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "../../ui/components/lobby-player-join-game-component"
-import { Box, Stack, Typography, Chip, Button, Gamepad } from "../bfg-ui"
+import { Box, Stack, Typography, Chip, Button, Gamepad, Container, Paper, Alert } from "../bfg-ui"
 import { useGameHosting } from "../../hooks/games-registry/game-hosting"
 import { PlayerProfileChip } from "./player-profile-chip"
 
 
 interface ILobbyPlayerStateComponentProps {
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
-  lobbyState: GameLobby
+  lobbyState: GameLobby | null
   currentPlayerProfile: PublicPlayerProfile
-  lobbyOptions: LobbyOptions
+  lobbyOptions: LobbyOptions | null
 
   onSelectGameChoice: (gameChoice: BfgSupportedGameTitle) => void
   onTakeSeat: () => void
@@ -29,6 +29,24 @@ export const LobbyPlayerStateComponent = ({
   onTakeSeat,
   onLeaveSeat,
 }: ILobbyPlayerStateComponentProps) => {
+
+  if (!lobbyState || !lobbyOptions) {
+    return (
+      <Container maxWidth="sm" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
+        <Paper elevation={2} style={{ padding: '32px', textAlign: 'center' }}>
+          <Typography variant="h6" component="h3" style={{ marginBottom: '8px' }}>
+            Connecting to lobby...
+          </Typography>
+          <Typography variant="body2" style={{ marginBottom: '16px' }}>
+            Make sure the host has started the lobby. Please wait while we establish the connection.
+          </Typography>
+          <Alert severity="info" style={{ textAlign: 'left' }}>
+            Waiting for lobby data from the host.
+          </Alert>
+        </Paper>
+      </Container>
+    )
+  }
 
   const hostProfile = lobbyState.gameHostPlayerProfile as PublicPlayerProfile;
 
@@ -55,6 +73,7 @@ export const LobbyPlayerStateComponent = ({
   const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
     return (
       <PlayerProfileChip
+        key={playerProfileId}
         playerProfileId={playerProfileId}
         playerProfiles={playerProfiles}
         myPlayerProfile={currentPlayerProfile}

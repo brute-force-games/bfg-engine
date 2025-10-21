@@ -29,7 +29,7 @@ export const useHostedLobbies = () => {
 /**
  * Hook to get a specific hosted lobby by ID with reactive updates
  */
-export const useHostedLobby = (lobbyId: GameLobbyId) => {
+export const useHostedLobby = (lobbyId: GameLobbyId): GameLobby | null => {
   const rawLobbies = useTable(TB_HOSTED_LOBBIES_TABLE_KEY, hostedLobbiesStore);
   // console.log('rawLobbies', rawLobbies);
   const rawLobbyData = rawLobbies[lobbyId];
@@ -77,7 +77,15 @@ export const useHostedLobbiesCount = () => {
 /**
  * Hook for hosted lobby management actions
  */
-export const useHostedLobbyActions = () => {
+export interface IHostedLobbyActions {
+  addLobby: (lobby: GameLobby) => Promise<boolean>;
+  updateLobby: (lobbyId: GameLobbyId, updates: GameLobbyUpdateFields) => boolean;
+  updateLobbyPlayerPool: (lobbyId: GameLobbyId, playerPool: PlayerProfileId[]) => boolean;
+  removeLobby: (lobbyId: GameLobbyId) => boolean;
+  clearAll: () => void;
+}
+
+export const useHostedLobbyActions = (): IHostedLobbyActions => {
   const addLobby = useCallback(async (lobby: GameLobby): Promise<boolean> => {
     return await addHostedLobby(lobby);
   }, []);

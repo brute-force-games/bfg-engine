@@ -1,11 +1,11 @@
 
 
-export type JoinLobbyTabId = 'player-lobby' | 'player-p2p-lobby-details';
+// export type JoinLobbyTabId = 'player-lobby' | 'player-p2p-lobby-details';
 
-export const AllJoinLobbyTabIds: readonly JoinLobbyTabId[] = [
-  'player-lobby',
-  'player-p2p-lobby-details',
-];
+// export const AllJoinLobbyTabIds: readonly JoinLobbyTabId[] = [
+//   'player-lobby',
+//   'player-p2p-lobby-details',
+// ];
 
 
 export type HostedLobbyTabId = 'lobby-admin' | 'player-lobby' | 'host-p2p-lobby-details';

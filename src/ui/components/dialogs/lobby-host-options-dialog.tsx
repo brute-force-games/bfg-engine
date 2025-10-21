@@ -22,13 +22,15 @@ interface LobbyHostOptionsDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (lobbyOptions: LobbyOptions) => void;
+  selectedGameChoice: BfgSupportedGameTitle | null;
   initialLobbyOptions: LobbyOptions;
 }
 
 export const LobbyHostOptionsDialog = ({ 
   open, 
   onClose, 
-  onSave, 
+  onSave,
+  selectedGameChoice,
   initialLobbyOptions 
 }: LobbyHostOptionsDialogProps) => {
   const [tempGameChoices, setTempGameChoices] = useState<BfgSupportedGameTitle[]>(
@@ -81,6 +83,7 @@ export const LobbyHostOptionsDialog = ({
             <FormGroup>
               {allGameChoices.map((choice: BfgSupportedGameTitle) => {
                 const isSelected = tempGameChoices.includes(choice);
+                const isCurrentGame = choice === selectedGameChoice;
                 return (
                   <FormControlLabel
                     key={choice}
@@ -89,6 +92,7 @@ export const LobbyHostOptionsDialog = ({
                         checked={isSelected}
                         onChange={(e) => handleGameChoiceChange(choice, e.target.checked)}
                         color="primary"
+                        disabled={isCurrentGame}
                       />
                     }
                     label={choice}

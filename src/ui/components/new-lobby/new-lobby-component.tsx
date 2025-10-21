@@ -21,8 +21,8 @@ import { useHostedLobbyActions } from '../../../hooks/stores/use-hosted-lobbies-
 import { BfgGameLobbyId } from '../../../models/types/bfg-branded-ids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
 import { useGameRegistry } from '../../../hooks/games-registry/games-registry';
-import { LobbyReadyComponent } from './lobby-ready-component';
 import { validateLobby } from '~/ops/game-lobby-ops/lobby-utils';
+import { Navigate } from '@tanstack/react-router';
 
 
 // Form validation schema with enhanced Zod validation
@@ -166,9 +166,7 @@ export const NewLobbyComponent = () => {
   // Show lobby creation success if a lobby was just created
   if (createdLobbyId) {
     return (
-      <LobbyReadyComponent
-        createdLobbyId={createdLobbyId}
-      />
+      <Navigate to="/hosted-lobby/$lobbyId" params={{ lobbyId: createdLobbyId }} />
     )
   }
 
