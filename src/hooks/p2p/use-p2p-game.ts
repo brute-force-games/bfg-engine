@@ -15,7 +15,8 @@ export interface IP2pGame {
   connectionEvents: ConnectionEvent[]
 
   peerProfiles: Map<PeerId, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
@@ -129,9 +130,14 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     setPeerProfiles(prev => new Map(prev).set(peerId, playerProfile))
   })
 
-  const playerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
-    Array.from(peerProfiles.values()).map(profile => [profile.id, profile])
-  );
+  const otherPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>([
+    ...Array.from(peerProfiles.values()).map(profile => [profile.id, profile] as const),
+  ]);
+
+  const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(otherPlayerProfiles);
+  if (myPlayerProfile) {
+    allPlayerProfiles.set(myPlayerProfile.id, myPlayerProfile);
+  }
 
   const refreshConnection = () => {
     addConnectionEvent('auto-refresh', 'Connection refreshed manually', peerProfiles.size);
@@ -149,7 +155,8 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     connectionStatus: connectionStatus,
     connectionEvents,
     peerProfiles,
-    playerProfiles,
+    otherPlayerProfiles,
+    allPlayerProfiles,
     sendPlayerMove,
     getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => {
       getPlayerMove((move: unknown, peer: string) => {

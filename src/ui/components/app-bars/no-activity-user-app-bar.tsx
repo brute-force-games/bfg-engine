@@ -7,7 +7,7 @@ interface NoActivityUserAppBarProps {
   myDefaultPlayerProfile: PrivatePlayerProfile | null;
 }
 
-export const NoActivityUserAppBar = (props: NoActivityUserAppBarProps) => {
+export const NoActivityUserAppBar = (_props: NoActivityUserAppBarProps) => {
   // const { myPlayerProfiles, myDefaultPlayerProfile } = props;
 
   // const myPlayerProfiles = useMyPlayerProfiles();

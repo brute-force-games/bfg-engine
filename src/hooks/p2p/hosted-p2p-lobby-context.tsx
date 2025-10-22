@@ -1,28 +1,24 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { GameLobbyId } from '../../models/types/bfg-branded-ids';
-import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
 import { Container, Paper, Typography } from '~/ui/bfg-ui';
-import { PrivatePlayerProfile, privateToPublicProfile } from '~/models/player-profile/private-player-profile';
-import { IHostedP2pLobbyData } from './use-hosted-p2p-lobby';
-import { IHostedLobbyActions } from '../stores/use-hosted-lobbies-store';
-import { GameLobby, LobbyOptions } from '~/models/p2p-lobby';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { useHostedP2pLobbyWithStore } from './use-hosted-p2p-lobby-with-store';
+import { PrivatePlayerProfile } from '~/models/player-profile/private-player-profile';
+import { LobbyOptions } from '~/models/p2p-lobby';
+import { useHostedP2pLobbyWithStore, IHostedP2pLobbyWithStoreData } from './use-hosted-p2p-lobby-with-store';
 
 
-interface IHostedP2pLobbyContext extends IHostedP2pLobbyData {
-  lobbyState: GameLobby;
-  lobbyOptions: LobbyOptions;
+// interface IHostedP2pLobbyContext extends IHostedP2pLobbyWithStoreData {
+//   lobbyState: GameLobby;
+//   lobbyOptions: LobbyOptions;
   
-  setLobbyOptions: (lobbyOptions: LobbyOptions) => void;
-  lobbyActions: IHostedLobbyActions;
+//   // setLobbyOptions: (lobbyOptions: LobbyOptions) => void;
+//   // lobbyActions: IHostedLobbyActions;
 
-  onSelectGameChoice: (gameChoice: BfgSupportedGameTitle) => void;
-  onTakeSeat: () => void;
-  onLeaveSeat: () => void;
+//   onSelectGameChoice: (gameChoice: BfgSupportedGameTitle) => void;
+//   onTakeSeat: () => void;
+//   onLeaveSeat: () => void;
 
-  myHostPlayerProfile: PublicPlayerProfile;
-}
+//   myHostPlayerProfile: PublicPlayerProfile;
+// }
 
 interface P2pHostedLobbyProviderProps {
   lobbyId: GameLobbyId;
@@ -30,26 +26,13 @@ interface P2pHostedLobbyProviderProps {
   children: ReactNode;
 }
 
-const P2pHostedLobbyContext = createContext<IHostedP2pLobbyContext | null>(null);
+const P2pHostedLobbyContext = createContext<IHostedP2pLobbyWithStoreData | null>(null);
 
 export const P2pHostedLobbyContextProvider = ({ 
   lobbyId,
   hostPlayerProfile,
   children 
 }: P2pHostedLobbyProviderProps) => {
-
-  // const hostedLobby = useHostedP2pLobby(lobbyId, hostPlayerProfile);
-  // const lobbyData = useHostedLobby(lobbyId);
-  // const lobbyActions = useHostedLobbyActions();
-  // const gameRegistry = useGameRegistry();
-
-  // const [lobbyOptions, setLobbyOptions] = useState<LobbyOptions>(() => {
-  //   const gameChoices = gameRegistry.getAvailableGameTitles();
-  //   return {
-  //     gameChoices,  
-  //     maxPlayers: 8,
-  //   }
-  // });
 
   const hostedLobby = useHostedP2pLobbyWithStore(lobbyId, hostPlayerProfile);
   const {
@@ -91,62 +74,7 @@ export const P2pHostedLobbyContextProvider = ({
     )
   }
 
-  // const applyPlayerMove = async (move: PlayerP2pLobbyMove, playerId: PlayerProfileId) => {
-  //   console.log('applyPlayerMove', move, playerId);
-  //   console.log('Received player move from peer:', playerId, move);
-
-  //   switch (move.move) {
-  //     case 'set-game-choice':
-  //       const updatedLobbyForGameChoice = await playerSetGameChoice(gameRegistry, lobbyState, playerId, move.gameChoice);
-  //       if (updatedLobbyForGameChoice) {
-  //         updateLobbyState(updatedLobbyForGameChoice);
-  //       }
-  //       break;
-
-  //     case 'take-seat':
-  //       const updatedLobbyForSeat = await playerTakeSeat(gameRegistry, lobbyState, playerId);
-  //       console.log('updatedLobbyForSeat', updatedLobbyForSeat);
-  //       if (updatedLobbyForSeat) {
-  //         updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForSeat.playerPool as PlayerProfileId[]);
-  //         updateLobbyState(updatedLobbyForSeat);
-  //       }
-  //       break;
-
-  //     case 'leave-seat':
-  //       const updatedLobbyForLeaveSeat = await playerLeaveSeat(gameRegistry, lobbyState, playerId);
-  //       console.log('updatedLobbyForLeaveSeat', updatedLobbyForLeaveSeat);
-  //       if (updatedLobbyForLeaveSeat) {
-  //         updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForLeaveSeat.playerPool as PlayerProfileId[]);
-  //         updateLobbyState(updatedLobbyForLeaveSeat);
-  //       }
-  //       break;
-      
-  //     default:
-  //       console.error('Unknown player move:', move);
-  //       break;
-  //   }
-  // }
-
-  const publicHostPlayerProfile = privateToPublicProfile(hostPlayerProfile);
-
-
-  // const onSelectGameChoice = async (gameChoice: BfgSupportedGameTitle) => {
-  //   // sendPlayerMove({ move: 'set-game-choice', gameChoice: gameChoice });
-  //   // asHostedLobbyUpdateLobbyData({ gameChoice });
-  //   // await asHostApplyMoveFromPlayer({ move: 'set-game-choice', gameChoice: gameChoice }, hostPlayerProfile.id);
-  //   applyPlayerMove({ move: 'set-game-choice', gameChoice: gameChoice }, hostPlayerProfile.id);
-  // }
-
-  // const onTakeSeat = async () => {
-  //   // sendPlayerMove({ move: 'take-seat' });
-  // }
-  
-  // const onLeaveSeat = async () => {
-  //   // sendPlayerMove({ move: 'leave-seat' });
-  // }
-
-  
-  const context: IHostedP2pLobbyContext = {
+  const context: IHostedP2pLobbyWithStoreData = {
     p2pLobby: hostedLobby.p2pLobby,
     lobbyState,
     lobbyOptions,
@@ -157,13 +85,9 @@ export const P2pHostedLobbyContextProvider = ({
     connectionEvents: hostedLobby.connectionEvents,
 
     peerProfiles: hostedLobby.peerProfiles,
-    myHostPlayerProfile: publicHostPlayerProfile,
+    myHostPlayerProfile: hostedLobby.myHostPlayerProfile,
     allPlayerProfiles: hostedLobby.allPlayerProfiles,
 
-    // updateLobbyData: (lobbyUpdates: GameLobbyUpdateFields) => {
-    //   lobbyActions.updateLobby(lobbyId, lobbyUpdates);
-    // },
-    
     setLobbyOptions: (lobbyOptions: LobbyOptions) => {
       setLobbyOptions(lobbyOptions);
     },
@@ -184,7 +108,7 @@ export const P2pHostedLobbyContextProvider = ({
   );
 };
 
-export const useP2pHostedLobbyContext = (): IHostedP2pLobbyContext => {
+export const useP2pHostedLobbyContext = (): IHostedP2pLobbyWithStoreData => {
   const context = useContext(P2pHostedLobbyContext);
   
   if (!context) {
@@ -193,4 +117,3 @@ export const useP2pHostedLobbyContext = (): IHostedP2pLobbyContext => {
   
   return context;
 };
-

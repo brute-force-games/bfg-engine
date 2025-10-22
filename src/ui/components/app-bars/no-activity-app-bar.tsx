@@ -1,16 +1,16 @@
 import { useMyPlayerProfiles, useRiskyMyDefaultPlayerProfile } from "../../../hooks/stores/use-my-player-profiles-store";
-import { AppBarTabItem } from "../bfg-app-bar/app-bar-tab-item";
+// import { AppBarTabItem } from "../bfg-tabs";
 import { NoActivityNoUserAppBar } from "./no-activity-no-user-app-bar";
 import { NoActivityUserAppBar } from "./no-activity-user-app-bar";
 
 
 interface NoActivityAppBarProps {
-  tabItems: AppBarTabItem[];
-  activeTabId: string;
+  // tabItems: readonly AppBarTabItem<NoActivitiesTabId>[];
+  // activeTabId: string;
 }
 
-export const NoActivityAppBar = (props: NoActivityAppBarProps) => {
-  const { tabItems, activeTabId } = props;
+export const NoActivityAppBar = (_props: NoActivityAppBarProps) => {
+  // const { tabItems, activeTabId } = props;
 
   const myPlayerProfiles = useMyPlayerProfiles();
   const myDefaultPlayerProfile = useRiskyMyDefaultPlayerProfile();

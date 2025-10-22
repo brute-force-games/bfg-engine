@@ -49,7 +49,7 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const menuItems: DbkAppBarMenuItem[] = [
     { type: 'menu-label', title: userName },
     { type: 'menu-divider' },
-    { type: 'menu-link', title: 'Player Profile', link: { to: '/my-player-profiles' } },
+    { type: 'menu-link', title: 'My Profiles', link: { to: '/my-player-profiles' } },
     // { type: 'menu-link', title: 'Gaming Groups', link: { to: '/gaming-groups' } },
     // { type: 'menu-link', title: 'My Friends', link: { to: '/my-friends' } },
     { type: 'menu-divider' },

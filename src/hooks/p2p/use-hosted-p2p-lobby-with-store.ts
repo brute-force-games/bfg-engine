@@ -26,6 +26,7 @@ export interface IHostedP2pLobbyWithStoreData {
 
   peerProfiles: Map<PeerId, PublicPlayerProfile>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  myHostPlayerProfile: PublicPlayerProfile
 
   sendLobbyData: (lobbyData: HostP2pLobbyDetails) => void
   getPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => void
@@ -198,6 +199,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
     connectionEvents,
     peerProfiles,
     allPlayerProfiles,
+    myHostPlayerProfile: hostPlayerProfile,
     
     sendLobbyData,
     getPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => {
