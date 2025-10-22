@@ -34,12 +34,12 @@ export const asHostApplyMoveFromPlayer = async <GameSpecificAction extends z.Zod
 
   const latestAction = gameActions[gameActions.length - 1];
 
-  // const initialGameState = selectedGameEngine.parseGameSpecificGameStateJson?.(
-  //   latestAction.actionOutcomeGameStateJson) ?? latestAction.actionOutcomeGameStateJson;
+  const initialGameStateJson = latestAction.actionOutcomeGameStateJson;
+  const initialGameState = selectedGameEngine.parseGameSpecificGameStateJson(
+    initialGameStateJson as any);
 
-  const initialGameState = latestAction.actionOutcomeGameStateJson;
-
-  console.log("MAKE MOVE - INITIAL GAME STATE", initialGameState);
+  console.log("MAKE MOVE - INITIAL GAME STATE JSON", initialGameStateJson);
+  console.log("MAKE MOVE - INITIAL GAME STATE (PARSED)", initialGameState);
 
   if (!selectedGameEngine.applyGameAction) {
     throw new Error("Game engine does not support applyGameAction");
