@@ -29,6 +29,16 @@ export const HostedGameDetailsComponent = ({
   //     console.error('Failed to copy: ', err);
   //   }
   // };
+
+  const latestGameSpecificStateJson = gameActions.length > 0 ? 
+    gameActions[gameActions.length - 1].actionOutcomeGameStateJson :
+    null;
+
+  const latestGameSpecificState = latestGameSpecificStateJson ? 
+    JSON.parse(latestGameSpecificStateJson) :
+    null;
+
+  const latestGameSpecificStateString = JSON.stringify(latestGameSpecificState, null, 2);
   
   return (
     <div>
@@ -73,6 +83,13 @@ export const HostedGameDetailsComponent = ({
                 <div key={index}>{action.actionType} [{action.source}] - {action.actionJson}</div>
               ))}
             </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-3">Latest Game Specific State</h2>
+            <PrettyJsonString
+              jsonString={latestGameSpecificStateString}
+            />
           </div>
         </div>
       </div>

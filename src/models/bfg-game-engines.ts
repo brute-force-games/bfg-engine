@@ -4,11 +4,12 @@ import { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-defini
 import { 
   BfgGameEngineProcessor as BfgGameEngineProcessorType 
 } from "@bfg-engine/models/game-engine/bfg-game-engines";
+import { GameTable } from "./game-table/game-table";
 
 
 export interface BfgGameMetadata {
   gameDefinition: GameDefinition;
-  engineProcessor?: BfgGameEngineProcessorType<any, any>;
+  engineProcessor: BfgGameEngineProcessorType<any, any>;
 }
 
 // Re-export the correct type for backward compatibility
@@ -17,34 +18,24 @@ export type BfgGameEngineProcessor<
   GameActionSchema extends z.ZodTypeAny = z.ZodTypeAny
 > = BfgGameEngineProcessorType<GameStateSchema, GameActionSchema>;
 
-// const AllBfgGameMetadata: Record<string, BfgGameMetadata> = {};
 
-// export function getBfgGameMetadata(gameTitle: BfgSupportedGameTitle): BfgGameMetadata | undefined {
-//   return AllBfgGameMetadata[gameTitle];
-// }
-
-export const createInitialGameData = (gameRegistry: IGameRegistry, gameTitle: BfgSupportedGameTitle): {
+export type InitialGameData = {
   initialGameSpecificState: any;
   gameStateJson: string;
   actionJson: string;
-} => {
+}
+
+// export const createInitialGameData = (gameRegistry: IGameRegistry, gameTitle: BfgSupportedGameTitle): InitialGameData => {
+export const createInitialGameData = (gameRegistry: IGameRegistry, gameTitle: BfgSupportedGameTitle, newGameTable: GameTable): InitialGameData => {
   const metadata = gameRegistry.getGameMetadata(gameTitle);
   
-  if (!metadata?.processor) {
-    throw new Error(`Game processor not found for game: ${gameTitle}`);
-  }
-
   const gameEngine = metadata.processor;
-
-  // Create a temporary game table object for the initial action
-  // We only need the fields required by createBfgGameSpecificInitialGameTableAction
-  const tempGameTable = {} as any;
   
-  // Same pattern for all games - using type assertions for flexibility
-  const initGameAction = gameEngine.createBfgGameSpecificInitialGameTableAction(tempGameTable) as any;
-  const initialGameSpecificState = gameEngine.createBfgInitialGameSpecificState(initGameAction) as any;
-  const gameStateJson = gameEngine.createGameSpecificGameStateJson(initialGameSpecificState) as any;
-  const actionJson = gameEngine.createGameSpecificActionJson(initGameAction.gameSpecificAction) as any;
+  // Same pattern for all games - type assertions need to be better genericized
+  const initGameAction = gameEngine.createBfgGameSpecificInitialGameTableAction(newGameTable);
+  const initialGameSpecificState = gameEngine.createBfgInitialGameSpecificState(initGameAction);
+  const gameStateJson = gameEngine.createGameSpecificGameStateJson(initialGameSpecificState);
+  const actionJson = gameEngine.createGameSpecificActionJson(initGameAction.gameSpecificAction);
   
   return {
     initialGameSpecificState,

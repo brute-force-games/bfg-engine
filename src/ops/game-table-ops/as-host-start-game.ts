@@ -58,7 +58,8 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
   const newGameTable = createNewGameTableFromLobbyState(lobbyState, newGameTableId);
   
   // Type-safe game engine access using helper function
-  const { initialGameSpecificState, gameStateJson, actionJson } = createInitialGameData(gameRegistry, gameTitle);
+  // const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
+  const { initialGameSpecificState, gameStateJson, actionJson } = createInitialGameData(gameRegistry, gameTitle, newGameTable);
 
   const gameSpecificSummary = `Game started`;
 
@@ -78,24 +79,18 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
     throw new Error("Failed to add game table");
   }
 
-  // const startActionId = BfgGameTableActionId.createId();
-
   const tableId = newGameTable.id;
   const now = Date.now();
 
   const hostStartsGameSetupAction: DbGameTableAction = {
-    // id: startActionId,
     gameTableId: tableId,
-    // previousActionId: mostRecentGameActionId,
     createdAt: now,
 
     source: "game-table-action-source-host",
     actionType: "game-table-action-host-starts-setup",
-    // nextPlayersToAct,
+
     actionJson,
     actionOutcomeGameStateJson: gameStateJson,
-
-    // realmId: newGameTable.realmId,
   }
 
   console.log("ADDING GAME ACTION", hostStartsGameSetupAction);

@@ -79,40 +79,6 @@ export const LobbyHostStateComponent = ({
     }
   }
 
-  // console.log('lobbyState', lobbyState);
-
-  // const playerPool = lobbyState.playerPool ?? [];
-
-  // const playerPoolChips = lobbyState.playerPool.map(playerId => {
-  //   const playerProfile = playerProfiles.get(playerId);
-  //   const playerIsMe = playerId === lobbyState.gameHostPlayerProfile.id;
-
-  //   if (!playerProfile) {
-  //     return (
-  //       <Chip 
-  //         key={playerId}
-  //         label={`${playerId} (name not available)`}
-  //         variant="outlined"
-  //         color="error"
-  //         size="small"
-  //       />
-  //     );
-  //   }
-  //   return (
-  //     <Chip 
-  //       key={playerId}
-  //       label={playerProfile.handle}
-  //       variant="filled"
-  //       color="primary"
-  //       size="small"
-  //     />
-  //   )
-  // })
-
-  // console.log('playerPool', playerProfiles, lobbyState.gameHostPlayerProfile);
-
-  console.log("LOBBY STATE", lobbyState);
-
   const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
     return (
       <PlayerProfileChip
