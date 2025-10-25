@@ -12,7 +12,7 @@ export { LobbyPlayerStateComponent } from './ui/components/lobby-player-state-co
 export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
 export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
-export type { BfgGameEngineProcessor, GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
+export type { BfgGameEngineProcessor, GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
 export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export type { IBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export { GameTableSeatSchema } from './models/game-table/game-table';

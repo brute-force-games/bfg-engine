@@ -2,7 +2,7 @@ import z from 'zod';
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
 import { GameLobbyId, PlayerProfileId } from '../models/types/bfg-branded-ids';
-import { GameLobby, LobbySchema } from '../models/p2p-lobby';
+import { GameLobby, GameLobbySchema } from '../models/p2p-lobby';
 import { PublicPlayerProfileJsonStr, PublicPlayerProfileJsonStrSchema, PublicPlayerProfileSchema } from '../models/player-profile/public-player-profile';
 
 
@@ -24,7 +24,7 @@ persister.startAutoLoad();
 persister.startAutoSave();
 
 
-const TbStoreLobbySchema = LobbySchema
+const TbStoreLobbySchema = GameLobbySchema
   .omit({
     gameHostPlayerProfile: true,
     playerPool: true,
@@ -64,7 +64,7 @@ export const parseRawHostedLobbyData = (lobbyId: string, rawData: any): GameLobb
     tbLobby.playerPoolCsvStr.split(',') as PlayerProfileId[] :
     [];
 
-  const gameLobby = LobbySchema.parse({
+  const gameLobby = GameLobbySchema.parse({
     ...tbLobby,
     gameHostPlayerProfile: gameHostPlayerProfileResult.data,
     playerPool,
@@ -80,7 +80,7 @@ export const addHostedLobby = async (lobby: GameLobby): Promise<boolean> => {
   try {
     console.log('addHostedLobby: lobby', lobby);
     // Validate the lobby data
-    const validationResult = LobbySchema.safeParse(lobby);
+    const validationResult = GameLobbySchema.safeParse(lobby);
     if (!validationResult.success) {
       console.error('Error validating lobby data:', validationResult.error);
       return false;

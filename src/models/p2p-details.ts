@@ -1,12 +1,12 @@
 import { z } from "zod"
-import { LobbyOptionsSchema, LobbySchema } from "./p2p-lobby"
+import { LobbyOptionsSchema, GameLobbySchema } from "./p2p-lobby"
 import { PublicPlayerProfileSchema } from "./player-profile/public-player-profile"
 import { BfgSupportedGameTitleSchema } from "./game-box-definition"
 
 
 export const HostP2pLobbyDetailsSchema = z.object({
   hostPlayerProfile: PublicPlayerProfileSchema,
-  lobbyState: LobbySchema,
+  lobbyState: GameLobbySchema,
   lobbyOptions: LobbyOptionsSchema,
 })
 

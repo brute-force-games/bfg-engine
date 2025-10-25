@@ -3,7 +3,7 @@ import { useTable } from 'tinybase/ui-react';
 import { 
   gameActionsStore,
   getGameActionsTableName,
-  addGameAction,
+  // addGameAction,
   clearGameActions,
   clearAllGameActions,
 } from '../../tb-store/hosted-game-actions-store';
@@ -82,12 +82,12 @@ export const useGameActionsCount = (gameTableId: GameTableId) => {
  * Hook for game actions management actions
  */
 export const useGameActionsActions = () => {
-  const addAction = useCallback(async (
-    gameTableId: GameTableId, 
-    newAction: DbGameTableAction
-  ): Promise<{ success: boolean; actionId?: string; error?: string }> => {
-    return await addGameAction(gameTableId, newAction);
-  }, []);
+  // const addAction = useCallback(async (
+  //   gameTableId: GameTableId, 
+  //   newAction: DbGameTableAction
+  // ): Promise<{ success: boolean; actionId?: string; error?: string }> => {
+  //   return await addGameAction(gameTableId, newAction);
+  // }, []);
 
   const clearActions = useCallback((gameTableId: GameTableId): boolean => {
     return clearGameActions(gameTableId);
@@ -98,7 +98,9 @@ export const useGameActionsActions = () => {
   }, []);
 
   return {
-    addAction,
+    // addAction,
+    // addHostAction,
+    // addPlayerAction,
     clearActions,
     clearAllActions,
   };

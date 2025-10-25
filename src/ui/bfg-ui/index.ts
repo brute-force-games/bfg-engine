@@ -28,6 +28,7 @@ export * from './components/Option';
 export * from './components/Paper';
 export * from './components/PrettyJson';
 export * from './components/Select';
+export * from './components/Slider';
 export * from './components/Stack';
 export * from './components/Switch';
 // export * from './components/Tabs';

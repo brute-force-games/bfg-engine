@@ -8,25 +8,28 @@ import { IGameRegistry } from "../../hooks/games-registry/games-registry";
 import { BfgEncodedString } from "~/models/game-engine/encoders";
 
 
-export type HostApplyMoveFromPlayerResult = {
+export type HostApplyHostActionResult = {
   resultTablePhase: TablePhase;
   gameTable: GameTable;
   gameAction: DbGameTableAction;
 }
 
-export const asHostApplyMoveFromPlayer = async <GameSpecificAction extends z.ZodTypeAny>(
+export const asHostApplyHostAction = async <GameSpecificAction extends z.ZodTypeAny>(
   gameRegistry: IGameRegistry,
   gameTable: GameTable,
   gameActions: DbGameTableAction[],
-  playerId: PlayerProfileId, 
-  playerAction: z.infer<GameSpecificAction>
-): Promise<HostApplyMoveFromPlayerResult> => {
+  hostPlayerId: PlayerProfileId, 
+  hostAction: z.infer<GameSpecificAction>
+): Promise<HostApplyHostActionResult> => {
   
   if (!gameTable) {
     throw new Error("Table not found");
   }
 
-  console.log("INCOMING PLAYER ACTION", playerAction);
+  throw new Error("Not implemented");
+
+
+  console.log("INCOMING HOST ACTION", hostAction);
 
   const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
   const gameEngine = gameMetadata.engine;
@@ -94,11 +97,11 @@ export const asHostApplyMoveFromPlayer = async <GameSpecificAction extends z.Zod
     nextGameStateStr: nextGameStateJsonStr as unknown as BfgEncodedString,
   }
 
-  const retVal: HostApplyMoveFromPlayerResult = {
+  const retVal: HostApplyHostActionResult = {
     resultTablePhase: tablePhase,
     gameTable: nextGameTable,
     gameAction: playerMoveAction,
-  } satisfies HostApplyMoveFromPlayerResult;
+  } satisfies HostApplyHostActionResult;
 
   return retVal;
 }

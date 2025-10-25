@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engines";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Container, Typography, Stack, Box } from "../bfg-ui";
+import { PlayerComponentProps } from "~/models/game-engine/bfg-game-engine-types";
+import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-engine/encoders";
+import { PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
 
 
 interface PlayerGameViewProps {
@@ -13,11 +15,11 @@ interface PlayerGameViewProps {
   gameTable: GameTable;
   gameActions: DbGameTableAction[];
   
-  onPlayerGameAction: (playerAction: any) => void
+  onPlayerGameAction: (playerActionStr: PlayerP2pActionStr) => void
 }
 
 export const PlayerGameView = (props: PlayerGameViewProps) => {
-  const { myPlayerSeat, gameTable, gameActions, onPlayerGameAction } = props;
+  const { gameTable, gameActions, onPlayerGameAction } = props;
 
   const latestAction = gameActions[gameActions.length - 1];
   
@@ -30,34 +32,51 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
   
-  const gameEngine = gameMetadata.processor as BfgGameEngineProcessor<
-    z.infer<typeof gameMetadata.processor["gameStateJsonSchema"]>,
-    z.infer<typeof gameMetadata.processor["gameActionJsonSchema"]>
-  >;
-  const gameRendererFactory = gameEngine.rendererFactory;
-  
-  const gameSpecificState = gameEngine.parseGameSpecificGameStateJson(
-    latestAction.actionOutcomeGameStateJson as any);
-
-  const latestGameSpecificAction = gameEngine.parseGameSpecificActionJson(
-    latestAction.actionJson as any);
-
-  const onPlayerMoveAction = async (gameState: typeof gameSpecificState, gameAction: typeof latestGameSpecificAction) => {
-    console.log("onGameAction", gameState, gameAction);
-
-    const playerMoveJson = gameEngine.createGameSpecificActionJson(gameAction);
-    onPlayerGameAction(playerMoveJson);
+  const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
+  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
+    throw new Error('Game specific state encoder format is not json-zod-object');
   }
 
-  const gameRepresentation = gameRendererFactory.createGameStateCombinationRepresentationAndInputComponent(myPlayerSeat, gameSpecificState, latestGameSpecificAction, onPlayerMoveAction);
+  const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
+  const hostActionEncoder = gameMetadata.hostActionEncoder;
+  if (hostActionEncoder.format !== 'json-zod-object') {
+    throw new Error('Host action encoder format is not json-zod-object');
+  }
 
+  const zodHostActionEncoder = hostActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  const zodHostActionSchema = zodHostActionEncoder.schema as z.ZodTypeAny;
+
+  const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
+  const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+
+  const onPlayerAction = (playerAction: z.infer<typeof zodHostActionSchema>) => {
+    console.log('🎮 PLAYER SENDING ACTION:', playerAction);
+    const encodedPlayerAction = zodHostActionEncoder.encode(playerAction);
+    const encodedPlayerActionStr = encodedPlayerAction as unknown as PlayerP2pActionStr;
+    onPlayerGameAction(encodedPlayerActionStr);
+  }
+
+  const playerGameComponentProps: PlayerComponentProps<
+    z.infer<typeof zodGameSpecificStateSchema>,
+    z.infer<typeof zodHostActionSchema>
+  > = {
+    gameState: gameSpecificState,
+    hostPlayerProfileId: props.myPlayerProfile.id,
+    currentPlayerProfileId: props.myPlayerProfile.id,
+    currentPlayerSeat: props.myPlayerSeat,
+    onPlayerAction,
+  };
+  const playerGameRepresentation = gameMetadata.components.PlayerComponent(playerGameComponentProps);
+
+  
   if (!gameMetadata) {
     return (
-      <Container sx={{ padding: 3 }}>
+      <Container style={{ padding: '24px' }}>
         <Stack spacing={3}>
           <Typography variant="h3">Loading Game Metadata...</Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" color="secondary">
             Loading game metadata...
           </Typography>
         </Stack>
@@ -67,7 +86,7 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
 
   return (
     <Box>
-      {gameRepresentation}
+      {playerGameRepresentation}
     </Box>
   );
 };

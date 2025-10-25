@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
-import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_MOVE_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants"; 
+import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants"; 
 import { GameTable } from "../../models/game-table/game-table";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids"
 import { useGameHosting } from "../../index";
-import { ConnectionEvent, PeerId, PeerIdSchema } from "./p2p-types";
+import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr } from "./p2p-types";
 
 
 export interface IP2pGame {
@@ -21,8 +21,8 @@ export interface IP2pGame {
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
 
-  sendPlayerMove: (move: unknown) => void
-  getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => void
+  txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
+  rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }
@@ -63,8 +63,8 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
 
   const [, getPublicGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
   const [, getPublicGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
-  const [sendPlayerProfile, getPlayerProfile] = room.makeAction<PublicPlayerProfile>(P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY)
-  const [sendPlayerMove, getPlayerMove] = room.makeAction<any>(P2P_GAME_PLAYER_MOVE_DATA_ACTION_KEY)
+  const [txPlayerProfile, rxPlayerProfile] = room.makeAction<PublicPlayerProfile>(P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY)
+  const [txPlayerActionStr, rxPlayerActionStr] = room.makeAction<PlayerP2pActionStr>(P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY)
 
   const connectionStatus = `Connected to ${peerProfiles.size} peers`;
 
@@ -85,7 +85,7 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     
     // Only send player profile if we have one (observers don't send profiles)
     if (myPlayerProfile) {
-      sendPlayerProfile(myPlayerProfile, peerId);
+      txPlayerProfile(myPlayerProfile, peerId);
       setPeerProfiles(prev => {
         const updated = new Map(prev).set(peerId, myPlayerProfile);
         const newCount = updated.size;
@@ -125,7 +125,7 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     setGameActions(publicGameActionsData)
   })
 
-  getPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
+  rxPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
     const peerId = PeerIdSchema.parse(peer);
     setPeerProfiles(prev => new Map(prev).set(peerId, playerProfile))
   })
@@ -157,9 +157,10 @@ export const useP2pGame = (gameTableId: GameTableId, myPlayerProfile: PublicPlay
     peerProfiles,
     otherPlayerProfiles,
     allPlayerProfiles,
-    sendPlayerMove,
-    getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => {
-      getPlayerMove((move: unknown, peer: string) => {
+    
+    txPlayerActionStr,
+    rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => {
+      rxPlayerActionStr((move: PlayerP2pActionStr, peer: string) => {
         const peerId = PeerIdSchema.parse(peer);
         callback(move, peerId);
       });

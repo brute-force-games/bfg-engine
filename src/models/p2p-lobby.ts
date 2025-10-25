@@ -15,7 +15,7 @@ export const InvalidLobbyReasonSchema = z.string().brand("InvalidLobbyReason");
 export type InvalidLobbyReason = z.infer<typeof InvalidLobbyReasonSchema>;
 
 
-export const LobbySchema = z.object({
+export const GameLobbySchema = z.object({
   id: BfgGameLobbyId.idSchema,
   createdAt: z.number(),
   gameHostPlayerProfile: PublicPlayerProfileSchema,
@@ -37,4 +37,4 @@ export const LobbySchema = z.object({
   updatedAt: z.number(),
 });
 
-export type GameLobby = z.infer<typeof LobbySchema>;
+export type GameLobby = z.infer<typeof GameLobbySchema>;

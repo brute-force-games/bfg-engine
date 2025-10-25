@@ -22,7 +22,7 @@ import { BfgGameLobbyId } from '../../../models/types/bfg-branded-ids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
 import { useGameRegistry } from '../../../hooks/games-registry/games-registry';
 import { validateLobby } from '~/ops/game-lobby-ops/lobby-utils';
-import { Navigate } from '@tanstack/react-router';
+import { Navigate, useNavigate } from '@tanstack/react-router';
 
 
 // Form validation schema with enhanced Zod validation
@@ -40,7 +40,11 @@ const createLobbyFormSchema = z.object({
 type CreateLobbyFormData = z.infer<typeof createLobbyFormSchema>;
 
 
-export const NewLobbyComponent = () => {
+interface NewLobbyComponentProps {
+  defaultGameTitle?: string;
+}
+
+export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) => {
   
   const defaultPlayerProfile = useRiskyMyDefaultPlayerProfile();
   
@@ -52,6 +56,7 @@ export const NewLobbyComponent = () => {
 
   const hostedLobbyActions = useHostedLobbyActions();
   const registry = useGameRegistry();
+  const navigate = useNavigate();
   // const gameHosting = useGameHosting();
 
   // Calculate default lobby name (safe even if profile is null)
@@ -61,12 +66,23 @@ export const NewLobbyComponent = () => {
   const form = useForm({
     defaultValues: {
       lobbyName: defaultLobbyName,
+      gameTitle: defaultGameTitle,
       joinLobbyAsPlayer: true,
     } as CreateLobbyFormData,
     onSubmit: async ({ value }: { value: CreateLobbyFormData }) => {
       await handleSubmit(value);
     },
   });
+
+  // Handle game title changes and update URL
+  const handleGameTitleChange = (gameTitle: string) => {
+    navigate({
+      to: '/new-lobby',
+      search: {
+        gameTitle: gameTitle || undefined,
+      },
+    });
+  };
 
   const handleSubmit = async (formData: CreateLobbyFormData) => {
     try {
@@ -241,7 +257,11 @@ export const NewLobbyComponent = () => {
                 <div>
                   <Select
                     value={field.state.value || ''}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      field.handleChange(newValue);
+                      handleGameTitleChange(newValue);
+                    }}
                     onBlur={field.handleBlur}
                     label="Game Title"
                     fullWidth

@@ -24,13 +24,14 @@ export const AllNewLobbyTabIds: readonly NewLobbyTabId[] = [
 ];
 
 
-export type HostedGameTabId = 'game-admin' | 'player-game' | 'hosted-game-details' | 'host-p2p-details';
+export type HostedGameTabId = 'game-admin' | 'player-game' | 'hosted-game-details' | 'host-p2p-details' | 'host-observe';
 
 export const AllHostedGameTabIds: readonly HostedGameTabId[] = [
   'game-admin',
   'player-game',
   'hosted-game-details',
   'host-p2p-details',
+  'host-observe',
 ];
 
 

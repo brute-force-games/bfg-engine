@@ -9,6 +9,7 @@ import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engine
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
 import { GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
+import { GameStateRepresentationProps } from "src/models/game-engine/bfg-game-engines"
 
 
 interface IObserverP2pGameComponentProps {
@@ -62,13 +63,18 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
   
   const latestGameSpecificAction = gameEngine.parseGameSpecificActionJson(
     latestAction.actionJson as any);
-    
+
+
+  const gameRepresentationProps: GameStateRepresentationProps<typeof gameSpecificState, typeof latestGameSpecificAction> = {
+    hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
+    myPlayerProfileId: null,
+    myPlayerSeat: viewPerspective,
+    viewLevel: 'observer-level',
+    gameState: gameSpecificState,
+    mostRecentAction: latestGameSpecificAction,
+  };
   const gameRepresentation = gameEngine.rendererFactory
-    .createGameStateRepresentationComponent(
-      viewPerspective, 
-      gameSpecificState, 
-      latestGameSpecificAction, 
-    );
+    .createGameStateRepresentationComponent(gameRepresentationProps);
 
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>

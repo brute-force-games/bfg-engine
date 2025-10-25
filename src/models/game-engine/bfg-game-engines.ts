@@ -3,6 +3,8 @@ import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
 import { BfgGameSpecificTableAction } from "../../models/game-table/game-table-action";
 import { GameTableActionResult } from "../../models/game-table/table-phase";
 import { GameDefinition } from "../game-box-definition";
+import { PlayerProfileId } from "../types/bfg-branded-ids";
+import { ViewLevel } from "./bfg-game-engine-types";
 
 // Branded types for JSON strings based on their schema
 declare const GameStateJsonBrand: unique symbol;
@@ -17,28 +19,77 @@ export type GameActionJson<GA extends z.ZodTypeAny> = string & {
 };
 
 
+// export type GameAccessRole = 'observer-role' | 'host-role' | 'player-role';
+// export type ViewLevel = 'observer-level' | 'host-level' | 'player-level';
+
+
+export interface GameStateRepresentationProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
+  hostPlayerProfileId: PlayerProfileId;
+  myPlayerProfileId: PlayerProfileId | null;
+  myPlayerSeat: GameTableSeat | null;
+  viewLevel: ViewLevel;
+  gameState: z.infer<GS>;
+  mostRecentAction: z.infer<GA>;
+}
+
+export interface GameStateActionInputProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
+  myPlayerSeat: GameTableSeat;
+  gameState: z.infer<GS>;
+  mostRecentAction: z.infer<GA>;
+  onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void;
+}
+
+export interface GameStateCombinationRepresentationAndInputProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
+  hostPlayerProfileId: PlayerProfileId;
+  myPlayerProfileId: PlayerProfileId | null;
+  myPlayerSeat: GameTableSeat;
+  gameState: z.infer<GS>;
+  mostRecentAction: z.infer<GA>;
+  onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void;
+}
+
+export interface GameHistoryComponentProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
+  playerSeat: GameTableSeat;
+  gameState: z.infer<GS>;
+  gameActions: BfgGameSpecificTableAction<z.infer<GA>>[];
+}
+
+export interface GameStateHostComponentProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
+  hostPlayerProfileId: PlayerProfileId;
+  myPlayerProfileId: PlayerProfileId | null;
+  myPlayerSeat: GameTableSeat | null;
+  gameTable: GameTable;
+  gameState: z.infer<GS>;
+  mostRecentAction: z.infer<GA>;
+  onGameAction: (gameTable: GameTable, gameState: z.infer<GS>, gameAction: z.infer<GA>) => void;
+  onHostAction: (gameTable: GameTable, gameState: z.infer<GS>, hostAction: z.infer<GA>) => void;
+}
+
+
 export type BfgGameEngineRendererFactory<
   GS extends z.ZodTypeAny,
   GA extends z.ZodTypeAny
 > = {
   createGameStateRepresentationComponent: (
-    playerSeat: GameTableSeat | null,
-    gameState: z.infer<GS>,
-    mostRecentAction: z.infer<GA>
+    props: GameStateRepresentationProps<GS, GA>,
+    // gameState: z.infer<GS>,
+    // mostRecentAction: z.infer<GA>
   ) => React.ReactNode;
 
   createGameStateActionInputComponent: (
-    playerSeat: GameTableSeat,
-    gameState: z.infer<GS>,
-    mostRecentAction: z.infer<GA>,
-    onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
+    props: GameStateActionInputProps<GS, GA>,
+    // playerSeat: GameTableSeat,
+    // gameState: z.infer<GS>,
+    // mostRecentAction: z.infer<GA>,
+    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode;
 
   createGameStateCombinationRepresentationAndInputComponent: (
-    playerSeat: GameTableSeat,
-    gameState: z.infer<GS>,
-    mostRecentAction: z.infer<GA>,
-    onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
+    props: GameStateCombinationRepresentationAndInputProps<GS, GA>,
+    // playerSeat: GameTableSeat,
+    // gameState: z.infer<GS>,
+    // mostRecentAction: z.infer<GA>,
+    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode | undefined,
   
   // // narrowGameActionsToValidGameActions: (gameActions: DbGameTableAction[]) => GA[];
@@ -47,16 +98,18 @@ export type BfgGameEngineRendererFactory<
   // ) => BfgGameSpecificTableAction<GA>[];
 
   createGameHistoryComponent?: (
-    playerSeat: GameTableSeat,
-    gameState: z.infer<GS>,
-    gameActions: BfgGameSpecificTableAction<z.infer<GA>>[]
+    props: GameHistoryComponentProps<GS, GA>,
+    // playerSeat: GameTableSeat,
+    // gameState: z.infer<GS>,
+    // gameActions: BfgGameSpecificTableAction<z.infer<GA>>[]
   ) => React.ReactNode;
 
   createGameStateHostComponent: (
-    gameTable: GameTable,
-    gameState: z.infer<GS>,
-    mostRecentAction: z.infer<GA>,
-    onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
+    props: GameStateHostComponentProps<GS, GA>,
+    // gameTable: GameTable,
+    // gameState: z.infer<GS>,
+    // mostRecentAction: z.infer<GA>,
+    // onGameAction: (gameTable: GameTable, gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode;
 }
 

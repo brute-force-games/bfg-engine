@@ -6,6 +6,7 @@ import { matchPlayerToSeat } from '~/ops/game-table-ops/player-seat-utils';
 import { GameTable, GameTableSeat } from '~/models/game-table/game-table';
 import { DbGameTableAction } from '~/models/game-table/game-table-action';
 import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
+import { PlayerP2pActionStr } from './p2p-types';
 
 
 interface IHostedP2pGameWithStoreContext extends IHostedP2pGameWithStoreData {
@@ -15,7 +16,7 @@ interface IHostedP2pGameWithStoreContext extends IHostedP2pGameWithStoreData {
   myPlayerSeat: GameTableSeat;
 
   gameActions: DbGameTableAction[];
-  handlePlayerMove: (move: unknown) => Promise<void>;
+  onSelfPlayerActionStr: (actionStr: PlayerP2pActionStr) => Promise<void>;
 }
 
 interface P2pHostedGameProviderProps {
@@ -41,14 +42,15 @@ export const P2pHostedGameContextProvider = ({
     otherPlayerProfiles,
     allPlayerProfiles,
 
-    sendGameTableData,
-    sendGameActionsData,
-    getPlayerMove,
+    txGameTableData,
+    txGameActionsData,
+    rxPlayerActionStr,
     refreshConnection,
     
     gameTable,
     gameActions: hostedGameActions,
-    handlePlayerMove,
+    onSelfPlayerActionStr,
+    onHostActionStr,
   } = hostedP2pGame;
 
   if (!hostPlayerProfile) {
@@ -98,24 +100,18 @@ export const P2pHostedGameContextProvider = ({
     otherPlayerProfiles,
     allPlayerProfiles,
 
-    sendGameTableData,
-    sendGameActionsData,
-    getPlayerMove,
+    txGameTableData,
+    txGameActionsData,
+    rxPlayerActionStr,
     refreshConnection,
 
     gameTable,
     myHostPlayerProfile: hostPlayerProfile,
     myPlayerSeat,
     gameActions: hostedGameActions ?? [],
-    handlePlayerMove,
 
-    // sendLobbyData: hostedLobby.sendLobbyData,
-    // getPlayerProfile: hostedLobby.getPlayerProfile,
-    // refreshConnection: hostedLobby.refreshConnection,
-
-    // onSelectGameChoice,
-    // onTakeSeat,
-    // onLeaveSeat,
+    onSelfPlayerActionStr,
+    onHostActionStr,
   };
 
   return (

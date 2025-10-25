@@ -1,7 +1,7 @@
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
 import { GameTableId } from '../models/types/bfg-branded-ids';
-import { DbGameTableAction, DbGameTableActionSchema } from '../models/game-table/game-table-action';
+import { DbGameTableAction, DbGameTableActionSchema, validateAsHostDbGameTableAction, validateAsPlayerDbGameTableAction } from '../models/game-table/game-table-action';
 
 /**
  * TinyBase store for game actions data
@@ -59,7 +59,7 @@ const getNextActionIndex = (gameTableId: GameTableId): number => {
  * Add a new game action to the store
  */
 // id: BfgGameTableId.idSchema,
-export const addGameAction = async (
+const addGameAction = async (
   gameTableId: GameTableId, 
   newAction: DbGameTableAction
 ): Promise<{ success: boolean; actionId?: string; error?: string }> => {
@@ -112,6 +112,24 @@ export const addGameAction = async (
     console.error('Error adding game action:', error);
     return { success: false, error: 'Failed to add action' };
   }
+};
+
+export const addGameHostAction = async (
+  gameTableId: GameTableId,
+  action: DbGameTableAction
+): Promise<{ success: boolean; actionId?: string; error?: string }> => {
+  validateAsHostDbGameTableAction(action);
+
+  return await addGameAction(gameTableId, action);
+};
+
+export const addGamePlayerAction = async (
+  gameTableId: GameTableId,
+  action: DbGameTableAction
+): Promise<{ success: boolean; actionId?: string; error?: string }> => {
+  validateAsPlayerDbGameTableAction(action);
+
+  return await addGameAction(gameTableId, action);
 };
 
 /**

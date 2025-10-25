@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { BfgPublicGameImplState } from "../game-engine/bfg-game-engine-types";
 
 
 export const TablePhaseEnumSchema = z.enum([
   "table-phase-lobby",
   "table-phase-lobby-abandoned",
+  "table-phase-game-setup",
   "table-phase-game-in-progress",
   "table-phase-game-complete-with-winners",
   "table-phase-game-complete-with-draw",
@@ -15,9 +17,9 @@ export const TablePhaseEnumSchema = z.enum([
 export type TablePhase = z.infer<typeof TablePhaseEnumSchema>;
 
 
-export type GameTableActionResult<T> = {
+export type GameTableActionResult<GIS extends BfgPublicGameImplState> = {
   tablePhase: TablePhase;
-  gameSpecificState: T;
+  gameSpecificState: GIS;
   gameSpecificStateSummary: string;
 }
 
