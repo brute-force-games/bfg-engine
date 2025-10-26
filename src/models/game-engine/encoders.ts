@@ -59,15 +59,12 @@ export const createJsonZodObjectDataEncoder = <TSchema extends z.ZodTypeAny>(
     schema,
     encode: (data: z.infer<TSchema>) => JSON.stringify(data) as BfgEncodedString,
     decode: (encoded: BfgEncodedString) => {
-      console.log("DECODING ENCODED", encoded);
       const parsedObject = JSON.parse(encoded);
       const parsedZodObject = schema.safeParse(parsedObject);
       if (!parsedZodObject.success) {
         const message = `Invalid JSON data for schema ${schema.description}: ${JSON.stringify(parsedZodObject.error)}`;
         console.error(message);
         return null;
-        // throw new Error(`Invalid JSON data for schema ${schema.toString()}: ${JSON.stringify(parsedZodObject.error)}`);
-
       }
       return parsedZodObject.data as z.infer<TSchema>;
     },

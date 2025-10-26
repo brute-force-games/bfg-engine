@@ -5,7 +5,7 @@ import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
 import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { ConnectionEvent, PeerId } from "./p2p-types";
+import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "./p2p-types";
 
 
 interface IPlayerP2pGame {
@@ -16,12 +16,12 @@ interface IPlayerP2pGame {
   gameActions: DbGameTableAction[];
 
   peerProfiles: Map<PeerId, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   myPlayerSeat: GameTableSeat | undefined;
 
-  sendPlayerMove: (move: unknown) => void
-  getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
+  txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
+  rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }

@@ -1,11 +1,9 @@
-import { z } from "zod";
-import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { getPlayerActionSource } from "./player-seat-utils";
 import { GameTable } from "../../models/game-table/game-table";
 import { TablePhase } from "../../models/game-table/table-phase";
 import { IGameRegistry } from "../../hooks/games-registry/games-registry";
 import { BfgEncodedString } from "~/models/game-engine/encoders";
+import { HostP2pActionStr } from "~/hooks/p2p/p2p-types";
 
 
 export type HostApplyHostActionResult = {
@@ -14,71 +12,50 @@ export type HostApplyHostActionResult = {
   gameAction: DbGameTableAction;
 }
 
-export const asHostApplyHostAction = async <GameSpecificAction extends z.ZodTypeAny>(
+export const asHostApplyHostAction = async (
   gameRegistry: IGameRegistry,
   gameTable: GameTable,
-  gameActions: DbGameTableAction[],
-  hostPlayerId: PlayerProfileId, 
-  hostAction: z.infer<GameSpecificAction>
+  gameActions: DbGameTableAction[], 
+  hostActionStr: HostP2pActionStr
 ): Promise<HostApplyHostActionResult> => {
   
   if (!gameTable) {
     throw new Error("Table not found");
   }
 
-  throw new Error("Not implemented");
-
-
-  console.log("INCOMING HOST ACTION", hostAction);
+  console.log("INCOMING HOST ACTION", hostActionStr);
 
   const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
   const gameEngine = gameMetadata.engine;
-  // const gameProcessor = gameEngine.processor;
   const gameProcessor = gameEngine;
 
-  const playerActionSource = getPlayerActionSource(gameTable, playerId);  
-
   const latestAction = gameActions[gameActions.length - 1];
-
-  // const actionStr = gameMetadata.hostActionEncoder.encode(initialGameSpecificAction.gameSpecificAction);
-  // const initialGameStateJonsStr = latestAction.actionOutcomeGameStateJsonStr;
-  // const currentGameStateJson = JSON.parse(latestAction.nextGameStateStr);
   const currentGameState = gameMetadata.gameSpecificStateEncoder.decode(latestAction.nextGameStateStr);
 
-  // console.log("MAKE MOVE - CURRENT GAME STATE JSON", currentGameStateJson);
   console.log("MAKE MOVE - CURRENT GAME STATE (PARSED)", currentGameState);
 
   if (!currentGameState) {
-    throw new Error("Failed to parse current game state");
+    throw new Error("Host action failed to parse current game state");
   }
 
-  // const currentGameState = currentGameStateResult.data;
+  const hostActionEncoder = gameMetadata.hostActionEncoder;
+  const p2pToBfgEncoded: BfgEncodedString = hostActionStr as unknown as BfgEncodedString;
+  const hostAction = hostActionEncoder.decode(p2pToBfgEncoded);
 
-  // const initialGameStateJson = latestAction.actionOutcomeGameStateJsonStr;
-  // const initialGameState = gameEngine.parseGameSpecificGameStateJson(
-  //   initialGameStateJson as any);
+  if (!hostAction) {
+    throw new Error("Failed to parse host action: " + hostActionStr);
+  }
 
-
-  // if (!gameEngine.applyGameAction) {
-  //   throw new Error("Game engine does not support applyGameAction");
-  // }
-
-  const afterActionResult = await gameProcessor.applyPlayerAction(gameTable, currentGameState, playerAction);
+  const afterActionResult = await gameProcessor.applyHostAction(gameTable, currentGameState, hostAction);
 
   const { tablePhase, gameSpecificStateSummary } = afterActionResult;
 
-  console.log("MAKE MOVE - PLAYER ACTION", playerAction);
+  console.log("MAKE MOVE - HOST ACTION", hostAction);
   console.log("MAKE MOVE - AFTER ACTION RESULT", afterActionResult);
 
-  // const playerActionJson = gameEngine.createGameSpecificActionJson?.(playerAction) ?? playerAction;
-  const playerActionJsonStr = gameMetadata.playerActionEncoder.encode(playerAction);
   const nextGameStateJsonStr = gameMetadata.gameSpecificStateEncoder.encode(afterActionResult.gameSpecificState);
 
-  console.log("MAKE MOVE - playerActionJson", playerActionJsonStr);
-
-  // const actionOutcomeGameState = afterActionResult.gameSpecificState;
-  // const actionOutcomeGameStateJson = gameEngine.createGameSpecificGameStateJson?.(actionOutcomeGameState) ?? actionOutcomeGameState;
-  // console.log("MAKE MOVE - actionOutcomeGameStateJson", actionOutcomeGameStateJson);
+  console.log("MAKE MOVE - hostActionJson", hostActionStr);
 
   const now = Date.now();
 
@@ -91,9 +68,9 @@ export const asHostApplyHostAction = async <GameSpecificAction extends z.ZodType
   const playerMoveAction: DbGameTableAction = {
     gameTableId: gameTable.id,
     createdAt: now,
-    source: playerActionSource,
-    actionType: "game-table-action-player-action",
-    actionStr: playerActionJsonStr as unknown as BfgEncodedString,
+    source: "game-table-action-source-host",
+    actionType: "game-table-action-host-action",
+    actionStr: hostActionStr as unknown as BfgEncodedString,
     nextGameStateStr: nextGameStateJsonStr as unknown as BfgEncodedString,
   }
 

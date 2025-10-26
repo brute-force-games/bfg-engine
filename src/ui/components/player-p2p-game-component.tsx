@@ -4,9 +4,9 @@ import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { PlayerGameView } from "../components/player-game-view"
 import { Container, TabsContainerPanel } from "../bfg-ui"
 import { P2pConnectionComponent } from "./p2p-connection-component"
-import { BfgGameSpecificGameState } from "../../models/game-table/game-table-action"
 import { PlayerGameTabId } from "./bfg-tabs"
 import { PlayerGameDetailsComponent } from "./player-game-details-component"
+import { PlayerP2pActionStr } from "~/hooks/p2p/p2p-types"
 
 
 interface IPlayerP2pGameComponentProps {
@@ -27,25 +27,9 @@ export const PlayerP2pGameComponent = ({
     return <div>Loading P2P Game...</div>;
   }
 
-  const { gameTable, gameActions, myPlayerSeat, sendPlayerMove } = p2pGame;
-
-  console.log("🔍 PlayerP2pGameComponent Debug Info:")
-  console.log("  gameTable:", gameTable)
-  console.log("  gameActions:", gameActions)
-  console.log("  myPlayerSeat:", myPlayerSeat)
-  console.log("  connectionStatus:", p2pGame.connectionStatus)
-  console.log("  peerCount:", p2pGame.peerProfiles.size)
-  console.log("  connectionEvents:", p2pGame.connectionEvents)
+  const { gameTable, gameActions, myPlayerSeat, txPlayerActionStr } = p2pGame;
 
   if (!gameTable || !gameActions) {
-    console.log("🔍 PlayerP2pGameComponent Debug Info:")
-    console.log("  gameTable:", gameTable)
-    console.log("  gameActions:", gameActions)
-    console.log("  myPlayerSeat:", myPlayerSeat)
-    console.log("  connectionStatus:", p2pGame.connectionStatus)
-    console.log("  peerCount:", p2pGame.peerProfiles.size)
-    console.log("  connectionEvents:", p2pGame.connectionEvents)
-    
     return (
       <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
         <TabsContainerPanel<PlayerGameTabId>
@@ -85,7 +69,7 @@ export const PlayerP2pGameComponent = ({
                   connectionStatus={p2pGame.connectionStatus}
                   connectionEvents={p2pGame.connectionEvents}
                   peerProfiles={p2pGame.peerProfiles}
-                  playerProfiles={p2pGame.playerProfiles}
+                  playerProfiles={p2pGame.otherPlayerProfiles}
                   onRefreshConnection={p2pGame.refreshConnection}
                 />
               )
@@ -101,8 +85,8 @@ export const PlayerP2pGameComponent = ({
     return <div>You are not in a seat. Please join a seat to play.</div>;
   }
 
-  const onPlayerGameAction = (move: BfgGameSpecificGameState) => {
-    sendPlayerMove(move);
+  const onPlayerGameAction = (actionStr: PlayerP2pActionStr) => {
+    txPlayerActionStr(actionStr);
   }
 
 
@@ -142,7 +126,7 @@ export const PlayerP2pGameComponent = ({
                 connectionStatus={p2pGame.connectionStatus}
                 connectionEvents={p2pGame.connectionEvents}
                 peerProfiles={p2pGame.peerProfiles}
-                playerProfiles={p2pGame.playerProfiles}
+                playerProfiles={p2pGame.otherPlayerProfiles}
                 onRefreshConnection={p2pGame.refreshConnection}
               />
             )

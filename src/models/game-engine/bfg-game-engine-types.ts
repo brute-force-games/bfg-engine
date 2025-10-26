@@ -149,7 +149,7 @@ export interface GameHostComponentProps<
   actingAsPlayerSeat: GameTableSeat | null
 
   // onPlayerAction: (gameState: GS, playerAction: GPA) => void
-  onHostAction: (gameState: GIS, hostAction: GHA) => void
+  onHostAction: (hostAction: GHA) => void
 }
 
 export interface GameHistoryComponentProps {

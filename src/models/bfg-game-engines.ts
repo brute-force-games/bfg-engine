@@ -17,11 +17,11 @@ import { BfgDataEncoderFormat } from "./game-engine/encoders";
 // > = BfgGameEngineProcessorType<GameStateSchema, GameActionSchema>;
 
 
-export type InitialGameData = {
-  initialGameSpecificState: any;
-  gameStateJson: string;
-  actionJson: string;
-}
+// export type InitialGameData = {
+//   initialGameSpecificState: any;
+//   gameStateJson: string;
+//   actionJson: string;
+// }
 
 // // export const createInitialGameData = (gameRegistry: IGameRegistry, gameTitle: BfgSupportedGameTitle): InitialGameData => {
 // export const createInitialGameData = (

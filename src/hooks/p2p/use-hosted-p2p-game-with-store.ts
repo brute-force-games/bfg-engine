@@ -5,7 +5,7 @@ import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
 import { Room } from "trystero";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants";
-import { ConnectionEvent, HostP2pActionStr, PeerId, PeerIdSchema, PlayerP2pActionStr } from "./p2p-types";
+import { ConnectionEvent, HostP2pActionStr, HostP2pActionStrSchema, PeerId, PeerIdSchema, PlayerP2pActionStr, PlayerP2pActionStrSchema } from "./p2p-types";
 import { useGameRegistry } from "../games-registry/games-registry";
 import { useCallback, useEffect } from "react";
 import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player";
@@ -139,46 +139,50 @@ export const useHostedP2pGameWithStore = (
   })
 
   const handleSelfPlayerActionStr = async (actionStr: PlayerP2pActionStr) => {
-    console.log('🎮 HOST RECEIVED self player action:', actionStr);
-    console.log(" PLAYER ACTION TYPE", typeof actionStr);
+    const validationResult = PlayerP2pActionStrSchema.safeParse(actionStr);
+    if (!validationResult.success) {
+      console.error('❌ Invalid player action received:', actionStr);
+      return;
+    }
+
+    const validatedActionStr = validationResult.data;
+
+    console.log('🎮 HOST RECEIVED self player action:', validatedActionStr);
 
     const playerActionEncoder = gameMetadata.playerActionEncoder;
-    const p2pToBfgEncoded: BfgEncodedString = actionStr as unknown as BfgEncodedString;
+    const p2pToBfgEncoded: BfgEncodedString = validatedActionStr as unknown as BfgEncodedString;
     const validatedAction = playerActionEncoder.decode(p2pToBfgEncoded);
 
     if (!validatedAction) {
-      console.error('❌ Invalid move received:', actionStr);
+      console.error('❌ Invalid move received:', validatedActionStr);
       return;
     }
     
-    const moveResult = await asHostApplyMoveFromPlayer(gameRegistry, hostedGame, gameActions, hostPlayerProfile.id, validatedAction);
+    const moveResult = await asHostApplyMoveFromPlayer(gameRegistry, hostedGame, gameActions, hostPlayerProfile.id, validatedActionStr);
     if (moveResult) {
       const updatedGameTable = moveResult.gameTable;
       const updatedGameAction = moveResult.gameAction;
       updateHostedGame(hostedGame.id, updatedGameTable);
-      // addGameHostAction(hostedGame.id, updatedGameAction);
       addGamePlayerAction(hostedGame.id, updatedGameAction);
     }
   }
 
   const handleHostActionStr = async (hostActionStr: HostP2pActionStr) => {
-    console.log('🎮 HOST RECEIVED host action:', hostActionStr);
-
-    const hostActionEncoder = gameMetadata.hostActionEncoder;
-    const p2pToBfgEncoded: BfgEncodedString = hostActionStr as unknown as BfgEncodedString;
-    const validatedAction = hostActionEncoder.decode(p2pToBfgEncoded);
-
-    if (!validatedAction) {
-      console.error('❌ Invalid host move received:', hostActionStr);
+    const validationResult = HostP2pActionStrSchema.safeParse(hostActionStr);
+    if (!validationResult.success) {
+      console.error('❌ Invalid host action received:', hostActionStr);
       return;
     }
 
-    const moveResult = await asHostApplyHostAction(gameRegistry, hostedGame, gameActions, hostPlayerProfile.id, validatedAction);
+    const validatedHostActionStr = validationResult.data;
+
+    console.log('🎮 HOST RECEIVED host action:', validatedHostActionStr);
+
+    const moveResult = await asHostApplyHostAction(gameRegistry, hostedGame, gameActions, validatedHostActionStr);
     if (moveResult) {
       const updatedGameTable = moveResult.gameTable;
       const updatedGameAction = moveResult.gameAction;
       updateHostedGame(hostedGame.id, updatedGameTable);
-      // addGameHostAction(hostedGame.id, updatedGameAction);
       addGameHostAction(hostedGame.id, updatedGameAction);
     }
   }

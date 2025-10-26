@@ -7,6 +7,7 @@ import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Typography, Stack, Box } from "../bfg-ui";
 import { GameHostComponentProps } from "~/models/game-engine/bfg-game-engine-types";
 import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders";
+import { HostP2pActionStr, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
 
 
 interface HostedGameViewProps {
@@ -19,8 +20,8 @@ interface HostedGameViewProps {
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   
   // onMyPlayerGameAction: (playerAction: any) => void
-  onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: any) => void
-  onHostGameAction: (hostAction: any) => void
+  onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: PlayerP2pActionStr) => void
+  onHostGameAction: (hostAction: HostP2pActionStr) => void
 }
 
 export const HostedGameView = (props: HostedGameViewProps) => {
@@ -36,36 +37,6 @@ export const HostedGameView = (props: HostedGameViewProps) => {
 
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
-  // const gameEngine = gameMetadata.engine;
-  // const gameComponents = gameMetadata.components;
-
-  // const nextGameStateJson = JSON.parse(latestAction.nextGameStateStr);
-  // const gameSpecificState = gameMetadata.gameSpecificStateSchema.parse(nextGameStateJson);
-  // const latestGameSpecificAction = gameMetadata.playerActionSchema.parse(latestAction.actionStr);
-  
-  // const { gameSpecificStateSchema, hostActionSchema } = gameMetadata;
-
-  // const gameEngine = gameMetadata.processor as BfgGameEngineProcessor<
-  //   z.infer<typeof gameMetadata.processor["gameStateJsonSchema"]>,
-  //   z.infer<typeof gameMetadata.processor["gameActionJsonSchema"]>
-  // >;
-  // const gameRendererFactory = gameEngine.rendererFactory;
-
-  // const gameSpecificState = gameEngine.parseGameSpecificGameStateJson(
-  //   latestAction.actionOutcomeGameStateJson as any);
-
-  // const latestGameSpecificAction = gameEngine.parseGameSpecificActionJson(
-  //   latestAction.actionJson as any);
-
-  // Type-safe callback function that works with the specific game engine
-  // const onHostAction = async (gameState: typeof gameSpecificState, hostAction: typeof latestGameSpecificAction) => {
-  //   console.log("onHostPlayerAction", gameState, hostAction);
-  //   // const playerMoveJson = gameEngine.createGameSpecificActionJson(gameAction);
-  //   // onPlayerGameAction(playerMoveJson);
-  //   onHostGameAction(gameState, hostAction);
-  // }
-
-  console.log("gameMetadata", gameMetadata);
 
   const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
   if (gameSpecificStateEncoder.format !== 'json-zod-object') {
@@ -86,6 +57,12 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
   const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
 
+  const onHostAction = (hostAction: z.infer<typeof zodHostActionSchema>) => {
+    const encodedHostAction = zodHostActionEncoder.encode(hostAction);
+    const encodedHostActionStr = encodedHostAction as unknown as HostP2pActionStr;
+    onHostGameAction(encodedHostActionStr);
+  }
+  
   const hostComponentProps: GameHostComponentProps<
     z.infer<typeof zodGameSpecificStateSchema>,
     z.infer<typeof zodHostActionSchema>
@@ -94,33 +71,11 @@ export const HostedGameView = (props: HostedGameViewProps) => {
     hostPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerSeat: props.myPlayerSeat,
-    onHostAction: onHostGameAction,
+    onHostAction,
   };
 
   const hostRepresentation = gameMetadata.components.HostComponent(hostComponentProps);
 
-  // const createHostRepresentationFn = gameRendererFactory.createGameStateHostComponent;
-  // const hostRepresentationProps: GameStateHostComponentProps<typeof gameSpecificState, typeof latestGameSpecificAction> = {
-  //   hostPlayerProfileId: props.myPlayerProfile.id,
-  //   myPlayerProfileId: props.myPlayerProfile.id,
-  //   myPlayerSeat: props.myPlayerSeat,
-  //   gameTable: hostedGame,
-  //   gameState: gameSpecificState,
-  //   mostRecentAction: latestGameSpecificAction,
-  //   onGameAction: onPlayerGameAction,
-  //   onHostAction: onHostAction,
-  // };
-  // const hostRepresentation = createHostRepresentationFn(hostRepresentationProps);
-  
-  
-  // const hostRepresentation = (gameRendererFactory as {
-  //   createGameStateHostComponent: (
-  //     gameTable: GameTable,
-  //     gameState: GameStateType,
-  //     mostRecentAction: GameActionType,
-  //     onGameAction: (gameState: GameStateType, gameAction: GameActionType) => void
-  //   ) => React.ReactNode;
-  // }).createGameStateHostComponent(hostedGame, gameSpecificState, latestGameSpecificAction, onPlayerMoveAction);
 
   return (
     <Stack spacing={2}>

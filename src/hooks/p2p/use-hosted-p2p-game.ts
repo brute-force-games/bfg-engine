@@ -5,7 +5,7 @@ import { GameTable } from "../../models/game-table/game-table";
 import { Room } from "trystero";
 import { DbGameTableAction } from "../../models/game-table/game-table-action";
 import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants";
-import { ConnectionEvent, PeerId } from "./p2p-types";
+import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "./p2p-types";
 
 
 interface IHostedP2pGameData {
@@ -13,12 +13,12 @@ interface IHostedP2pGameData {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
   peerProfiles: Map<PeerId, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   sendGameTableData: (gameTable: GameTable) => void
   sendGameActionsData: (gameActions: DbGameTableAction[]) => void
 
-  getPlayerMove: (callback: (move: unknown, peer: PeerId) => void) => void
+  rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
   
   refreshConnection: () => void
 }
@@ -37,13 +37,14 @@ export const useHostedP2pGame = (
   }
 
   const p2pGame = useP2pGame(gameTable.id, hostPlayerProfile);
-  const { room } = p2pGame;
+  const { room, otherPlayerProfiles } = p2pGame;
 
   const [sendGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
   const [sendGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
 
   const retVal = {
     ...p2pGame,
+    otherPlayerProfiles,
     sendGameTableData,
     sendGameActionsData,
   } satisfies IHostedP2pGameData;
