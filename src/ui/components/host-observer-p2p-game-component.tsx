@@ -111,9 +111,9 @@ export const HostObserverP2pGameComponent = ({ hostedGame, gameActions }: IHostO
     //         icon: <span>👁️</span>,
     //         content: (
               <Box>
-                <Typography variant="h5" style={{ marginBottom: '16px', color: '#666' }}>
+                {/* <Typography variant="h5" style={{ marginBottom: '16px', color: '#666' }}>
                   🔍 Observer View (Read-Only)
-                </Typography>
+                </Typography> */}
                 
                 <Box style={{ marginBottom: '24px' }}>
                   <Select

@@ -5,11 +5,10 @@ import { P2pConnectionComponent } from "./p2p-connection-component"
 import { PlayerGameTabId } from "./bfg-tabs"
 import { useObserverP2pGame } from "../../hooks/p2p/use-observer-p2p-game"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
-import { BfgGameEngineProcessor } from "../../models/game-engine/bfg-game-engines"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
 import { GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
-import { GameStateRepresentationProps } from "src/models/game-engine/bfg-game-engines"
+import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders"
 
 
 interface IObserverP2pGameComponentProps {
@@ -40,14 +39,8 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
     )
   }
 
-  // Render the game using the game engine's renderer
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
-  
-  const gameEngine = gameMetadata.processor as BfgGameEngineProcessor<
-    z.infer<typeof gameMetadata.processor["gameStateJsonSchema"]>,
-    z.infer<typeof gameMetadata.processor["gameActionJsonSchema"]>
-  >;
   
   const latestAction = gameActions[gameActions.length - 1];
   if (!latestAction) {
@@ -57,25 +50,26 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
       </Container>
     );
   }
-  
-  const gameSpecificState = gameEngine.parseGameSpecificGameStateJson(
-    latestAction.actionOutcomeGameStateJson as any);
-  
-  const latestGameSpecificAction = gameEngine.parseGameSpecificActionJson(
-    latestAction.actionJson as any);
 
+  const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
+  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
+    throw new Error('Game specific state encoder format is not json-zod-object');
+  }
 
-  const gameRepresentationProps: GameStateRepresentationProps<typeof gameSpecificState, typeof latestGameSpecificAction> = {
-    hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
-    myPlayerProfileId: null,
-    myPlayerSeat: viewPerspective,
-    viewLevel: 'observer-level',
+  const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
+
+  const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
+  const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+
+  const gameRepresentation = gameMetadata.components.ObserverComponent({
     gameState: gameSpecificState,
-    mostRecentAction: latestGameSpecificAction,
-  };
-  const gameRepresentation = gameEngine.rendererFactory
-    .createGameStateRepresentationComponent(gameRepresentationProps);
+    hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
+    observedPlayerProfileId: null,
+    observedPlayerSeat: viewPerspective,
+  });
 
+  
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
       <TabsContainerPanel
@@ -86,9 +80,9 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
             icon: <span>👁️</span>,
             content: (
               <Box>
-                <Typography variant="h5" style={{ marginBottom: '16px', color: '#666' }}>
+                {/* <Typography variant="h5" style={{ marginBottom: '16px', color: '#666' }}>
                   🔍 Observer View (Read-Only)
-                </Typography>
+                </Typography> */}
                 
                 <Box style={{ marginBottom: '24px' }}>
                   <Select
@@ -161,7 +155,7 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
                 connectionStatus={p2pGame.connectionStatus}
                 connectionEvents={p2pGame.connectionEvents}
                 peerProfiles={p2pGame.peerProfiles}
-                playerProfiles={p2pGame.playerProfiles}
+                playerProfiles={p2pGame.allPlayerProfiles}
                 onRefreshConnection={p2pGame.refreshConnection}
               />
             )

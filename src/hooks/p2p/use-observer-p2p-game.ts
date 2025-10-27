@@ -14,9 +14,9 @@ interface IObserverP2pGame {
   gameActions: DbGameTableAction[];
 
   peerProfiles: Map<PeerId, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
-  getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
+  // getPlayerMove: (callback: (move: unknown, peer: string) => void) => void
   
   refreshConnection: () => void
 }

@@ -1,6 +1,5 @@
 import React from 'react';
-import { classNames } from '../../utils/classNames';
-import styles from './Chip.module.css';
+import './Chip.css';
 
 export interface ChipProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
@@ -22,18 +21,18 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
     className, 
     ...props 
   }, ref) => {
-    const chipClassName = classNames(
-      styles.chip,
-      size === 'small' && styles.small,
-      variant === 'outlined' && styles.outlined,
-      styles[`color-${color}`],
-      clickable && styles.clickable,
+    const chipClassName = [
+      'chip',
+      size === 'small' && 'small',
+      variant === 'outlined' && 'outlined',
+      `color-${color}`,
+      clickable && 'clickable',
       className
-    );
+    ].filter(Boolean).join(' ');
 
     return (
       <Component ref={ref} className={chipClassName} {...props}>
-        <span className={styles.label}>{label}</span>
+        <span className="label">{label}</span>
       </Component>
     );
   }

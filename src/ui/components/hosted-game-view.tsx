@@ -79,7 +79,7 @@ export const HostedGameView = (props: HostedGameViewProps) => {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="body1">BFG Table Phase: {hostedGame.tablePhase}</Typography>
+      {/* <Typography variant="body1">BFG Table Phase: {hostedGame.tablePhase}</Typography> */}
       <Box>
         {hostRepresentation}
       </Box>

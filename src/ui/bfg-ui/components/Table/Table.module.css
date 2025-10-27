@@ -1,0 +1,103 @@
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+.headerRow {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.headerCell {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 500;
+  position: relative;
+  cursor: default;
+}
+
+.headerCell.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.headerCell.sortable:hover {
+  background-color: #eeeeee;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.sortIcon {
+  font-size: 12px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.headerCell.sortable:hover .sortIcon {
+  opacity: 1;
+}
+
+.dataRow {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s;
+}
+
+.dataRow:hover {
+  background-color: #fafafa;
+}
+
+.dataRow:last-child {
+  border-bottom: none;
+}
+
+.dataCell {
+  padding: 12px 16px;
+  vertical-align: top;
+}
+
+.loading,
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* Alignment */
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .headerCell,
+  .dataCell {
+    padding: 8px 12px;
+  }
+  
+  .headerContent {
+    gap: 4px;
+  }
+}

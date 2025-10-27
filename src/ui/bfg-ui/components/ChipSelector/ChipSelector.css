@@ -1,0 +1,58 @@
+.container {
+  width: 100%;
+}
+
+.label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.chipsContainer {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  transition: all 0.2s ease-in-out;
+}
+
+.selectedChip {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+.disabledChip {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--color-primary-main);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.clearButton:hover:not(:disabled) {
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+.clearButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.noCandidates {
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.helperText {
+  margin-top: 4px;
+  line-height: 1.4;
+}

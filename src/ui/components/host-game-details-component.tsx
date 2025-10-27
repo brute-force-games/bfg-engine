@@ -1,6 +1,12 @@
+import { useState } from "react"
+import { useGameRegistry } from "~/hooks/games-registry/games-registry"
 import { GameTable } from "../../models/game-table/game-table"
 import { DbGameTableAction } from "../../models/game-table/game-table-action"
-import { PrettyJsonString } from "../bfg-ui/components/PrettyJson"
+import { PrettyJsonObject } from "../bfg-ui/components/PrettyJsonObject/PrettyJsonObject"
+import { GameActionHistoryComponent } from "./game-action-history-component"
+import { Tabs, Tab, TabPanel } from "../bfg-ui/components/Tabs"
+import { Settings, History, Gamepad } from "../bfg-ui/icons"
+import { Paper, Stack, Typography, Box } from "../bfg-ui"
 
 
 interface IHostedGameDetailsComponentProps {
@@ -12,87 +18,105 @@ export const HostedGameDetailsComponent = ({
   hostedGame,
   gameActions,
 }: IHostedGameDetailsComponentProps) => {
+  const [activeTab, setActiveTab] = useState(0);
 
-  // const gameTableId = hostedGame.id;
-
-  // const [copySuccess, setCopySuccess] = useState(false);
-
-  // const joinLink = createJoinGameUrl(gameTableId);
-  // const fullJoinUrl = `${window.location.origin}${joinLink}`;
-
-  // const copyJoinUrlToClipboard = async () => {
-  //   try {
-  //     await navigator.clipboard.writeText(fullJoinUrl);
-  //     setCopySuccess(true);
-  //     setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
-  //   } catch (err) {
-  //     console.error('Failed to copy: ', err);
-  //   }
-  // };
-
-  const latestGameSpecificStateJson = gameActions.length > 0 ? 
-    gameActions[gameActions.length - 1].actionOutcomeGameStateJson :
+  const latestGameSpecificStateStr = gameActions.length > 0 ? 
+    gameActions[gameActions.length - 1].nextGameStateStr :
     null;
 
-  const latestGameSpecificState = latestGameSpecificStateJson ? 
-    JSON.parse(latestGameSpecificStateJson) :
+  const gameRegistry = useGameRegistry();
+  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+  const latestGameSpecificState = latestGameSpecificStateStr ?
+    gameMetadata.gameSpecificStateEncoder.decode(latestGameSpecificStateStr) :
     null;
 
-  const latestGameSpecificStateString = JSON.stringify(latestGameSpecificState, null, 2);
-  
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
   return (
-    <div>
-      {/* <h1>Host Game Details</h1> */}
+    <Box>
+      <Paper elevation={2}>
+        <Stack direction="column" spacing={0}>
+          <Box style={{ display: 'flex', justifyContent: 'center' }}>
+            <Tabs value={activeTab} onChange={handleTabChange}>
+              <Tab label="Game Details" icon={<Settings />} />
+              <Tab label="Action History" icon={<History />} />
+              <Tab label="Game State JSON" icon={<Gamepad />} />
+            </Tabs>
+          </Box>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Game Details</h2>
-            <div className="space-y-2">
-              <div>
-                <span className="font-medium">Game Title:</span>
-                <span className="ml-2">{hostedGame?.gameTitle}</span>
-              </div>
-              <div>
-                <span className="font-medium">Game ID:</span>
-                <span className="ml-2 font-mono text-sm">{hostedGame?.id}</span>
-              </div>
-              <div>
-                <span className="font-medium">Status:</span>
-                <span className="ml-2">{hostedGame?.currentStatusDescription}</span>
-              </div>
-              <div>
-                <span className="font-medium">Phase:</span>
-                <span className="ml-2">{hostedGame?.tablePhase}</span>
-              </div>
-              <div>
-                <span className="font-medium">Created:</span>
-                <span className="ml-2">{ hostedGame ? new Date(hostedGame.createdAt).toLocaleString() : ''}</span>
-              </div>
-            </div>
-          </div>
+        <TabPanel value={activeTab} index={0}>
+          <Stack direction="column" spacing={4}>
+            <Stack direction="column" spacing={2}>
+              <Box>
+                <Typography variant="body1" component="span" style={{ fontWeight: 500 }}>
+                  Game Title:
+                </Typography>
+                <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
+                  {hostedGame?.gameTitle}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body1" component="span" style={{ fontWeight: 500 }}>
+                  Game ID:
+                </Typography>
+                <Typography variant="body2" component="span" style={{ marginLeft: '8px', fontFamily: 'monospace' }}>
+                  {hostedGame?.id}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body1" component="span" style={{ fontWeight: 500 }}>
+                  Status:
+                </Typography>
+                <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
+                  {hostedGame?.currentStatusDescription}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body1" component="span" style={{ fontWeight: 500 }}>
+                  Phase:
+                </Typography>
+                <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
+                  {hostedGame?.tablePhase}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body1" component="span" style={{ fontWeight: 500 }}>
+                  Created:
+                </Typography>
+                <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
+                  {hostedGame ? new Date(hostedGame.createdAt).toLocaleString() : ''}
+                </Typography>
+              </Box>
+            </Stack>
+            
+            <Box style={{ marginTop: '24px' }}>
+              <Typography variant="h6" gutterBottom>
+                Raw Game Data
+              </Typography>
+              <PrettyJsonObject>
+                {hostedGame}
+              </PrettyJsonObject>
+            </Box>
+          </Stack>
+        </TabPanel>
 
-          <PrettyJsonString
-            jsonString={JSON.stringify(hostedGame, null, 2)}
-          />
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Game Actions</h2>
-            <div className="space-y-3">
-              {gameActions.map((action, index) => (
-                <div key={index}>{action.actionType} [{action.source}] - {action.actionJson}</div>
-              ))}
-            </div>
-          </div>
+        <TabPanel value={activeTab} index={1}>
+          <Box>
+            <GameActionHistoryComponent gameActions={gameActions} />
+          </Box>
+        </TabPanel>
 
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Latest Game Specific State</h2>
-            <PrettyJsonString
-              jsonString={latestGameSpecificStateString}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+        <TabPanel value={activeTab} index={2}>
+          <Box>
+            <PrettyJsonObject>
+              {latestGameSpecificState}
+            </PrettyJsonObject>
+          </Box>
+        </TabPanel>
+        </Stack>
+      </Paper>
+    </Box>
   )
 }
