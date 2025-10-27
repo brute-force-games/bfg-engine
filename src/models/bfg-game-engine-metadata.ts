@@ -35,40 +35,22 @@ export interface IBfgGameEngineProcessor<
 
   createGameStateHostComponent: (
     props: GameStateHostComponentProps<GS, GA>,
-    // gameTable: GameTable,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode,
 
   createGameStateRepresentationComponent: (
     props: GameStateRepresentationProps<GS, GA>,
-    // myPlayerSeat: GameTableSeat,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>
   ) => React.ReactNode,
 
   createGameStateActionInputComponent: (
     props: GameStateActionInputProps<GS, GA>,
-    // myPlayerSeat: GameTableSeat,
-    // gameState: z.infer<GS>, 
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode,
 
   createGameStateCombinationRepresentationAndInputComponent?: (
     props: GameStateCombinationRepresentationAndInputProps<GS, GA>,
-    // myPlayerSeat: GameTableSeat,
-    // gameState: z.infer<GS>, 
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
   ) => React.ReactNode | undefined,
 
   createGameHistoryComponent?: (
     props: GameHistoryComponentProps<GS, GA>,
-    // myPlayerSeat: GameTableSeat,
-    // gameState: z.infer<GS>,
-    // gameActions: BfgGameSpecificTableAction<z.infer<GA>>[]
   ) => React.ReactNode,
 }
 

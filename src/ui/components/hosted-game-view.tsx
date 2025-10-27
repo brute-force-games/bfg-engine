@@ -71,6 +71,7 @@ export const HostedGameView = (props: HostedGameViewProps) => {
     hostPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerSeat: props.myPlayerSeat,
+    latestGameAction: latestAction,
     onHostAction,
   };
 

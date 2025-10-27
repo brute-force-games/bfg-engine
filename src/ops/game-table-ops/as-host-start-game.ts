@@ -57,12 +57,7 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
 
   const newGameTable = createNewGameTableFromLobbyState(lobbyState, newGameTableId);
   
-  // Type-safe game engine access using helper function
-  // const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
-  // const { initialGameSpecificState, gameStateJson, actionJson } = createInitialGameData(gameRegistry, gameTitle, newGameTable, lobbyState);
-
   const metadata = gameRegistry.getGameMetadata(gameTitle);
-  // const gameProcessor = metadata.engine.processor;
   const gameProcessor = metadata.engine;
 
   const initialGameSpecificAction = gameProcessor.createGameSpecificInitialAction(newGameTable, lobbyState);
@@ -70,18 +65,6 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
 
   const actionStr = metadata.hostActionEncoder.encode(initialGameSpecificAction.gameSpecificAction);
   const nextGameStateStr = metadata.gameSpecificStateEncoder.encode(initialGameSpecificState);
-
-  // const gameSpecificSummary = `Game started`;
-
-  // const initialGameState = {
-  //   gameSpecificState: initialGameSpecificState,
-  //   tablePhase: 'table-phase-game-in-progress' as const,
-  //   gameSpecificStateSummary: gameSpecificSummary,
-  // };
-
-  // console.log("HOST STARTING GAME - INITIAL GAME STATE", initialGameState);
-  // console.log("HOST STARTING GAME - GAME STATE JSON", gameStateJson);
-  // console.log("HOST STARTING GAME - ACTION JSON", actionJson);
 
   const addedGameTable = await addHostedGame(newGameTable);
 

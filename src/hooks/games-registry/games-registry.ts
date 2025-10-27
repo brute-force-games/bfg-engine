@@ -4,15 +4,12 @@ import { BfgGameImplHostAction, BfgGameImplPlayerAction, BfgPublicGameImplState 
 
 
 export const GamesRegistry = new Map<BfgSupportedGameTitle, GameDefinition>();
-// export const GamesMetadataRegistry = new Map<BfgSupportedGameTitle, BfgGameEngineMetadata<any, any, any>>();
 export const GamesMetadataRegistry = new Map<BfgSupportedGameTitle, BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>>();
-
 
 
 export interface IGameRegistry {
   getAvailableGameTitles: () => BfgSupportedGameTitle[];
   getGameDefinition: (gameTitle: BfgSupportedGameTitle) => GameDefinition;
-  // getGameMetadata: (gameTitle: BfgSupportedGameTitle) => BfgGameEngineMetadata<any, any, any>;
   getGameMetadata: (gameTitle: BfgSupportedGameTitle) => BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>;
 }
 
@@ -39,8 +36,9 @@ const getGameMetadata = (gameTitle: BfgSupportedGameTitle): BfgGameEngineMetadat
   return metadata;
 }
 
-export const registerGame = (gameTitle: BfgSupportedGameTitle, gameDefinition: GameDefinition, gameMetadata: BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>) => {
-  GamesRegistry.set(gameTitle, gameDefinition);
+export const registerGame = (gameMetadata: BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>) => {
+  const { gameTitle, definition } = gameMetadata;
+  GamesRegistry.set(gameTitle, definition);
   GamesMetadataRegistry.set(gameTitle, gameMetadata);
 }
 
