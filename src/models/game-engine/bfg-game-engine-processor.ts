@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { BfgSupportedGameTitle } from "../game-box-definition";
-import { GameTable } from "../game-table/game-table";
+import { GameTable, GameTableSeat } from "../game-table/game-table";
 import { GameTableActionResult } from "../game-table/table-phase";
 import { BfgAllPublicKnowledgeGameEngineComponents, BfgGameImplHostAction, BfgGameImplPlayerAction, BfgPublicGameImplState } from "./bfg-game-engine-types";
 import { GameLobby } from "../p2p-lobby";
@@ -39,6 +39,8 @@ export interface IBfgAllPublicKnowledgeGameProcessor<
     gameState: GIS,
     hostAction: GHA
   ) => Promise<GameTableActionResult<GIS>>,
+
+  getNextToActPlayers: (gameState: GIS) => GameTableSeat[],
 }
 
 

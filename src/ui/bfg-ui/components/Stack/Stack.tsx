@@ -36,7 +36,7 @@ export const Stack = React.forwardRef<HTMLDivElement, StackProps>(
       styles.stack,
       styles[`direction${direction.charAt(0).toUpperCase()}${direction.slice(1).replace('-', '')}`],
       spacing > 0 && !useFlexGap && styles[`spacing-${spacing}`],
-      divider && styles.divider,
+      divider ? styles.divider : undefined,
       className
     );
 

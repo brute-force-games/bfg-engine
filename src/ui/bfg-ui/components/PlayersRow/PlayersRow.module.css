@@ -1,0 +1,66 @@
+.playersRow {
+  width: 100%;
+  flex: 1;
+  padding: 4px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 8px;
+  color: var(--text-primary, #333);
+}
+
+.playersGrid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.playersGrid > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.gameStatusSummary {
+  text-align: center;
+  padding: 12px;
+  background-color: var(--background-paper, #f5f5f5);
+  border-radius: 8px;
+  border: 1px solid var(--divider, #e0e0e0);
+}
+
+.statusText {
+  color: var(--text-primary, #333);
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .playersGrid {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .playersRow {
+    padding: 8px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .playersGrid {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 1025px) {
+  .playersGrid {
+    justify-content: flex-start;
+    max-width: 100%;
+    margin: 0;
+  }
+}

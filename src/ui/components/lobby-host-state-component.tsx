@@ -110,7 +110,7 @@ export const LobbyHostStateComponent = ({
     '' :
     `[${lobbyState.minNumPlayers} - ${lobbyState.maxNumPlayers} players]`;
 
-  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
+  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}?autoJoin=true`;
 
   if (isGameStarted) {
     return (

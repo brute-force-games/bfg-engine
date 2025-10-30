@@ -1,4 +1,4 @@
-import { usePlayerP2pGame } from "../../hooks/p2p/use-player-p2p-game"
+import { usePlayerP2pGame } from "../../hooks/p2p/game/use-player-p2p-game"
 import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { PlayerGameView } from "../components/player-game-view"
@@ -27,7 +27,7 @@ export const PlayerP2pGameComponent = ({
     return <div>Loading P2P Game...</div>;
   }
 
-  const { gameTable, gameActions, myPlayerSeat, txPlayerActionStr } = p2pGame;
+  const { gameTable, gameActions, peerPlayers, allPlayerProfiles, myPlayerSeat, txPlayerActionStr } = p2pGame;
 
   if (!gameTable || !gameActions) {
     return (
@@ -43,8 +43,8 @@ export const PlayerP2pGameComponent = ({
                   <h3>Loading game content...</h3>
                   <div style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
                     <div>Connection: {p2pGame.connectionStatus}</div>
-                    <div>Peers connected: {p2pGame.peerProfiles.size}</div>
-                    {p2pGame.peerProfiles.size === 0 && (
+                    <div>Peers connected: {p2pGame.peers.length}</div>
+                    {p2pGame.peers.length === 0 && (
                       <div style={{ marginTop: '10px', color: '#d32f2f' }}>
                         ⚠️ No host detected. Make sure someone is running the game host at:<br/>
                         <code>/hosted-games/{gameTableId}</code>
@@ -68,8 +68,10 @@ export const PlayerP2pGameComponent = ({
                 <P2pConnectionComponent
                   connectionStatus={p2pGame.connectionStatus}
                   connectionEvents={p2pGame.connectionEvents}
-                  peerProfiles={p2pGame.peerProfiles}
-                  playerProfiles={p2pGame.otherPlayerProfiles}
+                  peers={p2pGame.peers}
+                  myPeerPlayer={playerProfile}
+                  peerPlayers={p2pGame.peerPlayers}
+                  allPlayerProfiles={allPlayerProfiles}
                   onRefreshConnection={p2pGame.refreshConnection}
                 />
               )
@@ -89,6 +91,9 @@ export const PlayerP2pGameComponent = ({
     txPlayerActionStr(actionStr);
   }
 
+  // const playerProfiles = new Map(otherPlayerProfiles);
+  // const myPlayerPublicProfile = convertPrivateToPublicProfile(playerProfile);
+  // playerProfiles.set(myPlayerPublicProfile.id, myPlayerPublicProfile);
 
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
@@ -103,6 +108,9 @@ export const PlayerP2pGameComponent = ({
                 myPlayerProfile={playerProfile}
                 myPlayerSeat={myPlayerSeat}
                 gameTable={gameTable}
+                peers={p2pGame.peers}
+                peerPlayers={peerPlayers}
+                allPlayerProfiles={p2pGame.allPlayerProfiles}
                 gameActions={gameActions}
                 onPlayerGameAction={onPlayerGameAction}
               />
@@ -125,8 +133,10 @@ export const PlayerP2pGameComponent = ({
               <P2pConnectionComponent
                 connectionStatus={p2pGame.connectionStatus}
                 connectionEvents={p2pGame.connectionEvents}
-                peerProfiles={p2pGame.peerProfiles}
-                playerProfiles={p2pGame.otherPlayerProfiles}
+                peers={p2pGame.peers}
+                myPeerPlayer={playerProfile}
+                peerPlayers={p2pGame.peerPlayers}
+                allPlayerProfiles={allPlayerProfiles}
                 onRefreshConnection={p2pGame.refreshConnection}
               />
             )

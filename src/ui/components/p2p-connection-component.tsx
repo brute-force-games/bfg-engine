@@ -12,14 +12,17 @@ import {
 import { PeerProfilesComponent } from "../../ui/components/peer-profiles-component"
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { PlayerProfileId } from "../../models/types/bfg-branded-ids"
-import { ConnectionEvent } from "../../hooks/p2p/p2p-types"
+import { ConnectionEvent, PeerId, PeerIdSchema } from "../../hooks/p2p/p2p-types"
+import { selfId } from "trystero"
 
 
 interface P2pConnectionComponentProps {
   connectionStatus: string
   connectionEvents?: ConnectionEvent[]
-  peerProfiles: Map<string, PublicPlayerProfile>
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  peers: PeerId[]
+  myPeerPlayer?: PublicPlayerProfile;
+  peerPlayers: Map<PeerId, PublicPlayerProfile>
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   onResendLobbyData?: () => void
   onRefreshConnection?: () => void
 }
@@ -27,8 +30,9 @@ interface P2pConnectionComponentProps {
 export const P2pConnectionComponent = ({
   connectionStatus,
   connectionEvents = [],
-  peerProfiles,
-  playerProfiles,
+  peers,
+  peerPlayers,
+  myPeerPlayer,
   onResendLobbyData,
   onRefreshConnection
 }: P2pConnectionComponentProps) => {
@@ -52,6 +56,9 @@ export const P2pConnectionComponent = ({
       default: return '📡';
     }
   };
+
+  const myPeerId = PeerIdSchema.parse(selfId);
+  console.log("My peer ID:", myPeerId);
 
   return (
     <>
@@ -92,8 +99,10 @@ export const P2pConnectionComponent = ({
       </Typography>
       
       <PeerProfilesComponent
-        peerProfiles={peerProfiles}
-        playerProfiles={playerProfiles}
+        peers={peers}
+        myPeerPlayer={myPeerPlayer}
+        peerPlayers={peerPlayers}
+        myPeerId={myPeerId}
       />
       
       {connectionEvents.length > 0 && (

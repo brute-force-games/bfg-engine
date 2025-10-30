@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { GameLobbyId } from '../../models/types/bfg-branded-ids';
+import { GameLobbyId } from '../../../models/types/bfg-branded-ids';
 import { Container, Paper, Typography } from '~/ui/bfg-ui';
-import { PrivatePlayerProfile } from '~/models/player-profile/private-player-profile';
 import { LobbyOptions } from '~/models/p2p-lobby';
 import { useHostedP2pLobbyWithStore, IHostedP2pLobbyWithStoreData } from './use-hosted-p2p-lobby-with-store';
+import { useRiskyMyDefaultPlayerProfile } from '~/hooks/stores/use-my-player-profiles-store';
 
 
 // interface IHostedP2pLobbyContext extends IHostedP2pLobbyWithStoreData {
@@ -22,7 +22,7 @@ import { useHostedP2pLobbyWithStore, IHostedP2pLobbyWithStoreData } from './use-
 
 interface P2pHostedLobbyProviderProps {
   lobbyId: GameLobbyId;
-  hostPlayerProfile: PrivatePlayerProfile;
+  // hostPlayerProfile: PrivatePlayerProfile;
   children: ReactNode;
 }
 
@@ -30,9 +30,14 @@ const P2pHostedLobbyContext = createContext<IHostedP2pLobbyWithStoreData | null>
 
 export const P2pHostedLobbyContextProvider = ({ 
   lobbyId,
-  hostPlayerProfile,
+  // hostPlayerProfile,
   children 
 }: P2pHostedLobbyProviderProps) => {
+
+  const hostPlayerProfile = useRiskyMyDefaultPlayerProfile();
+  if (!hostPlayerProfile) {
+    throw new Error('Host player profile is required');
+  }
 
   const hostedLobby = useHostedP2pLobbyWithStore(lobbyId, hostPlayerProfile);
   const {
@@ -44,8 +49,6 @@ export const P2pHostedLobbyContextProvider = ({
     onTakeSeat,
     onLeaveSeat,
   } = hostedLobby;
-
-  console.log("dddlobbyState", lobbyState);
 
   if (!hostedLobby) {
     return (
@@ -84,7 +87,8 @@ export const P2pHostedLobbyContextProvider = ({
     connectionStatus: hostedLobby.connectionStatus,
     connectionEvents: hostedLobby.connectionEvents,
 
-    peerProfiles: hostedLobby.peerProfiles,
+    peers: hostedLobby.peers,
+    peerPlayers: hostedLobby.peerPlayers,
     myHostPlayerProfile: hostedLobby.myHostPlayerProfile,
     allPlayerProfiles: hostedLobby.allPlayerProfiles,
 
@@ -92,8 +96,9 @@ export const P2pHostedLobbyContextProvider = ({
       setLobbyOptions(lobbyOptions);
     },
     
-    sendLobbyData: hostedLobby.sendLobbyData,
-    getPlayerProfile: hostedLobby.getPlayerProfile,
+    txLobbyData: hostedLobby.txLobbyData,
+    txPlayerProfile: hostedLobby.txPlayerProfile,
+    rxPlayerProfile: hostedLobby.rxPlayerProfile,
     refreshConnection: hostedLobby.refreshConnection,
 
     onSelectGameChoice,

@@ -1,0 +1,143 @@
+.hrefLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+
+.hrefLink:focus {
+  outline: 2px solid var(--primary-color, #1976d2);
+  outline-offset: 2px;
+}
+
+.hrefLink:hover {
+  text-decoration: underline;
+}
+
+/* Variants */
+.text {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.outlined {
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: 8px 16px;
+}
+
+.contained {
+  background: currentColor;
+  border: none;
+  padding: 8px 16px;
+}
+
+/* Colors */
+.primary {
+  color: var(--primary-color, #1976d2);
+}
+
+.secondary {
+  color: var(--secondary-color, #dc004e);
+}
+
+.error {
+  color: var(--error-color, #d32f2f);
+}
+
+.success {
+  color: var(--success-color, #2e7d32);
+}
+
+.warning {
+  color: var(--warning-color, #ed6c02);
+}
+
+.info {
+  color: var(--info-color, #0288d1);
+}
+
+/* Contained variant color overrides */
+.contained.primary {
+  background-color: var(--primary-color, #1976d2);
+  color: white;
+}
+
+.contained.secondary {
+  background-color: var(--secondary-color, #dc004e);
+  color: white;
+}
+
+.contained.error {
+  background-color: var(--error-color, #d32f2f);
+  color: white;
+}
+
+.contained.success {
+  background-color: var(--success-color, #2e7d32);
+  color: white;
+}
+
+.contained.warning {
+  background-color: var(--warning-color, #ed6c02);
+  color: white;
+}
+
+.contained.info {
+  background-color: var(--info-color, #0288d1);
+  color: white;
+}
+
+/* Sizes */
+.small {
+  font-size: 0.875rem;
+  padding: 4px 8px;
+}
+
+.medium {
+  font-size: 1rem;
+  padding: 8px 16px;
+}
+
+.large {
+  font-size: 1.125rem;
+  padding: 12px 24px;
+}
+
+/* Full width */
+.fullWidth {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Icon spacing */
+.startIcon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.endIcon {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+/* Hover effects for contained variant */
+.contained:hover {
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+/* Hover effects for outlined variant */
+.outlined:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+}

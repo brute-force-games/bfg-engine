@@ -1,11 +1,11 @@
-import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile";
-import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
 import { useP2pGame } from "./use-p2p-game";
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
-import { matchPlayerToSeat } from "../../ops/game-table-ops/player-seat-utils";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "./p2p-types";
+import { DbGameTableAction } from "../../../models/game-table/game-table-action";
+import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
+import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";
+import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "../p2p-types";
 
 
 interface IPlayerP2pGame {
@@ -15,8 +15,10 @@ interface IPlayerP2pGame {
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
 
-  peerProfiles: Map<PeerId, PublicPlayerProfile>
-  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  peers: PeerId[];
+  peerPlayers: Map<PeerId, PublicPlayerProfile>
+  // otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   myPlayerSeat: GameTableSeat | undefined;
 

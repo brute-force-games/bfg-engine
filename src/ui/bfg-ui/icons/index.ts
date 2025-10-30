@@ -1,4 +1,5 @@
 export { ArrowRight } from './ArrowRight';
+export { ArrowLeft } from './ArrowLeft';
 export { CheckCircle } from './CheckCircle';
 export { Clear } from './Clear';
 export { ContentCopy } from './ContentCopy';

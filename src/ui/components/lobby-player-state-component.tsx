@@ -57,7 +57,7 @@ export const LobbyPlayerStateComponent = ({
   const gameHosting = useGameHosting();
   const baseUrl = gameHosting.getBaseUrl();
   
-  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}`;
+  const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}?autoJoin=true`;
 
   const gameLink = lobbyState.gameLink;
 

@@ -1,0 +1,111 @@
+.playerBox {
+  width: 100%;
+  padding: 2px 4px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-height: 60px;
+}
+
+.playerBox:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.currentPlayer {
+  border-color: var(--primary-color, #1976d2);
+  background-color: rgba(25, 118, 210, 0.05);
+  box-shadow: 0 0 0 1px var(--primary-color, #1976d2);
+}
+
+.gameOver {
+  opacity: 0.7;
+}
+
+.playerAvatar {
+  width: 48px;
+  height: 48px;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.myPlayerAvatar {
+  outline: 3px solid rgba(0, 0, 0, 0.85);
+  outline-offset: -3px;
+  border-radius: 50%;
+}
+
+.avatarContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.turnTriangleSlot {
+  height: 48px; /* match avatar height so it always has height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* margin-left: 6px; */
+  flex: 1 1 auto; /* take remaining width */
+}
+
+.turnTriangleIcon {
+  width: 10px;
+  height: 14px;
+  color: var(--success-color, #2e7d32);
+  display: block;
+  pointer-events: none;
+}
+
+.playerName {
+  font-weight: 600;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.playerSymbol {
+  font-weight: bold;
+  color: var(--primary-color, #1976d2);
+  text-align: center;
+  min-width: 40px;
+}
+
+.turnIndicator {
+  color: var(--success-color, #2e7d32);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.gameStatus {
+  font-weight: 600;
+  text-align: center;
+}
+
+.gameStatus:contains('Winner!') {
+  color: var(--success-color, #2e7d32);
+}
+
+.gameStatus:contains('Lost') {
+  color: var(--error-color, #d32f2f);
+}
+
+.gameStatus:contains('Draw') {
+  color: var(--warning-color, #ed6c02);
+}
+
+.moveCount {
+  color: var(--text-secondary, #666);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-left: 8px;
+}

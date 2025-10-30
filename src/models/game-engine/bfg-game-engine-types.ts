@@ -1,6 +1,6 @@
 import z from "zod";
-import { PlayerProfileId } from "~/index";
-import { GameTableSeat } from "../game-table/game-table";
+import { PlayerProfileId, PublicPlayerProfile } from "~/index";
+import { GameTable, GameTableSeat } from "../game-table/game-table";
 import { DbGameTableAction } from "../game-table/game-table-action";
 
 
@@ -55,6 +55,9 @@ export type ViewLevel = 'observer-level' | 'host-level' | 'player-level';
 
 
 export interface ObserverComponentProps<GIS extends BfgPublicGameImplState> {
+  gameTable: GameTable;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+
   gameState: GIS
   hostPlayerProfileId: PlayerProfileId
   
@@ -69,6 +72,9 @@ export interface PlayerComponentProps<
   GIS extends BfgPlayerGameImplState,
   GA extends BfgGameImplPlayerAction
 > {
+  gameTable: GameTable;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+
   gameState: GIS
   hostPlayerProfileId: PlayerProfileId
 
@@ -84,6 +90,9 @@ export interface GameHostComponentProps<
   GIS extends BfgPrivateGameImplState,
   GHA extends BfgGameImplHostAction
 > {
+  gameTable: GameTable;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+
   gameState: GIS
   hostPlayerProfileId: PlayerProfileId
 

@@ -3,7 +3,7 @@ import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { Container, TabsContainerPanel, Box, Typography, Select, Option } from "../bfg-ui"
 import { P2pConnectionComponent } from "./p2p-connection-component"
 import { PlayerGameTabId } from "./bfg-tabs"
-import { useObserverP2pGame } from "../../hooks/p2p/use-observer-p2p-game"
+import { useObserverP2pGame } from "../../hooks/p2p/game/use-observer-p2p-game"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
@@ -64,6 +64,9 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
 
   const gameRepresentation = gameMetadata.components.ObserverComponent({
     gameState: gameSpecificState,
+    gameTable: gameTable,
+    allPlayerProfiles: p2pGame.allPlayerProfiles,
+    latestGameAction: latestAction,
     hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
     observedPlayerProfileId: null,
     observedPlayerSeat: viewPerspective,
@@ -154,8 +157,9 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
               <P2pConnectionComponent
                 connectionStatus={p2pGame.connectionStatus}
                 connectionEvents={p2pGame.connectionEvents}
-                peerProfiles={p2pGame.peerProfiles}
-                playerProfiles={p2pGame.allPlayerProfiles}
+                peers={p2pGame.peers}
+                peerPlayers={p2pGame.peerPlayers}
+                allPlayerProfiles={p2pGame.allPlayerProfiles}
                 onRefreshConnection={p2pGame.refreshConnection}
               />
             )

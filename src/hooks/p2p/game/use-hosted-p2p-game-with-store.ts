@@ -1,18 +1,18 @@
-import { GameTableId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { useP2pGame } from "./use-p2p-game";
-import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
+import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
+import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { IP2pGameRoomEventHandlers, useP2pGame } from "./use-p2p-game";
+import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
 import { Room } from "trystero";
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../ui/components/constants";
-import { ConnectionEvent, HostP2pActionStr, HostP2pActionStrSchema, PeerId, PeerIdSchema, PlayerP2pActionStr, PlayerP2pActionStrSchema } from "./p2p-types";
-import { useGameRegistry } from "../games-registry/games-registry";
+import { DbGameTableAction } from "../../../models/game-table/game-table-action";
+import { P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../../ui/components/constants";
+import { ConnectionEvent, HostP2pActionStr, HostP2pActionStrSchema, PeerId, PeerIdSchema, PlayerP2pActionStr, PlayerP2pActionStrSchema } from "../p2p-types";
+import { useGameRegistry } from "../../games-registry/games-registry";
 import { useCallback, useEffect } from "react";
 import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player";
 import { matchPlayerToSeat } from "~/ops/game-table-ops/player-seat-utils";
 import { updateHostedGame } from "~/tb-store/hosted-games-store";
-import { useGameActions } from "../stores/use-game-actions-store";
-import { useHostedGame } from "../stores/use-hosted-games-store";
+import { useGameActions } from "../../stores/use-game-actions-store";
+import { useHostedGame } from "../../stores/use-hosted-games-store";
 import { addGameHostAction, addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
 import { BfgEncodedString } from "~/models/game-engine/encoders";
 import { asHostApplyHostAction } from "~/ops/game-table-ops/as-host-apply-host-action";
@@ -22,10 +22,12 @@ export interface IHostedP2pGameWithStoreData {
   room: Room
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
-  peerProfiles: Map<PeerId, PublicPlayerProfile>
+  // peerProfiles: Map<PeerId, PublicPlayerProfile>
+  peers: PeerId[]
+  peerPlayers: Map<PeerId, PublicPlayerProfile>
   
   myHostPlayerProfile: PublicPlayerProfile | null
-  otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  // otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   txGameTableData: (gameTable: GameTable) => void
@@ -48,8 +50,15 @@ export const useHostedP2pGameWithStore = (
   hostPlayerProfile: PublicPlayerProfile | null,
 ): IHostedP2pGameWithStoreData => {
 
+  const roomEventHandlers: IP2pGameRoomEventHandlers = {
+    onPeerJoin: (_peer: PeerId) => {
+      // console.log('Peer joined:', peer);
+      doSendGameData();
+    },
+  }
+
   const gameTable = useHostedGame(gameTableId);
-  const p2pGame = useP2pGame(gameTableId, hostPlayerProfile);
+  const p2pGame = useP2pGame(gameTableId, hostPlayerProfile, roomEventHandlers);
 
   if (!gameTable) {
     throw new Error('Game table is required');
@@ -134,9 +143,9 @@ export const useHostedP2pGameWithStore = (
   }, [doSendGameData])
 
   // Handle peer connections
-  room.onPeerJoin((_peer: string) => {
-    doSendGameData();
-  })
+  // room.onPeerJoin((_peer: string) => {
+  //   doSendGameData();
+  // })
 
   const handleSelfPlayerActionStr = async (actionStr: PlayerP2pActionStr) => {
     const validationResult = PlayerP2pActionStrSchema.safeParse(actionStr);

@@ -6,13 +6,17 @@ import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Container, Typography, Stack, Box } from "../bfg-ui";
 import { PlayerComponentProps } from "~/models/game-engine/bfg-game-engine-types";
 import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-engine/encoders";
-import { PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
+import { PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
+import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
 
 
 interface PlayerGameViewProps {
   myPlayerSeat: GameTableSeat;
   myPlayerProfile: PublicPlayerProfile;
   gameTable: GameTable;
+  peers: PeerId[];
+  peerPlayers: Map<PeerId, PublicPlayerProfile>;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   gameActions: DbGameTableAction[];
   
   onPlayerGameAction: (playerActionStr: PlayerP2pActionStr) => void
@@ -62,10 +66,13 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
     z.infer<typeof zodGameSpecificStateSchema>,
     z.infer<typeof zodHostActionSchema>
   > = {
+    gameTable: props.gameTable,
+    allPlayerProfiles: props.allPlayerProfiles,
     gameState: gameSpecificState,
     hostPlayerProfileId: props.myPlayerProfile.id,
     currentPlayerProfileId: props.myPlayerProfile.id,
     currentPlayerSeat: props.myPlayerSeat,
+    latestGameAction: latestAction,
     onPlayerAction,
   };
   const playerGameRepresentation = gameMetadata.components.PlayerComponent(playerGameComponentProps);
@@ -86,6 +93,25 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
 
   return (
     <Box>
+      {/* <Typography variant="body1">Peers: {props.peers.length}
+        {props.peers.map((peerId) => (
+          <Typography variant="body1" key={peerId}>{peerId}</Typography>
+        ))}
+      </Typography>
+      <Typography variant="body1">Peer players: {props.peerPlayers.size}
+        {props.peers.map((peerId) => (
+          <Typography variant="body1" key={peerId}>{peerId} [{props.peerPlayers.get(peerId)?.handle || 'unknown'}]</Typography>
+        ))}
+      </Typography>
+      <Typography variant="body1">All player profiles: {props.allPlayerProfiles.size}</Typography>
+      {Array.from(props.allPlayerProfiles.values()).map((profile) => (
+          <Typography variant="body1" key={profile.id}>{profile.id}: {profile.handle}</Typography>
+        ))} */}
+
+      {/* {Array.from(props.allPlayerProfiles.values()).map((profile) => (
+        <Typography variant="body1" key={profile.id}>{profile.id}: {profile.handle}</Typography>
+      ))} */}
+
       {playerGameRepresentation}
     </Box>
   );

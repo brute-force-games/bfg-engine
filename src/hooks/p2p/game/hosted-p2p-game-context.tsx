@@ -1,12 +1,12 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { GameTableId } from '../../models/types/bfg-branded-ids';
+import { GameTableId } from '~/models/types/bfg-branded-ids';
 import { PrivatePlayerProfile } from '~/models/player-profile/private-player-profile';
 import { IHostedP2pGameWithStoreData, useHostedP2pGameWithStore } from './use-hosted-p2p-game-with-store';
 import { matchPlayerToSeat } from '~/ops/game-table-ops/player-seat-utils';
 import { GameTable, GameTableSeat } from '~/models/game-table/game-table';
 import { DbGameTableAction } from '~/models/game-table/game-table-action';
 import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
-import { PlayerP2pActionStr } from './p2p-types';
+import { PlayerP2pActionStr } from '../p2p-types';
 
 
 interface IHostedP2pGameWithStoreContext extends IHostedP2pGameWithStoreData {
@@ -38,8 +38,9 @@ export const P2pHostedGameContextProvider = ({
     room,
     connectionStatus,
     connectionEvents,
-    peerProfiles,
-    otherPlayerProfiles,
+    peers,
+    peerPlayers,
+    // otherPlayerProfiles,
     allPlayerProfiles,
 
     txGameTableData,
@@ -96,8 +97,9 @@ export const P2pHostedGameContextProvider = ({
     room,
     connectionStatus,
     connectionEvents,
-    peerProfiles,
-    otherPlayerProfiles,
+    
+    peers,
+    peerPlayers,
     allPlayerProfiles,
 
     txGameTableData,

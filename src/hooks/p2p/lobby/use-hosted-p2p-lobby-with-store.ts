@@ -1,15 +1,15 @@
-import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
-import { useP2pLobby } from "./use-p2p-lobby";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../models/p2p-details";
-import { P2P_LOBBY_DETAILS_ACTION_KEY } from "../../ui/components/constants";
+import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
+import { IP2pLobbyRoomEventHandlers, useP2pLobby } from "./use-p2p-lobby";
+import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";
+import { P2P_LOBBY_DETAILS_ACTION_KEY } from "../../../ui/components/constants";
 import { IP2pLobby } from "./use-p2p-lobby";
-import { ConnectionEvent, PeerId, PeerIdSchema } from "./p2p-types";
-import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile";
-import { BfgSupportedGameTitle } from "../../models/game-box-definition";
-import { IHostedLobbyActions, useHostedLobby, useHostedLobbyActions } from "../stores/use-hosted-lobbies-store";
-import { GameLobby, LobbyOptions } from "../../models/p2p-lobby";
-import { useGameRegistry } from "../games-registry/games-registry";
+import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
+import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { BfgSupportedGameTitle } from "../../../models/game-box-definition";
+import { IHostedLobbyActions, useHostedLobby, useHostedLobbyActions } from "../../stores/use-hosted-lobbies-store";
+import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby";
+import { useGameRegistry } from "../../games-registry/games-registry";
 import { useCallback, useEffect, useState } from "react";
 import { playerSetGameChoice } from "~/ops/game-lobby-ops/player-set-game-choice";
 import { playerTakeSeat } from "~/ops/game-lobby-ops/player-take-seat";
@@ -24,12 +24,14 @@ export interface IHostedP2pLobbyWithStoreData {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peerProfiles: Map<PeerId, PublicPlayerProfile>
+  peers: PeerId[]
+  peerPlayers: Map<PeerId, PublicPlayerProfile>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   myHostPlayerProfile: PublicPlayerProfile
 
-  sendLobbyData: (lobbyData: HostP2pLobbyDetails) => void
-  getPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => void
+  txLobbyData: (lobbyData: HostP2pLobbyDetails) => void
+  txPlayerProfile: (playerProfile: PublicPlayerProfile) => void
+  rxPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => void
   refreshConnection: () => void
 
   lobbyState: GameLobby | null;
@@ -46,7 +48,14 @@ export interface IHostedP2pLobbyWithStoreData {
 
 export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfile: PrivatePlayerProfile): IHostedP2pLobbyWithStoreData => {
 
-  const p2pLobby = useP2pLobby(lobbyId, hostPlayerProfile);
+  const roomEventHandlers: IP2pLobbyRoomEventHandlers = {
+    onPeerJoin: (peer: PeerId) => {
+      console.log('Peer joined:', peer);
+      doSendLobbyData(peer);
+    },
+  }
+
+  const p2pLobby = useP2pLobby(lobbyId, hostPlayerProfile, roomEventHandlers);
   const lobbyState = useHostedLobby(lobbyId);
   const lobbyActions = useHostedLobbyActions();
   const gameRegistry = useGameRegistry();
@@ -61,17 +70,19 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
 
   const {
     room,
-    peerProfiles,
-    otherPlayerProfiles,
-    getPlayerProfile,
-    getPlayerMove,
+    peers,
+    peerPlayers,
+    allPlayerProfiles,
+    txPlayerProfile,
+    rxPlayerProfile,
+    rxPlayerMove,
     connectionEvents,
     refreshConnection
   } = p2pLobby;
   const { updateLobby } = lobbyActions;
 
-  const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(otherPlayerProfiles);
-  allPlayerProfiles.set(hostPlayerProfile.id, hostPlayerProfile);
+  // const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(otherPlayerProfiles);
+  // allPlayerProfiles.set(hostPlayerProfile.id, hostPlayerProfile);
 
   const applyPlayerMove = async (move: PlayerP2pLobbyMove, playerId: PlayerProfileId) => {
     console.log('applyPlayerMove', move, playerId);
@@ -127,15 +138,15 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
   }
 
 
-  // Handle peer connections
-  room.onPeerJoin((peer: string) => {
-    const peerId = PeerIdSchema.parse(peer);
-    console.log('Peer joined:', peerId)
+  // // Handle peer connections
+  // room.onPeerJoin((peer: string) => {
+  //   const peerId = PeerIdSchema.parse(peer);
+  //   console.log('Peer joined:', peerId)
 
-    doSendLobbyData(peerId);
-  })
+  //   doSendLobbyData(peerId);
+  // })
 
-  const [sendLobbyData] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
+  const [txLobbyData] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
 
   const doSendLobbyData = useCallback((peerId: PeerId) => {
     if (lobbyState) {
@@ -146,11 +157,11 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
       }
 
       console.log('sending lobby data', lobbyData);
-      sendLobbyData(lobbyData, peerId);
+      txLobbyData(lobbyData, peerId);
     } else {
       console.log('no lobby details to send');
     }
-  }, [hostPlayerProfile, lobbyOptions, lobbyState, sendLobbyData]);
+  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyData]);
 
   const broadcastLobbyData = useCallback(() => {
     if (lobbyState) {
@@ -159,16 +170,16 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
         lobbyOptions: lobbyOptions,
         lobbyState: lobbyState,
       }
-      sendLobbyData(lobbyData);
+      txLobbyData(lobbyData);
     } else {
       console.log('no lobby details to send');
     }
-  }, [hostPlayerProfile, lobbyOptions, lobbyState, sendLobbyData]);
+  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyData]);
 
 
-  getPlayerMove(async (move: PlayerP2pLobbyMove, peer: string) => {
+  rxPlayerMove(async (move: PlayerP2pLobbyMove, peer: string) => {
     const peerId = PeerIdSchema.parse(peer);
-    const playerProfileId = peerProfiles.get(peerId)?.id;
+    const playerProfileId = peerPlayers.get(peerId)?.id;
     if (!playerProfileId) {
       console.error('Player profile ID not found for peer:', peer);
       return;
@@ -184,7 +195,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
 
   useEffect(() => {
     if (lobbyState) {
-      sendLobbyData({
+      txLobbyData({
         hostPlayerProfile: hostPlayerProfile,
         lobbyState: lobbyState,
         lobbyOptions: lobbyOptions,
@@ -197,17 +208,14 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
     lobbyDetails: p2pLobby.lobbyDetails,
     connectionStatus: p2pLobby.connectionStatus,
     connectionEvents,
-    peerProfiles,
+    peers,
+    peerPlayers,
     allPlayerProfiles,
     myHostPlayerProfile: hostPlayerProfile,
-    
-    sendLobbyData,
-    getPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => {
-      getPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
-        const peerId = PeerIdSchema.parse(peer);
-        callback(playerProfile, peerId);
-      });
-    },
+
+    txLobbyData,
+    txPlayerProfile,
+    rxPlayerProfile,
     refreshConnection,
 
     lobbyState,

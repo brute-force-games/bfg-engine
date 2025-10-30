@@ -7,7 +7,7 @@ import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Typography, Stack, Box } from "../bfg-ui";
 import { GameHostComponentProps } from "~/models/game-engine/bfg-game-engine-types";
 import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders";
-import { HostP2pActionStr, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
+import { HostP2pActionStr, PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
 
 
 interface HostedGameViewProps {
@@ -16,10 +16,10 @@ interface HostedGameViewProps {
   hostedGame: GameTable;
   gameActions: DbGameTableAction[];
 
-  peerProfiles: Map<string, PublicPlayerProfile>;
-  playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+  peers: PeerId[];
+  peerPlayers: Map<PeerId, PublicPlayerProfile>;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   
-  // onMyPlayerGameAction: (playerAction: any) => void
   onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: PlayerP2pActionStr) => void
   onHostGameAction: (hostAction: HostP2pActionStr) => void
 }
@@ -68,6 +68,8 @@ export const HostedGameView = (props: HostedGameViewProps) => {
     z.infer<typeof zodHostActionSchema>
   > = {
     gameState: gameSpecificState,
+    gameTable: hostedGame,
+    allPlayerProfiles: props.allPlayerProfiles,
     hostPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerProfileId: props.myPlayerProfile.id,
     actingAsPlayerSeat: props.myPlayerSeat,
@@ -81,6 +83,12 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   return (
     <Stack spacing={2}>
       {/* <Typography variant="body1">BFG Table Phase: {hostedGame.tablePhase}</Typography> */}
+      {/* <Typography variant="body1">Peers: {props.peers.length}</Typography>
+      <Typography variant="body1">Peer players: {props.peerPlayers.size}</Typography>
+      <Typography variant="body1">All player profiles: {props.allPlayerProfiles.size}</Typography>
+      {Array.from(props.allPlayerProfiles.values()).map((profile) => (
+        <Typography variant="body1" key={profile.id}>{profile.id}: {profile.handle}</Typography>
+      ))} */}
       <Box>
         {hostRepresentation}
       </Box>

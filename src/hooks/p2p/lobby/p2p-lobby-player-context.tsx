@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { GameLobbyId, PlayerProfileId } from '../../models/types/bfg-branded-ids';
+import { GameLobbyId, PlayerProfileId } from '../../../models/types/bfg-branded-ids';
 import { useP2pLobby, IP2pLobby } from './use-p2p-lobby';
-import { PrivatePlayerProfile } from '~/models/player-profile/private-player-profile';
 import { Container, Paper, Typography } from '~/ui/bfg-ui';
 import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
+import { useRiskyMyDefaultPlayerProfile } from '~/hooks/stores/use-my-player-profiles-store';
 
 
 export interface IP2pLobbyPlayerContext extends Omit<IP2pLobby, 'room'> {
@@ -13,7 +13,7 @@ export interface IP2pLobbyPlayerContext extends Omit<IP2pLobby, 'room'> {
 
 interface P2pLobbyPlayerProviderProps {
   lobbyId: GameLobbyId;
-  myPlayerProfile: PrivatePlayerProfile;
+  // myPlayerProfile: PrivatePlayerProfile;
   children: ReactNode;
 }
 
@@ -21,9 +21,14 @@ const P2pLobbyPlayerContext = createContext<IP2pLobbyPlayerContext | null>(null)
 
 export const P2pLobbyPlayerContextProvider = ({ 
   lobbyId, 
-  myPlayerProfile, 
+  // myPlayerProfile, 
   children 
 }: P2pLobbyPlayerProviderProps) => {
+
+  const myPlayerProfile = useRiskyMyDefaultPlayerProfile();
+  if (!myPlayerProfile) {
+    throw new Error('My player profile is required');
+  }
 
   const lobby = useP2pLobby(lobbyId, myPlayerProfile);
 
@@ -44,16 +49,16 @@ export const P2pLobbyPlayerContextProvider = ({
 
   const { room, ...lobbyWithoutRoom } = lobby;
 
-  const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
-    [
-      ...lobby.otherPlayerProfiles.entries(),
-      [myPlayerProfile.id, myPlayerProfile]
-    ]);
+  // const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(
+  //   [
+  //     ...lobby.otherPlayerProfiles.entries(),
+  //     [myPlayerProfile.id, myPlayerProfile]
+  //   ]);
   
   const context: IP2pLobbyPlayerContext = {
     ...lobbyWithoutRoom,
     myPlayerProfile,
-    allPlayerProfiles,
+    // allPlayerProfiles,
   };
 
   return (
