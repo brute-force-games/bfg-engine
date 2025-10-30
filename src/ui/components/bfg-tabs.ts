@@ -35,10 +35,11 @@ export const AllHostedGameTabIds: readonly HostedGameTabId[] = [
 ];
 
 
-export type PlayerGameTabId = 'player-game' | 'player-game-details' | 'player-p2p-game-details';
+// export type PlayerGameTabId = 'player-game' | 'player-game-details' | 'player-p2p-game-details';
+export type PlayerGameTabId = 'player-game' | 'player-game-details';
 
 export const AllPlayerGameTabIds: readonly PlayerGameTabId[] = [
   'player-game',
   'player-game-details',
-  'player-p2p-game-details',
+  // 'player-p2p-game-details',
 ];

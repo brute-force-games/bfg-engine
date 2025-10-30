@@ -1,12 +1,12 @@
-import { GameLobby, LobbyOptions } from "../../models/p2p-lobby"
-import { PlayerProfileId } from "../../models/types/bfg-branded-ids"
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
-import { BfgShareableLinkComponent } from "../../ui/components/bfg-shareable-link-component"
-import { BfgSupportedGameTitle } from "../../models/game-box-definition"
-import { LobbyPlayerJoinGameComponent } from "../../ui/components/lobby-player-join-game-component"
-import { Box, Stack, Typography, Chip, Button, Gamepad, Container, Paper, Alert } from "../bfg-ui"
-import { useGameHosting } from "../../hooks/games-registry/game-hosting"
-import { PlayerProfileChip } from "./player-profile-chip"
+import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby"
+import { PlayerProfileId } from "../../../models/types/bfg-branded-ids"
+import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
+import { BfgShareableLinkComponent } from "../bfg-shareable-link-component"
+import { BfgSupportedGameTitle } from "../../../models/game-box-definition"
+import { LobbyPlayerJoinGameComponent } from "./lobby-player-join-game-component"
+import { Box, Stack, Typography, Chip, Button, Gamepad, Container, Paper, Alert } from "../../bfg-ui"
+import { useGameHosting } from "../../../hooks/games-registry/game-hosting"
+import { PlayerProfileChip } from "../player-profile-chip"
 
 
 interface ILobbyPlayerStateComponentProps {

@@ -10,12 +10,12 @@ import { Paper, Stack, Typography, Box } from "../bfg-ui"
 
 
 interface IHostedGameDetailsComponentProps {
-  hostedGame: GameTable
+  gameTable: GameTable
   gameActions: DbGameTableAction[]
 }
 
 export const HostedGameDetailsComponent = ({
-  hostedGame,
+  gameTable,
   gameActions,
 }: IHostedGameDetailsComponentProps) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -25,7 +25,7 @@ export const HostedGameDetailsComponent = ({
     null;
 
   const gameRegistry = useGameRegistry();
-  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+  const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
   const latestGameSpecificState = latestGameSpecificStateStr ?
     gameMetadata.gameSpecificStateEncoder.decode(latestGameSpecificStateStr) :
     null;
@@ -54,7 +54,7 @@ export const HostedGameDetailsComponent = ({
                   Game Title:
                 </Typography>
                 <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
-                  {hostedGame?.gameTitle}
+                  {gameTable?.gameTitle}
                 </Typography>
               </Box>
               <Box>
@@ -62,7 +62,7 @@ export const HostedGameDetailsComponent = ({
                   Game ID:
                 </Typography>
                 <Typography variant="body2" component="span" style={{ marginLeft: '8px', fontFamily: 'monospace' }}>
-                  {hostedGame?.id}
+                  {gameTable?.id}
                 </Typography>
               </Box>
               <Box>
@@ -70,7 +70,7 @@ export const HostedGameDetailsComponent = ({
                   Status:
                 </Typography>
                 <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
-                  {hostedGame?.currentStatusDescription}
+                  {gameTable?.currentStatusDescription}
                 </Typography>
               </Box>
               <Box>
@@ -78,7 +78,7 @@ export const HostedGameDetailsComponent = ({
                   Phase:
                 </Typography>
                 <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
-                  {hostedGame?.tablePhase}
+                  {gameTable?.tablePhase}
                 </Typography>
               </Box>
               <Box>
@@ -86,7 +86,7 @@ export const HostedGameDetailsComponent = ({
                   Created:
                 </Typography>
                 <Typography variant="body1" component="span" style={{ marginLeft: '8px' }}>
-                  {hostedGame ? new Date(hostedGame.createdAt).toLocaleString() : ''}
+                  {gameTable ? new Date(gameTable.createdAt).toLocaleString() : ''}
                 </Typography>
               </Box>
             </Stack>
@@ -96,7 +96,7 @@ export const HostedGameDetailsComponent = ({
                 Raw Game Data
               </Typography>
               <PrettyJsonObject>
-                {hostedGame}
+                {gameTable}
               </PrettyJsonObject>
             </Box>
           </Stack>

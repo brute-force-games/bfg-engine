@@ -1,5 +1,5 @@
-import { GameLobby } from "../../models/p2p-lobby"
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
+import { GameLobby } from "../../../models/p2p-lobby"
+import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
 import { 
   Box, 
   Typography, 
@@ -8,7 +8,7 @@ import {
   Avatar,
   CheckCircle as CheckCircleIcon,
   OpenInNew as OpenInNewIcon
-} from '../bfg-ui'
+} from '../../bfg-ui'
 
 
 interface ILobbyPlayerJoinGameComponentProps {
@@ -18,7 +18,6 @@ interface ILobbyPlayerJoinGameComponentProps {
 
 export const LobbyPlayerJoinGameComponent = ({ 
   lobbyState,
-  // currentPlayerProfile,
 }: ILobbyPlayerJoinGameComponentProps) => {
 
   // const handleGameChoice = (gameChoice: BfgSupportedGameTitles) => {

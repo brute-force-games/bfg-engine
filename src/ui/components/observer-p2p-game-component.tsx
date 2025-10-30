@@ -1,7 +1,6 @@
 import { z } from "zod"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
-import { Container, TabsContainerPanel, Box, Typography, Select, Option } from "../bfg-ui"
-import { P2pConnectionComponent } from "./p2p-connection-component"
+import { Container, Box, Typography, Select, Option } from "../bfg-ui"
 import { PlayerGameTabId } from "./bfg-tabs"
 import { useObserverP2pGame } from "../../hooks/p2p/game/use-observer-p2p-game"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
@@ -11,12 +10,13 @@ import { GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
 import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders"
 
 
+// TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
 interface IObserverP2pGameComponentProps {
   gameTableId: GameTableId
-  activeTabId: PlayerGameTabId
+  mode: PlayerGameTabId
 }
 
-export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserverP2pGameComponentProps) => {
+export const ObserverP2pGameComponent = ({ gameTableId, mode }: IObserverP2pGameComponentProps) => {
 
   const p2pGame = useObserverP2pGame(gameTableId);
   const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
@@ -75,13 +75,13 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
   
   return (
     <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
-      <TabsContainerPanel
-        activeTabId={activeTabId}
+      {/* <TabsContainerPanel
+        activeTabId={mode}
         tabs={[
           {
             id: "player-game",
             icon: <span>👁️</span>,
-            content: (
+            content: ( */}
               <Box>
                 {/* <Typography variant="h5" style={{ marginBottom: '16px', color: '#666' }}>
                   🔍 Observer View (Read-Only)
@@ -112,61 +112,61 @@ export const ObserverP2pGameComponent = ({ gameTableId, activeTabId }: IObserver
                 
                 {gameRepresentation}
               </Box>
-            )
+            {/* )
           },
-          {
-            id: "player-game-details",
-            icon: <span>📊</span>,
-            content: (
-              <div style={{ padding: '20px' }}>
-                <h2>Game Details</h2>
-                <div style={{ marginBottom: '16px' }}>
-                  <strong>Game Table ID:</strong> {gameTableId}
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <strong>Game State:</strong>
-                  <pre style={{ 
-                    backgroundColor: '#f5f5f5', 
-                    padding: '12px', 
-                    borderRadius: '4px',
-                    overflow: 'auto',
-                    maxHeight: '400px'
-                  }}>
-                    {JSON.stringify(gameTable, null, 2)}
-                  </pre>
-                </div>
-                <div>
-                  <strong>Game Actions ({gameActions.length}):</strong>
-                  <pre style={{ 
-                    backgroundColor: '#f5f5f5', 
-                    padding: '12px', 
-                    borderRadius: '4px',
-                    overflow: 'auto',
-                    maxHeight: '400px'
-                  }}>
-                    {JSON.stringify(gameActions, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            )
-          },
-          {
-            id: "player-p2p-game-details",
-            icon: <span>📡</span>,
-            content: (
-              <P2pConnectionComponent
-                connectionStatus={p2pGame.connectionStatus}
-                connectionEvents={p2pGame.connectionEvents}
-                peers={p2pGame.peers}
-                peerPlayers={p2pGame.peerPlayers}
-                allPlayerProfiles={p2pGame.allPlayerProfiles}
-                onRefreshConnection={p2pGame.refreshConnection}
-              />
-            )
-          }
+          // {
+          //   id: "player-game-details",
+          //   icon: <span>📊</span>,
+          //   content: (
+          //     <div style={{ padding: '20px' }}>
+          //       <h2>Game Details</h2>
+          //       <div style={{ marginBottom: '16px' }}>
+          //         <strong>Game Table ID:</strong> {gameTableId}
+          //       </div>
+          //       <div style={{ marginBottom: '16px' }}>
+          //         <strong>Game State:</strong>
+          //         <pre style={{ 
+          //           backgroundColor: '#f5f5f5', 
+          //           padding: '12px', 
+          //           borderRadius: '4px',
+          //           overflow: 'auto',
+          //           maxHeight: '400px'
+          //         }}>
+          //           {JSON.stringify(gameTable, null, 2)}
+          //         </pre>
+          //       </div>
+          //       <div>
+          //         <strong>Game Actions ({gameActions.length}):</strong>
+          //         <pre style={{ 
+          //           backgroundColor: '#f5f5f5', 
+          //           padding: '12px', 
+          //           borderRadius: '4px',
+          //           overflow: 'auto',
+          //           maxHeight: '400px'
+          //         }}>
+          //           {JSON.stringify(gameActions, null, 2)}
+          //         </pre>
+          //       </div>
+          //     </div>
+          //   )
+          // },
+          // {
+          //   id: "player-p2p-game-details",
+          //   icon: <span>📡</span>,
+          //   content: (
+          //     <P2pConnectionComponent
+          //       connectionStatus={p2pGame.connectionStatus}
+          //       connectionEvents={p2pGame.connectionEvents}
+          //       peers={p2pGame.peers}
+          //       peerPlayers={p2pGame.peerPlayers}
+          //       allPlayerProfiles={p2pGame.allPlayerProfiles}
+          //       onRefreshConnection={p2pGame.refreshConnection}
+          //     />
+          //   )
+          // }
         ]}
         tabColor="linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)"
-      />
+      /> */}
     </Container>
   )
 }
