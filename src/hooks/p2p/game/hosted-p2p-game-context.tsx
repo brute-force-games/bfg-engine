@@ -40,7 +40,7 @@ export const P2pHostedGameContextProvider = ({
     connectionEvents,
     peers,
     peerPlayers,
-    // otherPlayerProfiles,
+    
     allPlayerProfiles,
 
     txGameTableData,

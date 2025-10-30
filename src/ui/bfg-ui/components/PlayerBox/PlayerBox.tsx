@@ -2,11 +2,14 @@ import { Card, Stack, Typography, Avatar } from '@bfg-engine/ui/bfg-ui';
 import { GameTableSeat } from '@bfg-engine/models/game-table/game-table';
 import styles from './PlayerBox.module.css';
 import { ArrowLeft } from '../../icons';
+import { BfgPublicGameImplState } from '~/models/game-engine/bfg-game-engine-types';
 
 
-export interface PlayerBoxProps {
+export interface PlayerBoxProps<GIS extends BfgPublicGameImplState> {
   playerSeat: GameTableSeat;
-  playerSymbol: string;
+  gameState: GIS;
+  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
+  // playerSymbol: string;
   // gameState: TGameState;
   playerName: string;
   playerAvatar?: string;
@@ -15,31 +18,19 @@ export interface PlayerBoxProps {
   isGameOver: boolean;
 }
 
-export const PlayerBox = ({
+export const PlayerBox = <GIS extends BfgPublicGameImplState>({
   playerSeat,
-  playerSymbol,
+  gameState,
+  playerDetailsLineFn,
   // gameState,
   isPlayerNextToAct,
   playerName,
   playerAvatar,
   isMyPlayer,
   isGameOver,
-}: PlayerBoxProps) => {
-  // const playerSymbol = playerSeat === 'p1' ? 'X' : 'O';
-  // const isGameOver = typeof gameState === 'object' && gameState !== null && 'resolution' in gameState && gameState.resolution !== 'game-in-progress';
-  
-  // Count how many moves this player has made (only if board exists)
-  // const playerMoves = typeof gameState === 'object' && gameState !== null && 'board' in gameState && typeof gameState.board === 'string' 
-  //   ? gameState.board.split('').filter((cell: string) => cell === playerSymbol).length 
-  //   : 0;
-  
-  // const cardClassName = [
-  //   styles.playerBox,
-  //   isCurrentPlayer && !isGameOver && styles.currentPlayer,
-  //   isGameOver && styles.gameOver,
-  // ].filter(Boolean).join(' ');
+}: PlayerBoxProps<GIS>) => {
 
-  // const isGameOver = false;
+  const playerDetailsLine = playerDetailsLineFn(gameState, playerSeat);
 
   return (
     <Card className={styles.playerBox}>
@@ -72,7 +63,7 @@ export const PlayerBox = ({
 
           {/* Player Symbol */}
           <Typography variant="h4" className={styles.playerSymbol}>
-            {playerSymbol}
+            {playerDetailsLine}
           </Typography>
         </Stack>
 

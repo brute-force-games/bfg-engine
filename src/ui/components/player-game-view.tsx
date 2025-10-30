@@ -93,6 +93,7 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
 
   return (
     <Box>
+      {/* <Typography variant="body1">My Player Seat: {props.myPlayerSeat}</Typography> */}
       {/* <Typography variant="body1">Peers: {props.peers.length}
         {props.peers.map((peerId) => (
           <Typography variant="body1" key={peerId}>{peerId}</Typography>

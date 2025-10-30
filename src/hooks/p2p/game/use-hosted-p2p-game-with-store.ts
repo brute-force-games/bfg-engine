@@ -22,12 +22,11 @@ export interface IHostedP2pGameWithStoreData {
   room: Room
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
-  // peerProfiles: Map<PeerId, PublicPlayerProfile>
+
   peers: PeerId[]
   peerPlayers: Map<PeerId, PublicPlayerProfile>
   
   myHostPlayerProfile: PublicPlayerProfile | null
-  // otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
   txGameTableData: (gameTable: GameTable) => void
@@ -52,7 +51,6 @@ export const useHostedP2pGameWithStore = (
 
   const roomEventHandlers: IP2pGameRoomEventHandlers = {
     onPeerJoin: (_peer: PeerId) => {
-      // console.log('Peer joined:', peer);
       doSendGameData();
     },
   }
@@ -73,35 +71,10 @@ export const useHostedP2pGameWithStore = (
   const [txGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
   const [txGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
 
-  // const hostPrivateProfile = useRiskyMyDefaultPlayerProfile();
-  // const hostPlayerProfile = hostPrivateProfile ? convertPrivateToPublicProfile(hostPrivateProfile) : null;
   const gameRegistry = useGameRegistry();
   
   const hostedGame = useHostedGame(gameTableId);
   const gameActions = useGameActions(gameTableId);
-
-  // console.log("LOADED GAME ACTIONS", gameActions);
-
-  // const hostedP2pGame = useHostedP2pGame(hostedGame, hostPlayerProfile);
-  // const { peerProfiles, playerProfiles, room, getPlayerMove, sendGameTableData, sendGameActionsData, connectionEvents, refreshConnection } = hostedP2pGame;
-
-  // if (!hostPlayerProfile) {
-  //   return (
-  //     <div className="p-6">
-  //       <h1 className="text-3xl font-bold mb-6">Loading Profile...</h1>
-  //       <div className="text-gray-600">Loading profile details...</div>
-  //     </div>
-  //   )
-  // }
-
-  // if (!hostedGame) {
-  //   return (
-  //     <div className="p-6">
-  //       <h1 className="text-3xl font-bold mb-6">Loading Game...</h1>
-  //       <div className="text-gray-600">Loading game details...</div>
-  //     </div>
-  //   )
-  // }
 
   if (!hostedGame) {
     throw new Error('Hosted game is required');
@@ -109,19 +82,7 @@ export const useHostedP2pGameWithStore = (
 
   const myPlayerSeat = matchPlayerToSeat(hostPlayerProfile.id, hostedGame);
 
-  // if (!myPlayerSeat) {
-  //   console.log("You are not at this game table")
-  //   console.log("hostedGame", hostedGame)
-  //   console.log("myPlayerSeat", myPlayerSeat)
-  //   console.log("hostPlayerProfile.id", hostPlayerProfile.id)
-  //   console.log("hostedGame.gameHostPlayerProfileId", hostedGame.gameHostPlayerProfileId)
-  //   return <div>You are not at this game table</div>;
-  // }
-
-  // Get game metadata and validate the move with the schema
   const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
-  // const gameEngine = gameMetadata.engine;
-  // const playerActionSchema = gameMetadata.playerActionSchema;
 
   const doSendGameData = useCallback(() => {
     if (hostedGame && gameActions) {
@@ -141,11 +102,6 @@ export const useHostedP2pGameWithStore = (
   useEffect(() => {
     doSendGameData();
   }, [doSendGameData])
-
-  // Handle peer connections
-  // room.onPeerJoin((_peer: string) => {
-  //   doSendGameData();
-  // })
 
   const handleSelfPlayerActionStr = async (actionStr: PlayerP2pActionStr) => {
     const validationResult = PlayerP2pActionStrSchema.safeParse(actionStr);
@@ -185,8 +141,6 @@ export const useHostedP2pGameWithStore = (
 
     const validatedHostActionStr = validationResult.data;
 
-    console.log('🎮 HOST RECEIVED host action:', validatedHostActionStr);
-
     const moveResult = await asHostApplyHostAction(gameRegistry, hostedGame, gameActions, validatedHostActionStr);
     if (moveResult) {
       const updatedGameTable = moveResult.gameTable;
@@ -219,8 +173,6 @@ export const useHostedP2pGameWithStore = (
     onSelfPlayerActionStr: handleSelfPlayerActionStr,
     onHostActionStr: handleHostActionStr,
     
-    // otherPlayerProfiles: p2pGame.otherPlayerProfiles,
-    // allPlayerProfiles: p2pGame.allPlayerProfiles,
   } satisfies IHostedP2pGameWithStoreData;
   
   return retVal;

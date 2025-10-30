@@ -41,6 +41,7 @@ export interface IBfgAllPublicKnowledgeGameProcessor<
   ) => Promise<GameTableActionResult<GIS>>,
 
   getNextToActPlayers: (gameState: GIS) => GameTableSeat[],
+  getPlayerDetailsLine: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode,
 }
 
 

@@ -6,22 +6,25 @@ import { PlayerProfileId } from '@bfg-engine/models/types/bfg-branded-ids';
 import { useMyDefaultPublicPlayerProfile } from '@bfg-engine/hooks/stores/use-my-player-profiles-store';
 import styles from './PlayersRow.module.css';
 import { isGameOver } from '~/models/game-table/table-phase';
+import { BfgPublicGameImplState } from '~/models/game-engine/bfg-game-engine-types';
 
 
-export interface PlayersRowProps {
-  // gameState: TGameState;
+export interface PlayersRowProps<GIS extends BfgPublicGameImplState> {
   gameTable: GameTable;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   nextToActPlayers: GameTableSeat[];
+  gameState: GIS;
+  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
 }
 
-export const PlayersRow = ({
-  // gameState,
+export const PlayersRow = <GIS extends BfgPublicGameImplState>({
   gameTable,
   allPlayerProfiles,
   nextToActPlayers,
-}: PlayersRowProps) => {
-  
+  gameState,
+  playerDetailsLineFn,
+}: PlayersRowProps<GIS>) => {
+
   // Get all active players from the game table
   const activePlayers: GameTableSeat[] = [];
   if (gameTable.p1) activePlayers.push('p1');
@@ -43,7 +46,6 @@ export const PlayersRow = ({
       <Stack spacing={2} direction="row" className={styles.playersGrid} style={{ width: '100%' }}>
         {activePlayers.map((playerSeat) => {
           const isPlayerNextToAct = isGameActive && nextToActPlayers.includes(playerSeat);
-          // const isPlayerNextToAct = true;
           const playerProfileId = gameTable[playerSeat];
 
           const playerProfile = playerProfileId ? allPlayerProfiles.get(playerProfileId) : undefined;
@@ -54,13 +56,13 @@ export const PlayersRow = ({
             <Box key={playerSeat} style={{ flex: 1, minWidth: 0 }}>
               <PlayerBox
                 playerSeat={playerSeat}
-                playerSymbol={'XXXXXXXXXX'}
-                // gameState={gameState}
                 isPlayerNextToAct={isPlayerNextToAct}
                 playerName={playerHandle}
                 playerAvatar={playerProfile?.avatarImageUrl}
                 isMyPlayer={isMyPlayer}
                 isGameOver={gameOver}
+                gameState={gameState}
+                playerDetailsLineFn={playerDetailsLineFn}
               />
             </Box>
           );

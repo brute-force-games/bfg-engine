@@ -7,14 +7,21 @@ import { GameTable, GameTableSeat, PLAYER_SEATS } from "../../models/game-table/
 import { DbGameTableAction } from "../../models/game-table/game-table-action"
 import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-engine/encoders"
 import { ObserverComponentProps } from "~/models/game-engine/bfg-game-engine-types"
+import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
+import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
 
 
 interface IHostObserverP2pGameComponentProps {
   hostedGame: GameTable
   gameActions: DbGameTableAction[]
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 }
 
-export const HostObserverP2pGameComponent = ({ hostedGame, gameActions }: IHostObserverP2pGameComponentProps) => {
+export const HostObserverP2pGameComponent = ({
+  hostedGame,
+  gameActions,
+  allPlayerProfiles,
+}: IHostObserverP2pGameComponentProps) => {
 
   const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
 
@@ -51,6 +58,8 @@ export const HostObserverP2pGameComponent = ({ hostedGame, gameActions }: IHostO
 
   const observerComponentProps: ObserverComponentProps<z.infer<typeof zodGameSpecificStateSchema>> = {
     gameState: gameSpecificState,
+    gameTable: hostedGame,
+    allPlayerProfiles: allPlayerProfiles,
     hostPlayerProfileId: hostedGame.gameHostPlayerProfileId,
     observedPlayerProfileId: null,
     observedPlayerSeat: viewPerspective,
