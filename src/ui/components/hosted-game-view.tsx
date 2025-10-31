@@ -11,7 +11,7 @@ import { HostP2pActionStr, PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-ty
 
 
 interface HostedGameViewProps {
-  myPlayerSeat: GameTableSeat;
+  myPlayerSeat: GameTableSeat | null;
   myPlayerProfile: PublicPlayerProfile;
   hostedGame: GameTable;
   gameActions: DbGameTableAction[];

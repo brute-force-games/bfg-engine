@@ -44,27 +44,27 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
   const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
   const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
-  const hostActionEncoder = gameMetadata.hostActionEncoder;
-  if (hostActionEncoder.format !== 'json-zod-object') {
-    throw new Error('Host action encoder format is not json-zod-object');
+  const playerActionEncoder = gameMetadata.playerActionEncoder;
+  if (playerActionEncoder.format !== 'json-zod-object') {
+    throw new Error('Player action encoder format is not json-zod-object');
   }
 
-  const zodHostActionEncoder = hostActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
-  const zodHostActionSchema = zodHostActionEncoder.schema as z.ZodTypeAny;
+  const zodPlayerActionEncoder = playerActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  const zodPlayerActionSchema = zodPlayerActionEncoder.schema as z.ZodTypeAny;
 
   const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
   const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
 
-  const onPlayerAction = (playerAction: z.infer<typeof zodHostActionSchema>) => {
+  const onPlayerAction = (playerAction: z.infer<typeof zodPlayerActionSchema>) => {
     console.log('🎮 PLAYER SENDING ACTION:', playerAction);
-    const encodedPlayerAction = zodHostActionEncoder.encode(playerAction);
+    const encodedPlayerAction = zodPlayerActionEncoder.encode(playerAction);
     const encodedPlayerActionStr = encodedPlayerAction as unknown as PlayerP2pActionStr;
     onPlayerGameAction(encodedPlayerActionStr);
   }
 
   const playerGameComponentProps: PlayerComponentProps<
     z.infer<typeof zodGameSpecificStateSchema>,
-    z.infer<typeof zodHostActionSchema>
+    z.infer<typeof zodPlayerActionSchema>
   > = {
     gameTable: props.gameTable,
     allPlayerProfiles: props.allPlayerProfiles,

@@ -59,7 +59,7 @@ export const LobbyPlayerStateComponent = ({
   
   const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}?autoJoin=true`;
 
-  const gameLink = lobbyState.gameLink;
+  const gameLink = lobbyState.playGameLink;
 
   if (gameLink) {
     return (

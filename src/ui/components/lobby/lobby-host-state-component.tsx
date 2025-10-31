@@ -70,8 +70,8 @@ export const LobbyHostStateComponent = ({
       const gameTable = await asHostStartNewGame(gameRegistry, lobbyState, newGameTableId);
       console.log("NEW GAME TABLE", gameTable);
 
-      const gameLink = gameHosting.createPlayerGameUrl(newGameTableId);
-      updateLobbyState({ ...lobbyState, gameLink, gameTableId: newGameTableId });
+      const playGameLink = gameHosting.createPlayerGameUrl(newGameTableId);
+      updateLobbyState({ ...lobbyState, playGameLink, gameTableId: newGameTableId });
     } catch (error) {
       console.error("Error starting game:", error);
     } finally {
@@ -90,16 +90,19 @@ export const LobbyHostStateComponent = ({
     );
   }) ?? [];
 
-  const isGameStarted = lobbyState.gameLink !== undefined;
+  const isGameStarted = lobbyState.playGameLink !== undefined;
 
   const baseUrl = gameHosting.getBaseUrl();
   
+  // const hostingLink = lobbyState.gameTableId ? 
+  //   `${baseUrl}/hosted-games/${lobbyState.gameTableId}` :
+  //   '';
   const hostingLink = lobbyState.gameTableId ? 
-    `${baseUrl}/hosted-games/${lobbyState.gameTableId}` :
+    gameHosting.createHostedGameUrl(lobbyState.gameTableId) :
     '';
       
   const observerLink = lobbyState.gameTableId ?
-    `${baseUrl}/games/${lobbyState.gameTableId}/observe` :
+    gameHosting.createObserverGameUrl(lobbyState.gameTableId) :
     '';
 
   const lobbyValidLabel = lobbyState.isLobbyValid ? 
@@ -120,7 +123,7 @@ export const LobbyHostStateComponent = ({
             <i>{lobbyState.gameTitle}</i> will start once you open the Hosting Link! Players should join using the player link.
           </Typography>
 
-          {(lobbyState.gameLink || hostingLink) && (
+          {(lobbyState.playGameLink || hostingLink) && (
             <Box>
               <Stack spacing={1}>
                 {hostingLink && (
@@ -130,11 +133,11 @@ export const LobbyHostStateComponent = ({
                     linkUrl={hostingLink}
                   />
                 )}
-                {lobbyState.gameLink && (
+                {lobbyState.playGameLink && (
                   <BfgShareableLinkComponent
                     variant="standard"
                     linkLabel="Player Game Link"
-                    linkUrl={lobbyState.gameLink}
+                    linkUrl={lobbyState.playGameLink}
                   />
                 )}
                 {observerLink && (

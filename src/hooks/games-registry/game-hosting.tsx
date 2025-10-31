@@ -11,6 +11,7 @@ export interface GameHostingContextType {
   createFriendUrl: (friendId: GameFriendId) => string;
   createHostedGameUrl: (gameTableId: GameTableId) => string;
   createPlayerGameUrl: (gameTableId: GameTableId) => string;
+  createObserverGameUrl: (gameTableId: GameTableId) => string;
 }
 
 export const GameHostingContext = createContext<GameHostingContextType>({
@@ -32,8 +33,11 @@ export const GameHostingContext = createContext<GameHostingContextType>({
   createHostedGameUrl: () => {
     throw new Error('createHostedGameUrl not implemented');
   },
-  createPlayerGameUrl: () => {
+  createPlayerGameUrl: () => {  
     throw new Error('createPlayerGameUrl not implemented');
+  },
+  createObserverGameUrl: () => {
+    throw new Error('createObserverGameUrl not implemented');
   },
 });
 

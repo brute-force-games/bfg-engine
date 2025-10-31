@@ -23,7 +23,11 @@ interface IObserverP2pGame {
 
 export const useObserverP2pGame = (gameTableId: GameTableId): IObserverP2pGame | null => {
 
-  const p2pGame = useP2pGame(gameTableId, null);
+  const p2pGame = useP2pGame({
+    gameTableId,
+    myPlayerProfile: null,
+    requestedRole: 'observer',
+  });
 
   return {
     ...p2pGame,

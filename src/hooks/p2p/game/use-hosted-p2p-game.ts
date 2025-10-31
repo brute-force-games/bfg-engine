@@ -38,7 +38,11 @@ export const useHostedP2pGame = (
     throw new Error('Host player profile is required');
   }
 
-  const p2pGame = useP2pGame(gameTable.id, hostPlayerProfile);
+  const p2pGame = useP2pGame({
+    gameTableId: gameTable.id,
+    myPlayerProfile: hostPlayerProfile,
+    requestedRole: 'host',
+  });
   const { room, allPlayerProfiles } = p2pGame;
 
   const [txGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);

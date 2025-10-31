@@ -28,7 +28,7 @@ export const GameLobbySchema = z.object({
   gameTitle: BfgSupportedGameTitleSchema.optional(),
 
   gameTableId: BfgGameTableId.idSchema.optional(),
-  gameLink: z.string().optional(),
+  playGameLink: z.string().optional(),
 
   playerPool: z.array(BfgPlayerProfileId.idSchema),
   minNumPlayers: z.number(),

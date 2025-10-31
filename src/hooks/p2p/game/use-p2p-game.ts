@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { joinRoom, Room, selfId } from "trystero";
+import { joinRoom, Room } from "trystero";
 import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../../ui/components/constants"; 
 import { GameTable } from "../../../models/game-table/game-table";
 import { DbGameTableAction } from "../../../models/game-table/game-table-action";
@@ -7,6 +7,8 @@ import { PublicPlayerProfile } from "../../../models/player-profile/public-playe
 import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
 import { useGameHosting } from "../../../index";
 import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr } from "../p2p-types";
+import { GameTableAccessRole } from "~/models/game-roles";
+import { getTableAccessRoleForProfile, hasTableAccessRoleForProfile } from "~/models/game-table/utils";
 
 
 export interface IP2pGameRoomEventHandlers {
@@ -26,6 +28,12 @@ export interface IP2pGame {
   gameTable: GameTable | null;
   gameActions: DbGameTableAction[];
 
+  hasRequestedTableAccess: boolean;
+  myGameTableAccess: GameTableAccessRole;
+
+  setRoomEventHandlers: (eventHandlers: IP2pGameRoomEventHandlers) => void
+  clearRoomEventHandlers: () => void
+
   txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
   rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
   
@@ -33,21 +41,47 @@ export interface IP2pGame {
 }
 
 
-export const useP2pGame = (
-  gameTableId: GameTableId,
-  myPlayerProfile: PublicPlayerProfile | null,
-  roomEventHandlers: IP2pGameRoomEventHandlers = {}
-): IP2pGame => {
-  
+export interface IP2pGameProps {
+  gameTableId: GameTableId;
+  myPlayerProfile: PublicPlayerProfile | null;
+  requestedRole: GameTableAccessRole;
+  // roomEventHandlers: IP2pGameRoomEventHandlers;
+  // children: React.ReactNode;
+}
+
+
+export const useP2pGame = ({
+  gameTableId,
+  myPlayerProfile,
+  requestedRole,
+  // roomEventHandlers: IP2pGameRoomEventHandlers = {}
+}: IP2pGameProps): IP2pGame => {
+
   const [gameTable, setGameTable] = useState<GameTable | null>(null)
   const [gameActions, setGameActions] = useState<DbGameTableAction[]>([])
   const [peers, setPeers] = useState<PeerId[]>([])
   const [peerPlayers, setPeerPlayers] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
+  let roomEventHandlers: IP2pGameRoomEventHandlers | undefined = undefined;
+
+  const setRoomEventHandlers = (eventHandlers: IP2pGameRoomEventHandlers) => {
+    if (roomEventHandlers !== undefined) {
+      // throw new Error('Room event handlers already set');
+      console.warn('Room event handlers already set');
+    }
+    roomEventHandlers = eventHandlers;
+  }
+
+  const clearRoomEventHandlers = () => {
+    roomEventHandlers = undefined;
+  }
+
   // Create room - gets recreated on every render
   const gameHosting = useGameHosting();
   const trysteroConfig = gameHosting.getTrysteroConfig();
+
+  console.log('useP2pGame - gameTableId', gameTableId)
   
   const room = joinRoom(trysteroConfig, gameTableId, (error: {
     error: string;
@@ -102,23 +136,9 @@ export const useP2pGame = (
     if (myPlayerProfile) {
       console.log('Sending my player profile to peer:', peerId, myPlayerProfile)
       txPlayerProfile(myPlayerProfile, peerId);
-    //   setPeerPlayers(prev => {
-    //     const updated = new Map(prev).set(peerId, myPlayerProfile);
-    //     const newCount = updated.size;
-    //     addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
-    //     return updated;
-    //   });
-    // } else {
-    //   // Observer mode - just track peer count
-    //   // setPeerProfiles(prev => {
-    //   //   const updated = new Map(prev);
-    //   //   const newCount = updated.size + 1;
-    //   //   addConnectionEvent('peer-joined', `Peer joined (total: ${newCount})`, newCount);
-    //   //   return updated;
-    //   // });
     }
 
-    if (roomEventHandlers.onPeerJoin) {
+    if (roomEventHandlers?.onPeerJoin) {
       roomEventHandlers.onPeerJoin(peerId);
     }
   })
@@ -136,7 +156,7 @@ export const useP2pGame = (
       addConnectionEvent('peer-left', `Peer left (total: ${peers.length})`, peers.length);
     }
 
-    if (roomEventHandlers.onPeerLeave) {
+    if (roomEventHandlers?.onPeerLeave) {
       roomEventHandlers.onPeerLeave(peerId);
     }
   })
@@ -166,6 +186,7 @@ export const useP2pGame = (
     allPlayerProfiles.set(myPlayerProfile.id, myPlayerProfile);
   }
 
+
   const refreshConnection = () => {
     addConnectionEvent('auto-refresh', 'Connection refreshed manually', peers.length);
     setPeerPlayers(new Map());
@@ -175,17 +196,27 @@ export const useP2pGame = (
     // Room will be recreated on next render automatically
   };
 
+  const myPlayerProfileId = myPlayerProfile?.id ?? null;
+  const myGameTableAccess = getTableAccessRoleForProfile(myPlayerProfileId, gameTable, requestedRole);
+  const hasRequestedTableAccess = hasTableAccessRoleForProfile(myPlayerProfileId, gameTable, requestedRole);
   
-  return {
+  const retVal: IP2pGame = {
     room,
     gameTable,
     gameActions,
     connectionStatus,
     connectionEvents,
+    
+    myGameTableAccess,
+    hasRequestedTableAccess,
+
     peers,
     peerPlayers,
     allPlayerProfiles,
-    
+
+    setRoomEventHandlers,
+    clearRoomEventHandlers,
+
     txPlayerActionStr,
     rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => {
       rxPlayerActionStr((move: PlayerP2pActionStr, peer: string) => {
@@ -195,4 +226,6 @@ export const useP2pGame = (
     },
     refreshConnection,
   }
+
+  return retVal;
 }

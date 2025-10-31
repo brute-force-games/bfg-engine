@@ -6,6 +6,7 @@ import { GameTable, GameTableSeat } from "../../../models/game-table/game-table"
 import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "../p2p-types";
+import { useP2pGameContext } from "./p2p-game-context";
 
 
 interface IPlayerP2pGame {
@@ -34,9 +35,21 @@ export const usePlayerP2pGame = (
   myPlayerProfile: PrivatePlayerProfile,
 ): IPlayerP2pGame | null => {
 
-  const p2pGame = useP2pGame(gameTableId, myPlayerProfile);
+  // const p2pGame = useP2pGame(gameTableId, myPlayerProfile);
+  const p2pGame = useP2pGameContext();
 
   const { gameTable } = p2pGame;
+  
+  if (!gameTable) {
+    return null;
+  }
+
+  const p2pGameTable = p2pGame.gameTable;
+
+  if (p2pGameTable?.id !== gameTableId) {
+    throw new Error('P2P game table ID does not match the game table ID: ' + p2pGameTable?.id + ' !== ' + gameTableId);
+  }
+
 
   const myPlayerSeat = matchPlayerToSeat(myPlayerProfile.id, gameTable);
 

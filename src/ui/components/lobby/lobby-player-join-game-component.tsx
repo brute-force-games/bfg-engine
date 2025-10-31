@@ -85,7 +85,7 @@ export const LobbyPlayerJoinGameComponent = ({
         {/* Game Link Button */}
         <Box style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Button
-            onClick={() => window.open(lobbyState.gameLink, '_blank', 'noopener,noreferrer')}
+            onClick={() => window.open(lobbyState.playGameLink, '_blank', 'noopener,noreferrer')}
             variant="contained"
             size="large"
             style={{

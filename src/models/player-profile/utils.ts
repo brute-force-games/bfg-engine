@@ -12,7 +12,7 @@ export const convertPrivateToPublicProfile = (privateProfile: PrivatePlayerProfi
     publicKey: privateProfile.publicKey,
     walletAddress: privateProfile.walletAddress,
     walletPublicKey: privateProfile.walletPublicKey,
-    identityType: privateProfile.identityType,
+    // identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,
   };

@@ -16,9 +16,12 @@ import { useHostedGame } from "../../stores/use-hosted-games-store";
 import { addGameHostAction, addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
 import { BfgEncodedString } from "~/models/game-engine/encoders";
 import { asHostApplyHostAction } from "~/ops/game-table-ops/as-host-apply-host-action";
+import { GameTableAccessRole } from "~/models/game-roles";
+import { IP2pGame } from "./use-p2p-game";
+import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
 
 
-export interface IHostedP2pGameWithStoreData {
+export interface IHostedP2pGameWithStoreData extends IP2pGame {
   room: Room
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
@@ -37,16 +40,18 @@ export interface IHostedP2pGameWithStoreData {
   refreshConnection: () => void
 
   gameTable: GameTable | null
-  gameActions: DbGameTableAction[] | null
+  // gameActions: DbGameTableAction[] | null
   myPlayerSeat: GameTableSeat | null
+  myGameTableAccess: GameTableAccessRole
 
   onSelfPlayerActionStr: (actionStr: PlayerP2pActionStr) => Promise<void>
   onHostActionStr: (actionStr: HostP2pActionStr) => Promise<void>
 }
 
+
 export const useHostedP2pGameWithStore = (
   gameTableId: GameTableId,
-  hostPlayerProfile: PublicPlayerProfile | null,
+  hostPlayerProfile: PrivatePlayerProfile | null,
 ): IHostedP2pGameWithStoreData => {
 
   const roomEventHandlers: IP2pGameRoomEventHandlers = {
@@ -55,10 +60,34 @@ export const useHostedP2pGameWithStore = (
     },
   }
 
-  const gameTable = useHostedGame(gameTableId);
-  const p2pGame = useP2pGame(gameTableId, hostPlayerProfile, roomEventHandlers);
+  const hostedGame = useHostedGame(gameTableId);
+  const p2pGame = useP2pGame({ 
+    gameTableId, 
+    myPlayerProfile: hostPlayerProfile, 
+    requestedRole: 'host',
+  });
+  // const p2pGame = useP2pGameContext();
 
-  if (!gameTable) {
+  if (hostedGame === null) {
+    throw new Error('Host game table could not be found: ' + gameTableId);
+  }
+
+  if (gameTableId !== hostedGame.id) {
+    throw new Error('Route game table ID does not match the hosted game table ID: ' + gameTableId + ' !== ' + hostedGame.id);
+  }
+
+  // if (gameTable?.id !== undefined && p2pGame.gameTable?.id !== gameTableId) {
+  //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGame.gameTable?.id + ' !== ' + gameTableId);
+  // }
+
+  const gameTableHostPlayerProfileId = hostedGame?.gameHostPlayerProfileId;
+  if (gameTableHostPlayerProfileId !== hostPlayerProfile?.id) {
+    throw new Error('P2P my player profile ID does not match the host player profile ID: ' + gameTableHostPlayerProfileId + ' !== ' + hostPlayerProfile?.id);
+  }
+
+  p2pGame.setRoomEventHandlers(roomEventHandlers);
+
+  if (!hostedGame) {
     throw new Error('Game table is required');
   }
 
@@ -73,12 +102,12 @@ export const useHostedP2pGameWithStore = (
 
   const gameRegistry = useGameRegistry();
   
-  const hostedGame = useHostedGame(gameTableId);
+  // const hostedGame = useHostedGame(gameTableId);
   const gameActions = useGameActions(gameTableId);
 
-  if (!hostedGame) {
-    throw new Error('Hosted game is required');
-  }
+  // if (!hostedGame) {
+  //   throw new Error('Hosted game is required');
+  // }
 
   const myPlayerSeat = matchPlayerToSeat(hostPlayerProfile.id, hostedGame);
 
@@ -157,11 +186,19 @@ export const useHostedP2pGameWithStore = (
     await handleSelfPlayerActionStr(actionStr);
   })
 
+  useEffect(() => {
+    // console.log('P2P game table ID:', p2pGame.gameTable?.id);
+    // console.log('Game table ID:', gameTableId);
+    p2pGame.clearRoomEventHandlers();
+  }, [p2pGame])
 
-  const retVal = {
+
+  const retVal: IHostedP2pGameWithStoreData = {
     ...p2pGame,
     gameActions,
     myHostPlayerProfile: hostPlayerProfile ?? null,
+    myGameTableAccess: 'host',
+    hasRequestedTableAccess: true,
 
     txGameTableData,
     txGameActionsData,
@@ -172,8 +209,7 @@ export const useHostedP2pGameWithStore = (
     
     onSelfPlayerActionStr: handleSelfPlayerActionStr,
     onHostActionStr: handleHostActionStr,
-    
-  } satisfies IHostedP2pGameWithStoreData;
+  };
   
   return retVal;
 }
