@@ -1,6 +1,5 @@
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
 import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
-import { useP2pGame } from "./use-p2p-game";
 import { DbGameTableAction } from "../../../models/game-table/game-table-action";
 import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
 import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";

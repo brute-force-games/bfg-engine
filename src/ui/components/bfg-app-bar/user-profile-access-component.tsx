@@ -1,8 +1,9 @@
 import { Avatar, Box, IconButton, Tooltip } from "../../bfg-ui/index"
-import { DbkAppBarMenu, DbkAppBarMenuItem } from "./app-bar-menu"
+import { DbkAppBarMenu, DbkAppBarMenuItem } from "../app-bar-menu/app-bar-menu"
 import { useState } from "react";
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
 import { useHostedGameActions } from "../../../hooks/stores/use-hosted-games-store";
+import { AppSettingsDialog } from "../app-settings/app-settings-dialog";
 
 
 interface UserProfileAccessComponentProps {
@@ -16,14 +17,14 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const { clearAllStores } = useHostedGameActions();
   
   // Debug logging
-  console.log('UserProfileAccessComponent rendered with:', {
-    myPlayerProfiles,
-    myDefaultPlayerProfile,
-    profilesCount: myPlayerProfiles?.length || 0
-  });
+  // console.log('UserProfileAccessComponent rendered with:', {
+  //   myPlayerProfiles,
+  //   myDefaultPlayerProfile,
+  //   profilesCount: myPlayerProfiles?.length || 0
+  // });
 
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-
+  const [isAppSettingsDialogOpen, setIsAppSettingsDialogOpen] = useState(false);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -35,6 +36,15 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+  };
+
+  const handleOpenAppSettingsDialog = async () => {
+    setIsAppSettingsDialogOpen(true);
+    handleCloseUserMenu();
+  };
+
+  const handleCloseAppSettingsDialog = () => {
+    setIsAppSettingsDialogOpen(false);
   };
 
   const handleClearAllStores = async () => {
@@ -53,6 +63,7 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
     // { type: 'menu-link', title: 'Gaming Groups', link: { to: '/gaming-groups' } },
     // { type: 'menu-link', title: 'My Friends', link: { to: '/my-friends' } },
     { type: 'menu-divider' },
+    { type: 'menu-action', title: 'App Settings', action: handleOpenAppSettingsDialog },
     { type: 'menu-action', title: 'Clear All Stores', action: handleClearAllStores },
     { type: 'menu-anchor', title: 'BFG Starter on Github', href: 'https://github.com/brute-force-games/bfg-starter' },
     // { type: 'menu-action', title: 'Download Profile Backup', action: doDownloadProfileBackup },
@@ -91,6 +102,10 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
         anchorElUser={anchorElUser}
         userMenuItems={menuItems}
         handleCloseUserMenu={handleCloseUserMenu}
+      />
+      <AppSettingsDialog
+        open={isAppSettingsDialogOpen}
+        onClose={handleCloseAppSettingsDialog}
       />
     </Box>  
   )

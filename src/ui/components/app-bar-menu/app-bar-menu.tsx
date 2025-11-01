@@ -1,6 +1,6 @@
 import { Divider, Menu, MenuItem, Typography } from "../../bfg-ui/index";
 import { useState } from 'react';
-import { DbkAppBarSubMenu } from './app-bar-sub-menu';
+import { BfgAppBarSubMenu } from './app-bar-sub-menu';
 import { Link, LinkProps } from '@tanstack/react-router';
 
 
@@ -153,7 +153,7 @@ export const DbkAppBarMenu = ({ anchorElUser, userMenuItems, handleCloseUserMenu
             )
           } else {
             return (
-              <DbkAppBarSubMenu
+              <BfgAppBarSubMenu
                 key={index}
                 menuItem={menuItem}
                 areSubmenusOpen={areSubmenusOpen}

@@ -1,28 +1,23 @@
-import { useGameHosting } from "~/hooks/games-registry/game-hosting";
-import { AppBar, Toolbar, Typography } from "../../bfg-ui"
-import { BruteForceGamesAppBar } from "./app-bar"
+import { BfgStarterNavBar } from "../bfg-nav-bar/bfg-starter-nav-bar"
+import { AppBarTabItem } from "./tab-item-hook"
 
 
 export const NoUserAppBar = () => {
 
+  const tabItems: AppBarTabItem[] = [
+    {
+      id: "home",
+      label: "Home"
+    }
+  ]
+
   return (
-    <BruteForceGamesAppBar 
-      tabItems={[
-        {
-          id: "home",
-          label: "Home"
-        }
-      ]}
-      activeTabId="home"
-      onTabChange={() => {}}
+    <BfgStarterNavBar
+      tabsConfig={{
+        tabItems,
+        activeTabId: "home",
+        onTabChange: () => {}
+      }}
     />
-  )
-  
-  return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography variant="h6">No Activity - No User</Typography>
-      </Toolbar>
-    </AppBar>
   )
 }

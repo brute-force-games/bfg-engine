@@ -5,15 +5,13 @@ export interface OptionProps extends React.OptionHTMLAttributes<HTMLOptionElemen
   children: React.ReactNode;
 }
 
-export const Option = React.forwardRef<HTMLOptionElement, OptionProps>(
-  ({ children, ...props }, ref) => {
-    return (
-      <option ref={ref} {...props}>
-        {children}
-      </option>
-    );
-  }
-);
+export const Option: React.FC<OptionProps> = ({ children, ...props }) => {
+  return (
+    <option {...props}>
+      {children}
+    </option>
+  );
+};
 
 Option.displayName = 'Option';
 

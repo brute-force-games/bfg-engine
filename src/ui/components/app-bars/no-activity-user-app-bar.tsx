@@ -8,10 +8,6 @@ interface NoActivityUserAppBarProps {
 }
 
 export const NoActivityUserAppBar = (_props: NoActivityUserAppBarProps) => {
-  // const { myPlayerProfiles, myDefaultPlayerProfile } = props;
-
-  // const myPlayerProfiles = useMyPlayerProfiles();
-  // const myDefaultPlayerProfile = useMyDefaultPlayerProfile();
 
   return (
     <BruteForceGamesAppBar 

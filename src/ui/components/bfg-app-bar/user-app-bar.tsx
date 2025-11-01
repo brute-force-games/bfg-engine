@@ -1,5 +1,7 @@
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
 import { BruteForceGamesAppBar } from "./app-bar";
+import { NavSpine } from "./nav-spine";
+import { AppBarTabItem } from "./tab-item-hook";
 
 
 interface BruteForceGamesUserAppBarProps {
@@ -9,23 +11,31 @@ interface BruteForceGamesUserAppBarProps {
 
 export const BruteForceGamesUserAppBar = (_props: BruteForceGamesUserAppBarProps) => {
 
+
+  const tabItems: AppBarTabItem[] = [
+    {
+      id: "home",
+      label: "Home"
+    },
+    {
+      id: "my-player-profiles",
+      label: "My Profiles",
+    }
+  ]
+
   return (
-    <BruteForceGamesAppBar 
-      tabsConfig={{
-        tabItems: [
-        {
-          id: "home",
-          label: "Home"
-        },
-        {
-          id: "my-player-profiles",
-          label: "My Profiles",
-          link: { to: "/my-player-profiles" }
-        }
-      ],
-      activeTabId: "home",
-      onTabChange: () => {}
-    }}
-    />
+    <BruteForceGamesAppBar>
+      {({ isNarrowScreen }) => (
+        <NavSpine
+          title="Brute Force Games Starter"
+          isNarrowScreen={isNarrowScreen}
+          tabsConfig={{
+            tabItems,
+            activeTabId: "home",
+            onTabChange: () => {}
+          }}
+        />
+      )}
+    </BruteForceGamesAppBar>
   )
 }

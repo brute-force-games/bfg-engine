@@ -1,30 +1,28 @@
 import { useState, useEffect } from "react";
-import { AppBar, Box, Button, Toolbar, Typography, IconButton, Menu, MenuItem } from "../../bfg-ui/index";
-import { MenuIcon } from "../../bfg-ui/icons";
-import { Link } from '@tanstack/react-router';
+import { AppBar, Toolbar } from "../../bfg-ui/index";
 import { useRiskyMyDefaultPlayerProfile, useMyPlayerProfiles } from "../../../hooks/stores/use-my-player-profiles-store";
 import { UserProfileAccessComponent } from "./user-profile-access-component";
-import { useGameHosting } from "../../../hooks/games-registry/game-hosting";
-import { AppBarTabItem } from "./tab-item-hook";
 
 
-interface BruteForceGamesAppBarProps<TTabId extends string = string> {
-  tabsConfig: {
-    tabItems: readonly AppBarTabItem<TTabId>[];
-    activeTabId: TTabId;
-    onTabChange?: (tabId: TTabId) => void;
-  } | null;
+interface BruteForceGamesAppBarProps {
+  // tabsConfig: {
+  //   tabItems: readonly AppBarTabItem<TTabId>[];
+  //   activeTabId: TTabId;
+  //   onTabChange?: (tabId: TTabId) => void;
+  // } | null;
+  // childContent?: (props: { isNarrowScreen: boolean }) => React.ReactElement;
+  children?: ((props: { isNarrowScreen: boolean }) => React.ReactElement) | React.ReactNode;
 }
 
-export const BruteForceGamesAppBar = <TTabId extends string = string>(props: BruteForceGamesAppBarProps<TTabId>) => {
+export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
   
-  const gameHosting = useGameHosting();
+  const { children } = props;
+
   const myPlayerProfiles = useMyPlayerProfiles();
   const myDefaultPlayerProfile = useRiskyMyDefaultPlayerProfile();
 
-  const siteTitle = gameHosting.getSiteTitle();
   
-  const [navMenuAnchor, setNavMenuAnchor] = useState<null | HTMLElement>(null);
+  // const [navMenuAnchor, setNavMenuAnchor] = useState<null | HTMLElement>(null);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
   
   useEffect(() => {
@@ -38,13 +36,13 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
     return () => window.removeEventListener('resize', checkScreenWidth);
   }, []);
   
-  const handleNavMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setNavMenuAnchor(event.currentTarget);
-  };
+  // const handleNavMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  //   setNavMenuAnchor(event.currentTarget);
+  // };
   
-  const handleNavMenuClose = () => {
-    setNavMenuAnchor(null);
-  };
+  // const handleNavMenuClose = () => {
+  //   setNavMenuAnchor(null);
+  // };
   
   return (
     <AppBar 
@@ -66,9 +64,8 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        {isNarrowScreen ? (
+        {/* {isNarrowScreen ? (
           <>
-            {/* Mobile Layout */}
             <IconButton
               onClick={handleNavMenuOpen}
               style={{ color: 'inherit' }}
@@ -132,7 +129,6 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
           </>
         ) : (
           <>
-            {/* Desktop Layout */}
             <Typography
               variant="h6"
               component="div"
@@ -188,14 +184,22 @@ export const BruteForceGamesAppBar = <TTabId extends string = string>(props: Bru
               );
             })}
 
-            </Box>
+            </Box> */}
             
-            <UserProfileAccessComponent
+            {/* <UserProfileAccessComponent
               myPlayerProfiles={myPlayerProfiles}
               myDefaultPlayerProfile={myDefaultPlayerProfile}
             />
           </>
-        )}
+        )} */}
+
+        {/* {childContent && childContent({ isNarrowScreen })} */}
+        {/* {typeof children === 'function' ? children({ isNarrowScreen }) : children} */}
+        {children && typeof children === 'function' ? children({ isNarrowScreen }) : children}
+        <UserProfileAccessComponent
+          myPlayerProfiles={myPlayerProfiles}
+          myDefaultPlayerProfile={myDefaultPlayerProfile}
+        />
 
       </Toolbar>
     </AppBar>

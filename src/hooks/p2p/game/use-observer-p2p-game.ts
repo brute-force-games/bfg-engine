@@ -26,7 +26,7 @@ export const useObserverP2pGame = (gameTableId: GameTableId): IObserverP2pGame |
   const p2pGame = useP2pGame({
     gameTableId,
     myPlayerProfile: null,
-    requestedRole: 'observer',
+    requestedRole: 'watch',
   });
 
   return {

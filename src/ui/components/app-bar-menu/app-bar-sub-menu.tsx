@@ -3,14 +3,17 @@ import { ArrowRight, Menu, MenuItem, Typography } from "../../bfg-ui/index";
 import { SubMenu } from "./app-bar-menu";
 
 
-interface IMwAppBarSubMenuProps {
+interface IBfgAppBarSubMenuProps {
   menuItem: SubMenu;
   areSubmenusOpen: boolean;
   handleOpenSubmenu: () => void;
   handleMenuClose: () => void;
 }
 
-export const DbkAppBarSubMenu = ({ menuItem, areSubmenusOpen, handleOpenSubmenu, handleMenuClose }: IMwAppBarSubMenuProps) => {
+export const BfgAppBarSubMenu = ({ menuItem, areSubmenusOpen, handleOpenSubmenu, handleMenuClose }: IBfgAppBarSubMenuProps) => {
+
+  // const appSettings = useAppSettings();
+  // const gameSpineLocation = appSettings.gameSpineLocation;
 
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
 
