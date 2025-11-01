@@ -1,7 +1,6 @@
 import { z } from "zod"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { Container, Box, Typography, Select, Option } from "../bfg-ui"
-import { PlayerGameTabId } from "./bfg-tabs"
 import { useObserverP2pGame } from "../../hooks/p2p/game/use-observer-p2p-game"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
@@ -13,10 +12,9 @@ import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-en
 // TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
 interface IObserverP2pGameComponentProps {
   gameTableId: GameTableId
-  mode: PlayerGameTabId
 }
 
-export const ObserverP2pGameComponent = ({ gameTableId, mode }: IObserverP2pGameComponentProps) => {
+export const ObserverP2pGameComponent = ({ gameTableId }: IObserverP2pGameComponentProps) => {
 
   const p2pGame = useObserverP2pGame(gameTableId);
   const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);

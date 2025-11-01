@@ -24,11 +24,21 @@ export const GameSpineLocationSchema = z.enum([
 ]);
 export type GameSpineLocation = z.infer<typeof GameSpineLocationSchema>;
 
+
+export const PlayerAgentModeSchema = z.enum([
+  'none',
+  'chaotic-random',
+  'try-to-win',
+  'try-to-lose',
+]);
+export type PlayerAgentMode = z.infer<typeof PlayerAgentModeSchema>;
+
 /**
  * App settings schema
  */
 export const AppSettingsSchema = z.object({
   gameSpineLocation: GameSpineLocationSchema,
+  playerAgentMode: PlayerAgentModeSchema,
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
@@ -37,6 +47,7 @@ export type AppSettings = z.infer<typeof AppSettingsSchema>;
  */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   gameSpineLocation: 'top',
+  playerAgentMode: 'none',
 };
 
 // Create the store
