@@ -82,13 +82,6 @@ export const HostedGameView = (props: HostedGameViewProps) => {
 
   return (
     <Stack spacing={2}>
-      {/* <Typography variant="body1">BFG Table Phase: {hostedGame.tablePhase}</Typography> */}
-      {/* <Typography variant="body1">Peers: {props.peers.length}</Typography>
-      <Typography variant="body1">Peer players: {props.peerPlayers.size}</Typography>
-      <Typography variant="body1">All player profiles: {props.allPlayerProfiles.size}</Typography>
-      {Array.from(props.allPlayerProfiles.values()).map((profile) => (
-        <Typography variant="body1" key={profile.id}>{profile.id}: {profile.handle}</Typography>
-      ))} */}
       <Box>
         {hostRepresentation}
       </Box>

@@ -9,29 +9,16 @@ interface BfgStarterNavBarProps<TTabId extends string = string> {
     activeTabId: TTabId;
     onTabChange: (tabId: TTabId) => void;
   } | null;
-  // activeTabId: GameTabId;
-  // myGameTableAccess: GameTableAccessRole;
-  // gameTabItems: readonly AppBarTabItem<GameTabId>[];
-  // activeTabId: TTabId;  
 }
 
-export const BfgStarterNavBar = (props: BfgStarterNavBarProps) => {
-  // const { myGameTableAccess, activeTabId } = props;
+export const BfgStarterNavBar = <TTabId extends string = string>(props: BfgStarterNavBarProps<TTabId>) => {
   const { tabsConfig } = props;
-
-  // const gameTabItems = getGameTabItems(myGameTableAccess);
-  // const tabsConfig = {
-  //   tabItems: gameTabItems,
-  //   activeTabId: activeTabId,
-  // };
 
   if (!tabsConfig) {
     return (
       <BruteForceGamesAppBar />
     )
   }
-
-  
 
   return (
     <BruteForceGamesAppBar>

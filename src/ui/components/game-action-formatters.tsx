@@ -1,4 +1,3 @@
-import React from 'react';
 import { Typography } from '../bfg-ui/components/Typography';
 import { Chip } from '../bfg-ui/components/Chip';
 import { DbGameTableAction } from '~/models/game-table/game-table-action';

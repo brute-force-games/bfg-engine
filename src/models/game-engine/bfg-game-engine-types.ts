@@ -107,6 +107,14 @@ export interface GameHistoryComponentProps {
   gameActions: BfgGameImplPublicHistoryAction[];
 }
 
+export interface GameSpineComponentProps<GIS extends BfgPublicGameImplState> {
+  gameTable: GameTable;
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+  orientation: 'horizontal' | 'vertical';
+
+  gameState: GIS
+}
+
 
 export type BfgAllPublicKnowledgeGameEngineComponents<
   GIS extends BfgPublicGameImplState,
@@ -118,4 +126,5 @@ export type BfgAllPublicKnowledgeGameEngineComponents<
   PlayerComponent: (props: PlayerComponentProps<GIS, GPA>) => React.ReactNode;
   HostComponent: (props: GameHostComponentProps<GIS, GHA>) => React.ReactNode;
   HistoryComponent?: (props: GameHistoryComponentProps) => React.ReactNode;
+  GameSpineComponent?: (props: GameSpineComponentProps<GIS>) => React.ReactNode;
 }

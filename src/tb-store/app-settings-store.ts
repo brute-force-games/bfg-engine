@@ -1,6 +1,6 @@
-import { z } from 'zod';
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
+import { AppSettings, AppSettingsSchema } from '~/models/app-settings';
 
 /**
  * TinyBase store for user app settings
@@ -12,41 +12,11 @@ export const TB_APP_SETTINGS_STORE_NAME = 'tinybase_app_settings';
 // export const TB_APP_SETTINGS_VALUE_KEY = 'appSettings';
 
 /**
- * Game spine location options
- */
-export const GameSpineLocationSchema = z.enum([
-  'nav-bar',
-  'top',
-  'left',
-  'right',
-  'bottom',
-  'hidden',
-]);
-export type GameSpineLocation = z.infer<typeof GameSpineLocationSchema>;
-
-
-export const PlayerAgentModeSchema = z.enum([
-  'none',
-  'chaotic-random',
-  'try-to-win',
-  'try-to-lose',
-]);
-export type PlayerAgentMode = z.infer<typeof PlayerAgentModeSchema>;
-
-/**
- * App settings schema
- */
-export const AppSettingsSchema = z.object({
-  gameSpineLocation: GameSpineLocationSchema,
-  playerAgentMode: PlayerAgentModeSchema,
-});
-export type AppSettings = z.infer<typeof AppSettingsSchema>;
-
-/**
  * Default app settings
  */
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   gameSpineLocation: 'top',
+  gameLogPanelLocation: 'right',
   playerAgentMode: 'none',
 };
 

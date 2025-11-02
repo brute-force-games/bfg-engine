@@ -5,9 +5,8 @@ import {
   updateAppSettings,
   resetAppSettings,
   parseRawAppSettings,
-  AppSettings,
-  GameSpineLocation,
 } from '../../tb-store/app-settings-store';
+import { AppSettings, GameSpineLocation } from '~/models/app-settings';
 
 /**
  * Hook to get app settings with reactive updates
@@ -22,13 +21,13 @@ export const useAppSettings = (): AppSettings => {
   return parsedSettings;
 };
 
-/**
- * Hook to get the game spine location with reactive updates
- */
-export const useGameSpineLocation = (): GameSpineLocation => {
-  const settings = useAppSettings();
-  return settings.gameSpineLocation;
-};
+// /**
+//  * Hook to get the game spine location with reactive updates
+//  */
+// export const useGameSpineLocation = (): GameSpineLocation => {
+//   const settings = useAppSettings();
+//   return settings.gameSpineLocation;
+// };
 
 /**
  * Hook for app settings management actions

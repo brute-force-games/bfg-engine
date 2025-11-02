@@ -1,36 +1,32 @@
 import { Box, PlayersRow, Stack } from "@bfg-engine/ui/bfg-ui";
-import { BfgSupportedGameTitle } from "@bfg-engine/models/game-box-definition";
-import { GameTable } from '~/models/game-table/game-table';
-import { GameTableSeat } from '~/models/game-table/game-table';
-import { PlayerProfileId } from '~/models/types/bfg-branded-ids';
-import { PublicPlayerProfile } from '~/models/player-profile/public-player-profile';
-import { BfgGameTitleBox } from "./BfgGameTitleBox";
+import { BfgBasicGameTitleBox } from "./BfgBasicGameTitleBox";
 import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
+import { VerticalBfgGameSpine } from "./VerticalBfgGameSpine";
+import { BfgGameSpineProps } from "./types";
 
-
-interface BfgGameSpineProps<GIS extends BfgPublicGameImplState> {
-  gameTitle: BfgSupportedGameTitle;
-  gameSourceUrl: string;
-  orientation: 'horizontal' | 'vertical';
-  gameTable: GameTable;
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  nextToActPlayers: GameTableSeat[];
-  gameState: GIS;
-  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
-}
 
 export const BfgGameSpine = <GIS extends BfgPublicGameImplState>(props: BfgGameSpineProps<GIS>) => {
   const { gameTitle, gameSourceUrl, orientation, gameTable, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
 
-  if (orientation !== 'horizontal') {
-    throw new Error('BfgGameSpine: non-horizontal orientation is not implemented');
+  if (orientation === 'vertical') {
+    return (
+      <VerticalBfgGameSpine
+        gameTitle={gameTitle}
+        gameSourceUrl={gameSourceUrl}
+        orientation={orientation}
+        gameTable={gameTable}
+        allPlayerProfiles={allPlayerProfiles}
+        nextToActPlayers={nextToActPlayers}
+        gameState={gameState}
+        playerDetailsLineFn={playerDetailsLineFn}
+      />
+    )
   }
 
   return (
     <Box>
       <Stack spacing={3} direction="row" style={{ width: '100%', height: 68, backgroundColor: 'lightgray' }}>
-        {/* <Stack spacing={3} style={{ width: '100%', height: '100%' }}> */}
-        <BfgGameTitleBox
+        <BfgBasicGameTitleBox
           gameTitle={gameTitle}
           gameSourceUrl={gameSourceUrl}
         />

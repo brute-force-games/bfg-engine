@@ -10,7 +10,8 @@ import {
   Stack,
 } from '../../bfg-ui/index';
 import { useAppSettings, useAppSettingsActions } from '../../../hooks/stores/use-my-app-settings-store';
-import { GameSpineLocation, PlayerAgentMode } from '../../../tb-store/app-settings-store';
+import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
+
 
 interface AppSettingsDialogProps {
   open: boolean;
@@ -25,9 +26,11 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
   // Initialize with current settings
   const [formValues, setFormValues] = useState<{
     gameSpineLocation: GameSpineLocation;
+    gameLogPanelLocation: GameLogPanelLocation;
     playerAgentMode: PlayerAgentMode;
   }>(() => ({
     gameSpineLocation: currentSettings.gameSpineLocation,
+    gameLogPanelLocation: currentSettings.gameLogPanelLocation,
     playerAgentMode: currentSettings.playerAgentMode,
   }));
 
@@ -36,10 +39,11 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
     if (open) {
       setFormValues({
         gameSpineLocation: currentSettings.gameSpineLocation,
+        gameLogPanelLocation: currentSettings.gameLogPanelLocation,
         playerAgentMode: currentSettings.playerAgentMode,
       });
     }
-  }, [open, currentSettings.gameSpineLocation, currentSettings.playerAgentMode]);
+  }, [open, currentSettings.gameSpineLocation, currentSettings.gameLogPanelLocation, currentSettings.playerAgentMode]);
 
   const handleSave = () => {
     updateSettings(formValues);
@@ -57,6 +61,13 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
     });
   };
 
+  const handleGameLogPanelLocationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormValues({
+      ...formValues,
+      gameLogPanelLocation: event.target.value as GameLogPanelLocation,
+    });
+  };
+
   const handlePlayerAgentModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setFormValues({
       ...formValues,
@@ -71,6 +82,12 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
     { value: 'right', label: 'Right Side' },
     { value: 'bottom', label: 'Bottom' },
     { value: 'hidden', label: 'Hidden' },
+  ];
+
+  const gameLogPanelLocationOptions: { value: GameLogPanelLocation; label: string }[] = [
+    { value: 'none', label: 'None (Hidden)' },
+    { value: 'left', label: 'Left Side' },
+    { value: 'right', label: 'Right Side' },
   ];
 
   const playerAgentModeOptions: { value: PlayerAgentMode; label: string }[] = [
@@ -93,6 +110,19 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
             fullWidth
           >
             {gameSpineLocationOptions.map((option) => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+          
+          <Select
+            label="Game Log Panel Location"
+            value={formValues.gameLogPanelLocation}
+            onChange={handleGameLogPanelLocationChange}
+            fullWidth
+          >
+            {gameLogPanelLocationOptions.map((option) => (
               <Option key={option.value} value={option.value}>
                 {option.label}
               </Option>

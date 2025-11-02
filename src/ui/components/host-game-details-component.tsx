@@ -20,12 +20,12 @@ export const HostedGameDetailsComponent = ({
 }: IHostedGameDetailsComponentProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
+  const gameRegistry = useGameRegistry();
+  const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
+
   const latestGameSpecificStateStr = gameActions.length > 0 ? 
     gameActions[gameActions.length - 1].nextGameStateStr :
     null;
-
-  const gameRegistry = useGameRegistry();
-  const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
   const latestGameSpecificState = latestGameSpecificStateStr ?
     gameMetadata.gameSpecificStateEncoder.decode(latestGameSpecificStateStr) :
     null;

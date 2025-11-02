@@ -8,31 +8,12 @@ import { useHostedP2pGameWithStore } from "./use-hosted-p2p-game-with-store";
 export interface IP2pGameValue extends IP2pGame {
   myPlayerProfile: PrivatePlayerProfile | null;
   myGameTableAccess: GameTableAccessRole;
-
-  // room: Room
-
-  // connectionStatus: string
-  // connectionEvents: ConnectionEvent[]
-
-  // peers: PeerId[];
-  // peerPlayers: Map<PeerId, PublicPlayerProfile>
-  // allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
-
-  // gameTable: GameTable | null;
-  // gameActions: DbGameTableAction[];
-
-  // txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
-  // rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
-  
-  // refreshConnection: () => void
 }
 
 
 export interface IP2pGameContextProviderProps extends IP2pGameProps {
-  // gameTableId: GameTableId;
   myPlayerProfile: PrivatePlayerProfile | null;
   requestedRole: GameTableAccessRole;
-  // roomEventHandlers: IP2pGameRoomEventHandlers;
   children: React.ReactNode;
 }
 
@@ -42,7 +23,6 @@ export const P2pGameContextProvider = ({
   gameTableId,
   myPlayerProfile,
   requestedRole,
-  // roomEventHandlers,
   children 
 }: IP2pGameContextProviderProps) => {
 
@@ -55,23 +35,6 @@ export const P2pGameContextProvider = ({
       myPlayerProfile,
       requestedRole,
     });
-
-  // if (requestedRole === 'host' && myPlayerProfile) {
-  //   return (
-  //     <P2pHostedGameContextProvider
-  //       gameTableId={gameTableId}
-  //       // myPlayerProfile={myPlayerProfile}
-  //       hostPlayerProfile={myPlayerProfile}
-  //       children={children}
-  //     />
-  //   )
-  // }
-
-  // const p2pGame = useP2pGame({
-  //   gameTableId,
-  //   myPlayerProfile,
-  //   requestedRole,
-  // });
 
   const retVal: IP2pGameValue = {
     ...p2pGame,
