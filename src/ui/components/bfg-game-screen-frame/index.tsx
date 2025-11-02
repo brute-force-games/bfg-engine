@@ -9,6 +9,28 @@ import { GameTable } from "~/models/game-table/game-table";
 import { GameLogPanel } from "../game-log-panel";
 import { DbGameTableAction } from "~/models/game-table/game-table-action";
 
+// Fixed width for side panels (log panel and game spine)
+const SIDE_PANEL_WIDTH = 150;
+
+interface FixedWidthPanelProps {
+  children: React.ReactNode;
+}
+
+const FixedWidthPanel = ({ children }: FixedWidthPanelProps) => {
+  return (
+    <div style={{ 
+      width: `${SIDE_PANEL_WIDTH}px`, 
+      minWidth: `${SIDE_PANEL_WIDTH}px`, 
+      maxWidth: `${SIDE_PANEL_WIDTH}px`, 
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
+      overflowY: 'auto',
+      overflowX: 'hidden'
+    }}>
+      {children}
+    </div>
+  );
+};
 
 interface BfgGameScreenFrameProps<TTabId extends string = string> {
   tabsConfig: {
@@ -87,11 +109,29 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
   const BfgGameBoardFrame = () => {
     return (
       <Stack direction="row" style={{ flex: 1, minHeight: 0 }}>
-        {gameLogPanelLocation === 'left' && bfgGameLogPanel}
-        {gameSpineLocation === 'left' && bfgGameSpine}
-        {children}
-        {gameSpineLocation === 'right' && bfgGameSpine}
-        {gameLogPanelLocation === 'right' && bfgGameLogPanel}
+        {gameLogPanelLocation === 'left' && (
+          <FixedWidthPanel>
+            {bfgGameLogPanel}
+          </FixedWidthPanel>
+        )}
+        {gameSpineLocation === 'left' && (
+          <FixedWidthPanel>
+            {bfgGameSpine}
+          </FixedWidthPanel>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {children}
+        </div>
+        {gameSpineLocation === 'right' && (
+          <FixedWidthPanel>
+            {bfgGameSpine}
+          </FixedWidthPanel>
+        )}
+        {gameLogPanelLocation === 'right' && (
+          <FixedWidthPanel>
+            {bfgGameLogPanel}
+          </FixedWidthPanel>
+        )}
       </Stack>
     );
   };

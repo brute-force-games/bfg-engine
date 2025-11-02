@@ -10,9 +10,15 @@ export interface BfgBasicGameTitleBoxProps {
 export const BfgBasicGameTitleBox = (props: BfgBasicGameTitleBoxProps) => {
   const { gameTitle, gameSourceUrl } = props;
 
+  const boxStyle = {
+    width: '100%',
+    overflowWrap: 'break-word' as const,
+    wordBreak: 'break-word' as const,
+  };
+
   if (!gameSourceUrl) {
     return (
-      <Box style={{ width: '300px' }}>
+      <Box style={boxStyle}>
         <Typography variant="h5">
           You are playing {gameTitle}
         </Typography>
@@ -21,7 +27,7 @@ export const BfgBasicGameTitleBox = (props: BfgBasicGameTitleBoxProps) => {
   }
 
   return (
-    <Box style={{ width: '300px' }}>
+    <Box style={boxStyle}>
       <Typography variant="h5">
         You are playing <HrefLink href={gameSourceUrl}>{gameTitle}</HrefLink>
       </Typography>
