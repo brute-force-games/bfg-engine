@@ -1,29 +1,27 @@
 import { z } from "zod";
-import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Container, Typography, Stack, Box } from "../bfg-ui";
 import { PlayerComponentProps } from "~/models/game-engine/bfg-game-engine-types";
 import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-engine/encoders";
-import { PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
+import { IPlayerBfgGameDetails } from "~/hooks/p2p/game/p2p-game-types";
 
 
-interface PlayerGameViewProps {
-  myPlayerSeat: GameTableSeat;
-  myPlayerProfile: PublicPlayerProfile;
-  gameTable: GameTable;
-  peers: PeerId[];
-  peerPlayers: Map<PeerId, PublicPlayerProfile>;
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  gameActions: DbGameTableAction[];
-  
-  onPlayerGameAction: (playerActionStr: PlayerP2pActionStr) => void
-}
+// interface PlayerGameViewProps {
+//   myPlayerSeat: GameTableSeat;
+//   myPlayerProfile: PublicPlayerProfile;
+//   gameTable: GameTable;
+//   peers: PeerId[];
+//   peerPlayerIds: Map<PeerId, PlayerProfileId>;
+//   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+//   gameActions: DbGameTableAction[];
 
-export const PlayerGameView = (props: PlayerGameViewProps) => {
-  const { gameTable, gameActions, onPlayerGameAction } = props;
+//   myPrivatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr | null;
+//   onPlayerGameAction: (playerActionStr: PlayerP2pActionStr) => void
+// }
+
+// export const PlayerGameView = (props: PlayerGameViewProps) => {
+export const PlayerGameView = (props: IPlayerBfgGameDetails) => {
+  const { gameTable, gameActions, myPrivatePlayerKnowledgeStr, onPlayerAction } = props;
 
   const latestAction = gameActions[gameActions.length - 1];
   
@@ -36,17 +34,17 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
   
-  const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
-    throw new Error('Game specific state encoder format is not json-zod-object');
+  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
 
   const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
   const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
-  const playerActionEncoder = gameMetadata.playerActionEncoder;
-  if (playerActionEncoder.format !== 'json-zod-object') {
-    throw new Error('Player action encoder format is not json-zod-object');
+  const playerActionEncoder = gameMetadata.encoders.playerActionEncoder;
+  if (playerActionEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Player action encoder format is not json-zod-object-string');
   }
 
   const zodPlayerActionEncoder = playerActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
@@ -55,20 +53,45 @@ export const PlayerGameView = (props: PlayerGameViewProps) => {
   const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
   const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
 
-  const onPlayerAction = (playerAction: z.infer<typeof zodPlayerActionSchema>) => {
-    console.log('🎮 PLAYER SENDING ACTION:', playerAction);
-    const encodedPlayerAction = zodPlayerActionEncoder.encode(playerAction);
-    const encodedPlayerActionStr = encodedPlayerAction as unknown as PlayerP2pActionStr;
-    onPlayerGameAction(encodedPlayerActionStr);
+  const privatePlayerKnowledgeSchema = gameMetadata.gameKnowledgeType === 'private-player-knowledge' ?
+    (gameMetadata.encoders.privatePlayerKnowledgeEncoder as IBfgJsonZodObjectDataEncoder<any>).schema as z.ZodTypeAny :
+    z.never();
+
+  let myPrivatePlayerKnowledge: z.infer<typeof privatePlayerKnowledgeSchema> | null = null;
+  if (gameMetadata.gameKnowledgeType === 'private-player-knowledge') {
+    const privatePlayerKnowledgeEncoder = gameMetadata.encoders.privatePlayerKnowledgeEncoder;
+    if (privatePlayerKnowledgeEncoder.format !== 'json-zod-object-string') {
+      throw new Error('Private player knowledge encoder format is not json-zod-object-string');
+    }
+
+    // const zodPrivatePlayerKnowledgeEncoder = privatePlayerKnowledgeEncoder as IBfgJsonZodObjectDataEncoder<any>;
+    // const zodPrivatePlayerKnowledgeSchema = zodPrivatePlayerKnowledgeEncoder.schema as z.ZodTypeAny;
+    
+    myPrivatePlayerKnowledge = myPrivatePlayerKnowledgeStr ?
+      privatePlayerKnowledgeEncoder.decode(myPrivatePlayerKnowledgeStr as unknown as BfgEncodedString) :
+      null;
   }
+
+  // const onPlayerAction = (playerAction: z.infer<typeof zodPlayerActionSchema>) => {
+  //   console.log('🎮 PLAYER SENDING ACTION:', playerAction);
+  //   const encodedPlayerAction = zodPlayerActionEncoder.encode(playerAction);
+  //   const encodedPlayerActionStr = encodedPlayerAction as unknown as PlayerP2pActionStr;
+  //   onPlayerGameAction(encodedPlayerActionStr);
+  // }
+
 
   const playerGameComponentProps: PlayerComponentProps<
     z.infer<typeof zodGameSpecificStateSchema>,
-    z.infer<typeof zodPlayerActionSchema>
+    z.infer<typeof zodPlayerActionSchema>,
+    // z.infer<typeof zodPrivatePlayerKnowledgeSchema>
+    // never
+    z.infer<typeof privatePlayerKnowledgeSchema>
+    // privatePlayerKnowledgeSchema
   > = {
     gameTable: props.gameTable,
     allPlayerProfiles: props.allPlayerProfiles,
     gameState: gameSpecificState,
+    myPrivatePlayerKnowledge,
     hostPlayerProfileId: props.myPlayerProfile.id,
     currentPlayerProfileId: props.myPlayerProfile.id,
     currentPlayerSeat: props.myPlayerSeat,

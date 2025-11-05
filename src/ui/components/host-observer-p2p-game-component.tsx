@@ -46,8 +46,8 @@ export const HostObserverP2pGameComponent = ({
   }
   
   const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
-    throw new Error('Game specific state encoder format is not json-zod-object');
+  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
 
   const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;

@@ -1,12 +1,12 @@
 import { z } from "zod"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { Container, Box, Typography, Select, Option } from "../bfg-ui"
-import { useObserverP2pGame } from "../../hooks/p2p/game/use-observer-p2p-game"
 import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
 import { GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
 import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders"
+import { useP2pGameRoomAsObserver } from "~/hooks/p2p/game/use-bfg-game-room"
 
 
 // TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
@@ -16,18 +16,28 @@ interface IObserverP2pGameComponentProps {
 
 export const ObserverP2pGameComponent = ({ gameTableId }: IObserverP2pGameComponentProps) => {
 
-  const p2pGame = useObserverP2pGame(gameTableId);
+  const p2pGame = useP2pGameRoomAsObserver();
   const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
 
   if (!p2pGame) {
     return (
       <ContentLoading
-        message="Loading P2P Game Observer View..."
+        message="Loading P2P Game..."
       />
     )
   }
 
-  const { gameTable, gameActions } = p2pGame;
+  const p2p = p2pGame.p2p;
+
+  if (!p2p) {
+    return (
+      <ContentLoading
+        message="Loading P2P Observer Data..."
+      />
+    )
+  }
+
+  const { gameTable, gameActions } = p2p;
 
   if (!gameTable || !gameActions) {
     return (
@@ -35,6 +45,10 @@ export const ObserverP2pGameComponent = ({ gameTableId }: IObserverP2pGameCompon
         message="Loading Game xDetails..."
       />
     )
+  }
+
+  if (gameTable.id !== gameTableId) {
+    throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + gameTableId);
   }
 
   const gameRegistry = useGameRegistry();
@@ -49,9 +63,9 @@ export const ObserverP2pGameComponent = ({ gameTableId }: IObserverP2pGameCompon
     );
   }
 
-  const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
-    throw new Error('Game specific state encoder format is not json-zod-object');
+  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
 
   const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
@@ -63,7 +77,7 @@ export const ObserverP2pGameComponent = ({ gameTableId }: IObserverP2pGameCompon
   const gameRepresentation = gameMetadata.components.ObserverComponent({
     gameState: gameSpecificState,
     gameTable: gameTable,
-    allPlayerProfiles: p2pGame.allPlayerProfiles,
+    allPlayerProfiles: p2p.allPlayerProfiles,
     latestGameAction: latestAction,
     hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
     observedPlayerProfileId: null,

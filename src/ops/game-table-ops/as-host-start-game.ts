@@ -63,8 +63,8 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
   const initialGameSpecificAction = gameProcessor.createGameSpecificInitialAction(newGameTable, lobbyState);
   const initialGameSpecificState = gameProcessor.createGameSpecificInitialState(newGameTable, initialGameSpecificAction);
 
-  const actionStr = metadata.hostActionEncoder.encode(initialGameSpecificAction.gameSpecificAction);
-  const nextGameStateStr = metadata.gameSpecificStateEncoder.encode(initialGameSpecificState);
+  const actionStr = metadata.encoders.hostActionEncoder.encode(initialGameSpecificAction.gameSpecificAction);
+  const nextGameStateStr = metadata.encoders.hostGameStateEncoder.encode(initialGameSpecificState);
 
   const addedGameTable = await addHostedGame(newGameTable);
 

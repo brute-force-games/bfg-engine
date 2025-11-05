@@ -38,17 +38,17 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
 
-  const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object') {
-    throw new Error('Game specific state encoder format is not json-zod-object');
+  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
 
   const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
   const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
-  const hostActionEncoder = gameMetadata.hostActionEncoder;
-  if (hostActionEncoder.format !== 'json-zod-object') {
-    throw new Error('Host action encoder format is not json-zod-object');
+  const hostActionEncoder = gameMetadata.encoders.hostActionEncoder;
+  if (hostActionEncoder.format !== 'json-zod-object-string') {
+    throw new Error('Host action encoder format is not json-zod-object-string');
   }
 
   const zodHostActionEncoder = hostActionEncoder as IBfgJsonZodObjectDataEncoder<any>;

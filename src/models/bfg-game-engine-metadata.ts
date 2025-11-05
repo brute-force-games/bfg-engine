@@ -3,10 +3,10 @@ import { z } from "zod";
 import { GameTable } from "./game-table/game-table";
 import { BfgSupportedGameTitle } from "./game-box-definition";
 import { 
-  BfgGameEngineProcessor, 
-  BfgGameEngineRendererFactory,
-  GameStateJson,
-  GameActionJson,
+  // BfgGameEngineProcessor, 
+  // BfgGameEngineRendererFactory,
+  // GameStateJson,
+  // GameActionJson,
   GameStateHostComponentProps,
   GameStateActionInputProps,
   GameStateCombinationRepresentationAndInputProps,
@@ -55,90 +55,90 @@ export interface IBfgGameEngineProcessor<
 }
 
 
-export const createBfgGameEngineProcessor = <
-  GS extends z.ZodTypeAny,
-  GA extends z.ZodTypeAny
->(
-  _gameTitle: BfgSupportedGameTitle,
-  gameStateSchema: GS,
-  gameActionSchema: GA,
-  processorImplementation: IBfgGameEngineProcessor<GS, GA>,
-  rendererFactory: BfgGameEngineRendererFactory<GS, GA>,
-): BfgGameEngineProcessor<GS, GA> => {
+// export const createBfgGameEngineProcessor = <
+//   GS extends z.ZodTypeAny,
+//   GA extends z.ZodTypeAny
+// >(
+//   _gameTitle: BfgSupportedGameTitle,
+//   gameStateSchema: GS,
+//   gameActionSchema: GA,
+//   processorImplementation: IBfgGameEngineProcessor<GS, GA>,
+//   rendererFactory: BfgGameEngineRendererFactory<GS, GA>,
+// ): BfgGameEngineProcessor<GS, GA> => {
 
-  type TGameStateInferred = z.infer<GS>;
-  type TGameActionInferred = z.infer<GA>;
+//   type TGameStateInferred = z.infer<GS>;
+//   type TGameActionInferred = z.infer<GA>;
 
-  const createBrandedGameStateJsonValue = (obj: TGameStateInferred): GameStateJson<GS> => {
-    const json = JSON.stringify(obj);
-    console.log("createBrandedGameStateJsonValue", json);
-    return json as GameStateJson<GS>;
-  }
+//   const createBrandedGameStateJsonValue = (obj: TGameStateInferred): GameStateJson<GS> => {
+//     const json = JSON.stringify(obj);
+//     console.log("createBrandedGameStateJsonValue", json);
+//     return json as GameStateJson<GS>;
+//   }
 
-  const createBrandedGameActionJsonValue = (obj: TGameActionInferred): GameActionJson<GA> => {
-    const json = JSON.stringify(obj);
-    return json as GameActionJson<GA>;
-  }
+//   const createBrandedGameActionJsonValue = (obj: TGameActionInferred): GameActionJson<GA> => {
+//     const json = JSON.stringify(obj);
+//     return json as GameActionJson<GA>;
+//   }
 
-  const createBfgInitialGameState = (initialGameTableAction: BfgGameSpecificTableAction<z.infer<GA>>): z.infer<GS> => {
-    const initialGameSpecificState = processorImplementation.createInitialGameSpecificState(initialGameTableAction.gameSpecificAction);
+//   const createBfgInitialGameState = (initialGameTableAction: BfgGameSpecificTableAction<z.infer<GA>>): z.infer<GS> => {
+//     const initialGameSpecificState = processorImplementation.createInitialGameSpecificState(initialGameTableAction.gameSpecificAction);
     
-    return initialGameSpecificState;
-  }
+//     return initialGameSpecificState;
+//   }
 
 
-  // const narrowGameStateToValidGameActions = (
-  //   tableState: GameTable,
-  //   gameState: z.infer<GS>,
-  // ): BfgGameSpecificTableAction<GA>[] => {
+//   // const narrowGameStateToValidGameActions = (
+//   //   tableState: GameTable,
+//   //   gameState: z.infer<GS>,
+//   // ): BfgGameSpecificTableAction<GA>[] => {
 
-  //   const retVal: BfgGameSpecificTableAction<GA>[] = [];
+//   //   const retVal: BfgGameSpecificTableAction<GA>[] = [];
 
-  //   // for (const gameAction of gameActions) {
+//   //   // for (const gameAction of gameActions) {
 
-  //   //   const gameSpecificActionJson = JSON.parse(gameAction.actionJson);
-  //   //   const parsedGameSpecificAction = gameActionSchema.parse(gameSpecificActionJson);
+//   //   //   const gameSpecificActionJson = JSON.parse(gameAction.actionJson);
+//   //   //   const parsedGameSpecificAction = gameActionSchema.parse(gameSpecificActionJson);
 
-  //   //   const bfgAction: BfgGameSpecificTableAction<GA> = {
-  //   //     gameTableActionId: gameAction.id,
-  //   //     source: gameAction.source,
-  //   //     actionType: gameAction.actionType,
-  //   //     gameSpecificAction: parsedGameSpecificAction,
-  //   //   };
+//   //   //   const bfgAction: BfgGameSpecificTableAction<GA> = {
+//   //   //     gameTableActionId: gameAction.id,
+//   //   //     source: gameAction.source,
+//   //   //     actionType: gameAction.actionType,
+//   //   //     gameSpecificAction: parsedGameSpecificAction,
+//   //   //   };
 
-  //   //   retVal.push(bfgAction);
-  //   // }
+//   //   //   retVal.push(bfgAction);
+//   //   // }
 
-  //   return retVal;
-  // }
+//   //   return retVal;
+//   // }
 
 
-  const processor: BfgGameEngineProcessor<GS, GA> = {
+//   const processor: BfgGameEngineProcessor<GS, GA> = {
 
-    ...processorImplementation,
+//     ...processorImplementation,
 
-    rendererFactory,
+//     rendererFactory,
 
-    createBfgInitialGameSpecificState: createBfgInitialGameState,
-    createBfgGameSpecificInitialGameTableAction: processorImplementation.createInitialGameTableAction,
+//     createBfgInitialGameSpecificState: createBfgInitialGameState,
+//     createBfgGameSpecificInitialGameTableAction: processorImplementation.createInitialGameTableAction,
 
-    createGameSpecificGameStateJson: (obj: TGameStateInferred) => createBrandedGameStateJsonValue(obj),
-    parseGameSpecificGameStateJson: (jsonString: GameStateJson<GS>) => {
-      const json = JSON.parse(jsonString);
-      return gameStateSchema.parse(json) as z.infer<GS>;
-    },
+//     createGameSpecificGameStateJson: (obj: TGameStateInferred) => createBrandedGameStateJsonValue(obj),
+//     parseGameSpecificGameStateJson: (jsonString: GameStateJson<GS>) => {
+//       const json = JSON.parse(jsonString);
+//       return gameStateSchema.parse(json) as z.infer<GS>;
+//     },
 
-    createGameSpecificActionJson: (obj: TGameActionInferred) => createBrandedGameActionJsonValue(obj),
-    parseGameSpecificActionJson: (jsonString: GameActionJson<GA>) => {
-      const json = JSON.parse(jsonString);
-      return gameActionSchema.parse(json) as z.infer<GA>;
-    },
+//     createGameSpecificActionJson: (obj: TGameActionInferred) => createBrandedGameActionJsonValue(obj),
+//     parseGameSpecificActionJson: (jsonString: GameActionJson<GA>) => {
+//       const json = JSON.parse(jsonString);
+//       return gameActionSchema.parse(json) as z.infer<GA>;
+//     },
 
-    // narrowGameStateToValidGameActions,
+//     // narrowGameStateToValidGameActions,
 
-    gameStateJsonSchema: gameStateSchema,
-    gameActionJsonSchema: gameActionSchema,
-  };
+//     gameStateJsonSchema: gameStateSchema,
+//     gameActionJsonSchema: gameActionSchema,
+//   };
 
-  return processor;
-}
+//   return processor;
+// }

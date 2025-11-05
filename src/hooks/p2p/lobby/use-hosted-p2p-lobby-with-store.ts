@@ -2,7 +2,6 @@ import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-
 import { IP2pLobbyRoomEventHandlers, useP2pLobby } from "./use-p2p-lobby";
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";
-import { P2P_LOBBY_DETAILS_ACTION_KEY } from "../../../ui/components/constants";
 import { IP2pLobby } from "./use-p2p-lobby";
 import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
@@ -29,10 +28,10 @@ export interface IHostedP2pLobbyWithStoreData {
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   myHostPlayerProfile: PublicPlayerProfile
 
-  txLobbyData: (lobbyData: HostP2pLobbyDetails) => void
+  txLobbyDetails: (lobbyDetails: HostP2pLobbyDetails, peer?: PeerId) => void
   txPlayerProfile: (playerProfile: PublicPlayerProfile) => void
   rxPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => void
-  refreshConnection: () => void
+  // refreshConnection: () => void
 
   lobbyState: GameLobby | null;
   lobbyOptions: LobbyOptions;
@@ -69,7 +68,8 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
   });
 
   const {
-    room,
+    // room,
+    txLobbyDetails,
     peers,
     peerPlayers,
     allPlayerProfiles,
@@ -81,8 +81,6 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
   } = p2pLobby;
   const { updateLobby } = lobbyActions;
 
-  // const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>(otherPlayerProfiles);
-  // allPlayerProfiles.set(hostPlayerProfile.id, hostPlayerProfile);
 
   const applyPlayerMove = async (move: PlayerP2pLobbyMove, playerId: PlayerProfileId) => {
     console.log('applyPlayerMove', move, playerId);
@@ -146,7 +144,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
   //   doSendLobbyData(peerId);
   // })
 
-  const [txLobbyData] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
+  // const [txLobbyData] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
 
   const doSendLobbyData = useCallback((peerId: PeerId) => {
     if (lobbyState) {
@@ -157,11 +155,11 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
       }
 
       console.log('sending lobby data', lobbyData);
-      txLobbyData(lobbyData, peerId);
+      txLobbyDetails(lobbyData, peerId);
     } else {
       console.log('no lobby details to send');
     }
-  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyData]);
+  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyDetails]);
 
   const broadcastLobbyData = useCallback(() => {
     if (lobbyState) {
@@ -170,11 +168,11 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
         lobbyOptions: lobbyOptions,
         lobbyState: lobbyState,
       }
-      txLobbyData(lobbyData);
+      txLobbyDetails(lobbyData);
     } else {
       console.log('no lobby details to send');
     }
-  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyData]);
+  }, [hostPlayerProfile, lobbyOptions, lobbyState, txLobbyDetails]);
 
 
   rxPlayerMove(async (move: PlayerP2pLobbyMove, peer: string) => {
@@ -195,7 +193,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
 
   useEffect(() => {
     if (lobbyState) {
-      txLobbyData({
+      txLobbyDetails({
         hostPlayerProfile: hostPlayerProfile,
         lobbyState: lobbyState,
         lobbyOptions: lobbyOptions,
@@ -213,7 +211,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
     allPlayerProfiles,
     myHostPlayerProfile: hostPlayerProfile,
 
-    txLobbyData,
+    txLobbyDetails,
     txPlayerProfile,
     rxPlayerProfile,
     refreshConnection,

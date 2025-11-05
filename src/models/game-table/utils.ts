@@ -1,4 +1,5 @@
-import { GameTableAccessRole } from "../game-roles";
+import { PeerId } from "~/hooks/p2p/p2p-types";
+import { PublicPlayerProfile } from "../player-profile/public-player-profile";
 import { PlayerProfileId } from "../types/bfg-branded-ids";
 import { GameTable } from "./game-table";
 import { GameTableActionSource, HostActionSources, PlayerActionSources } from "./game-table-action";
@@ -29,60 +30,66 @@ export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, g
   );
 }
 
-export const isProfileIdOkForHostAccess = (playerId: PlayerProfileId | null, gameTable: GameTable): boolean => {
-  return playerId === gameTable.gameHostPlayerProfileId;
+export const isProfileOkForHostAccess = (playerProfile: PublicPlayerProfile, gameTable: GameTable): boolean => {
+  return playerProfile.id === gameTable.gameHostPlayerProfileId;
 }
 
 
-export const getTableAccessRoleForProfile = (
-  playerId: PlayerProfileId | null, 
-  gameTable: GameTable | null,
-  requestedRole: GameTableAccessRole
-): GameTableAccessRole => {
+export const isMessageFromHost = (_peerId: PeerId): boolean => {
+  return true;
+  // return message.source === 'host';
+}
 
-  if (!gameTable || !playerId) {
-    return 'observer';
-  }
 
-  const okForPlayerAccess = isProfileIdOkForPlayerAccess(playerId, gameTable);
-  const okForHostAccess = isProfileIdOkForHostAccess(playerId, gameTable);
+// export const getTableAccessRoleForProfile = (
+//   playerId: PlayerProfileId | null, 
+//   gameTable: GameTable | null,
+//   requestedRole: GameTableAccessRole
+// ): GameTableAccessRole => {
 
-  if (requestedRole === 'player' && (
-      okForPlayerAccess || okForHostAccess))
-  {
-    return 'player';
-  }
+//   if (!gameTable || !playerId) {
+//     return 'observer';
+//   }
 
-  if (requestedRole === 'host' && okForHostAccess) {
-    return 'host';
-  }
+//   const okForPlayerAccess = isProfileIdOkForPlayerAccess(playerId, gameTable);
+//   const okForHostAccess = isProfileIdOkForHostAccess(playerId, gameTable);
+
+//   if (requestedRole === 'player' && (
+//       okForPlayerAccess || okForHostAccess))
+//   {
+//     return 'player';
+//   }
+
+//   if (requestedRole === 'host' && okForHostAccess) {
+//     return 'host';
+//   }
   
-  return 'observer';
-}
+//   return 'observer';
+// }
 
 
-export const hasTableAccessRoleForProfile = (
-  playerId: PlayerProfileId | null, 
-  gameTable: GameTable | null,
-  requestedRole: GameTableAccessRole
-): boolean => {
+// export const hasTableAccessRoleForProfile = (
+//   playerId: PlayerProfileId | null, 
+//   gameTable: GameTable | null,
+//   requestedRole: GameTableAccessRole
+// ): boolean => {
 
-  if (!gameTable || !playerId) {
-    return false;
-  }
+//   if (!gameTable || !playerId) {
+//     return false;
+//   }
 
-  const okForPlayerAccess = isProfileIdOkForPlayerAccess(playerId, gameTable);
-  const okForHostAccess = isProfileIdOkForHostAccess(playerId, gameTable);
+//   const okForPlayerAccess = isProfileIdOkForPlayerAccess(playerId, gameTable);
+//   const okForHostAccess = isProfileIdOkForHostAccess(playerId, gameTable);
 
-  if (requestedRole === 'player' && (
-      okForPlayerAccess || okForHostAccess))
-  {
-    return true;
-  }
+//   if (requestedRole === 'player' && (
+//       okForPlayerAccess || okForHostAccess))
+//   {
+//     return true;
+//   }
 
-  if (requestedRole === 'host' && okForHostAccess) {
-    return true;
-  }
+//   if (requestedRole === 'host' && okForHostAccess) {
+//     return true;
+//   }
   
-  return false;
-}
+//   return false;
+// }

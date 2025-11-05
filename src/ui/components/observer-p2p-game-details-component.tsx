@@ -1,6 +1,7 @@
+import { useP2pGameRoomAsObserver } from "~/hooks/p2p/game/use-bfg-game-room"
 import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { Container, Typography } from "../bfg-ui"
-import { useObserverP2pGame } from "../../hooks/p2p/game/use-observer-p2p-game"
+// import { useP2pGameAsObserver } from "../../hooks/p2p/game/create-p2p-game-as-observer"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 
 
@@ -12,7 +13,7 @@ interface IObserverP2pGameDetailsComponentProps {
 
 export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGameDetailsComponentProps) => {
 
-  const p2pGame = useObserverP2pGame(gameTableId);
+  const p2pGame = useP2pGameRoomAsObserver();
   // const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
 
   if (!p2pGame) {
@@ -23,7 +24,15 @@ export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGam
     )
   }
 
-  const { gameTable, gameActions } = p2pGame;
+  const p2p = p2pGame.p2p;
+  if (!p2p) {
+    return (
+      <ContentLoading
+        message="Loading P2P Observer Data..."
+      />
+    )
+  }
+  const { gameTable, gameActions } = p2p;
 
   if (!gameTable || !gameActions) {
     return (
@@ -33,8 +42,9 @@ export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGam
     )
   }
 
-  // const gameRegistry = useGameRegistry();
-  // const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
+  if (gameTable.id !== gameTableId) {
+    throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + gameTableId);
+  }
   
   const latestAction = gameActions[gameActions.length - 1];
   if (!latestAction) {
@@ -46,8 +56,8 @@ export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGam
   }
 
   // const gameSpecificStateEncoder = gameMetadata.gameSpecificStateEncoder;
-  // if (gameSpecificStateEncoder.format !== 'json-zod-object') {
-  //   throw new Error('Game specific state encoder format is not json-zod-object');
+  // if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+  //   throw new Error('Game specific state encoder format is not json-zod-object-string');
   // }
 
   // const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;

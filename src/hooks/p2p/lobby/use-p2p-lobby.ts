@@ -7,6 +7,10 @@ import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-
 import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../../ui/components/constants";
 import { useGameHosting } from "../../games-registry/game-hosting";
 import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
+import { useRoom } from "~/hooks/use-trystero-room";
+import { useSupabaseRoom } from "~/hooks/use-trystero-supabase-room";
+import { useMqttRoom } from "~/hooks/use-trystero-mqtt-room";
+import { useTorrentRoom } from "~/hooks/use-trystero-torrent-room";
 
 
 export interface IP2pLobbyRoomEventHandlers {
@@ -30,6 +34,9 @@ export interface IP2pLobby {
   txPlayerProfile: (playerProfile: PublicPlayerProfile) => void
   rxPlayerProfile: (callback: (playerProfile: PublicPlayerProfile, peer: PeerId) => void) => void
 
+  txLobbyDetails: (lobbyDetails: HostP2pLobbyDetails, peer?: PeerId) => void
+  rxLobbyDetails: (callback: (lobbyDetails: HostP2pLobbyDetails) => void) => void
+
   txPlayerMove: (move: PlayerP2pLobbyMove) => void
   rxPlayerMove: (callback: (move: PlayerP2pLobbyMove, peer: PeerId) => void) => void
   
@@ -51,7 +58,7 @@ export const useP2pLobby = (
   const gameHosting = useGameHosting();
   const trysteroConfig = gameHosting.getTrysteroConfig();
 
-  // Create room - gets recreated on every render
+  // // Create room - gets recreated on every render
   const room = joinRoom(trysteroConfig, lobbyId, (error: {
     error: string;
     appId: string;
@@ -62,6 +69,12 @@ export const useP2pLobby = (
     addConnectionEvent('join-error', `Join error: ${error.error}`, 0);
   });
   console.log('joined p2p lobby room', room)
+
+  // console.log('calling useP2pLobby for lobby', trysteroConfig)
+  // const room = useRoom(trysteroConfig, lobbyId);
+  // const room = useTorrentRoom(trysteroConfig, lobbyId);
+  // const room = useSupabaseRoom(lobbyId);
+  console.log('joined p2p lobby room', room);
 
   const addConnectionEvent = (type: ConnectionEvent['type'], message: string, peerCount: number) => {
     const event: ConnectionEvent = {
@@ -74,9 +87,10 @@ export const useP2pLobby = (
     setConnectionEvents(prev => [...prev, event]);
   };
 
-  const [_, rxPublicHostData] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
   const [txPlayerProfile, rxPlayerProfile] = room.makeAction<PublicPlayerProfile>(P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY)
   const [txPlayerMove, rxPlayerMove] = room.makeAction<PlayerP2pLobbyMove>(P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY)
+
+  const [txLobbyDetails, rxLobbyDetails] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
 
   const connectionStatus = `Connected to ${peers.length} peers. Connected to ${peerPlayers.size} players.`;
 
@@ -131,7 +145,7 @@ export const useP2pLobby = (
     }
   })
 
-  rxPublicHostData((publicHostData: HostP2pLobbyDetails, peer: string) => {
+  rxLobbyDetails((publicHostData: HostP2pLobbyDetails, peer: string) => {
     const peerId = PeerIdSchema.parse(peer);
     console.log('getPublicHostData - ', peerId, publicHostData)
     setLobbyDetails(publicHostData)
@@ -188,6 +202,13 @@ export const useP2pLobby = (
       rxPlayerMove((move: PlayerP2pLobbyMove, peer: string) => {
         const peerId = PeerIdSchema.parse(peer);
         callback(move, peerId);
+      });
+    },
+
+    txLobbyDetails,
+    rxLobbyDetails: (callback: (lobbyDetails: HostP2pLobbyDetails) => void) => {
+      rxLobbyDetails((lobbyDetails: HostP2pLobbyDetails) => {
+        callback(lobbyDetails);
       });
     },
 

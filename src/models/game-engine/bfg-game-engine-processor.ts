@@ -1,50 +1,43 @@
-import { z } from "zod";
 import { BfgSupportedGameTitle } from "../game-box-definition";
 import { GameTable, GameTableSeat } from "../game-table/game-table";
 import { GameTableActionResult } from "../game-table/table-phase";
-import { BfgAllPublicKnowledgeGameEngineComponents, BfgGameImplHostAction, BfgGameImplPlayerAction, BfgPublicGameImplState } from "./bfg-game-engine-types";
+import { BfgGameImplHostAction, BfgGameImplPlayerAction, BfgHostGameImplState, BfgPrivatePlayerKnowledgeImplState } from "./bfg-game-engine-types";
 import { GameLobby } from "../p2p-lobby";
 import { BfgGameSpecificTableAction } from "../game-table/game-table-action";
 
 
-export interface IBfgAllPublicKnowledgeGameProcessor<
-  GIS extends BfgPublicGameImplState,
+export interface IBfgGameProcessor<
+  GHS extends BfgHostGameImplState,
   GPA extends BfgGameImplPlayerAction,
-  GHA extends BfgGameImplHostAction
+  GHA extends BfgGameImplHostAction,
+  PPK extends BfgPrivatePlayerKnowledgeImplState
 > {
   gameTitle: BfgSupportedGameTitle,
 
   createGameSpecificInitialAction: (gameTable: GameTable, lobbyState: GameLobby) => BfgGameSpecificTableAction<GHA>,
-  createGameSpecificInitialState: (gameTable: GameTable, gameSpecificInitialAction: BfgGameSpecificTableAction<GHA>) => GIS,
+  createGameSpecificInitialState: (gameTable: GameTable, gameSpecificInitialAction: BfgGameSpecificTableAction<GHA>) => GHS,
 
   applyPlayerAction: (
     tableState: GameTable,
-    gameState: GIS,
+    gameState: GHS,
     playerAction: GPA
-  ) => Promise<GameTableActionResult<GIS>>,
+  ) => Promise<GameTableActionResult<GHS>>,
 
   applyHostAction: (
     tableState: GameTable,
-    gameState: GIS,
+    gameState: GHS,
     hostAction: GHA
-  ) => Promise<GameTableActionResult<GIS>>,
+  ) => Promise<GameTableActionResult<GHS>>,
 
-  getNextToActPlayers: (gameTable: GameTable, gameState: GIS) => GameTableSeat[],
-  getPlayerDetailsLine: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode,
+  getNextToActPlayers: (gameTable: GameTable, gameState: GHS) => GameTableSeat[],
+  getPlayerDetailsLine: (gameState: GHS, playerSeat: GameTableSeat) => React.ReactNode,
+
+  getAllPlayersPrivateKnowledge: (gameTable: GameTable, gameState: GHS) => Map<GameTableSeat, PPK> | null,
 }
 
 
-export interface IBfgAllPublicKnowledgeGameEngine<
-  GIS extends BfgPublicGameImplState,
+export type IBfgAllPublicKnowledgeGameProcessor<
+  GHS extends BfgHostGameImplState,
   GPA extends BfgGameImplPlayerAction,
   GHA extends BfgGameImplHostAction
-> {
-  gameTitle: BfgSupportedGameTitle,
-  
-  gameSpecificStateSchema: z.ZodType<GIS>,
-  playerActionSchema: z.ZodType<GPA>,
-  hostActionSchema: z.ZodType<GHA>,
-
-  processor: IBfgAllPublicKnowledgeGameProcessor<GIS, GPA, GHA>,
-  components: BfgAllPublicKnowledgeGameEngineComponents<GIS, GPA, GHA>,
-}
+> = IBfgGameProcessor<GHS, GPA, GHA, never>

@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
-import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY } from "../../../ui/components/constants"; 
+import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY, P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY } from "../../../ui/components/constants"; 
 import { GameTable } from "../../../models/game-table/game-table";
 import { DbGameTableAction } from "../../../models/game-table/game-table-action";
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
-import { useGameHosting } from "../../../index";
-import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr } from "../p2p-types";
+import { PrivatePlayerProfile, useGameHosting, useGameRegistry } from "../../../index";
+import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
 import { GameTableAccessRole } from "~/models/game-roles";
-import { getTableAccessRoleForProfile, hasTableAccessRoleForProfile } from "~/models/game-table/utils";
+// import { getTableAccessRoleForProfile, hasTableAccessRoleForProfile } from "~/models/game-table/utils";
+// import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
+// import { useRoom } from "~/hooks/use-trystero-room";
+// import { useSupabaseRoom } from "~/hooks/use-trystero-supabase-room";
+// import { useMqttRoom } from "~/hooks/use-trystero-mqtt-room";
+// import { useTorrentRoom } from "~/hooks/use-trystero-torrent-room";
 
 
 export interface IP2pGameRoomEventHandlers {
@@ -16,37 +21,46 @@ export interface IP2pGameRoomEventHandlers {
   onPeerLeave?: (peer: PeerId) => void
 }
 
-export interface IP2pGame {
-  room: Room
-  connectionStatus: string
-  connectionEvents: ConnectionEvent[]
+// export interface IP2pGame {
+//   room: Room
+//   connectionStatus: string
+//   connectionEvents: ConnectionEvent[]
 
-  peers: PeerId[];
-  peerPlayers: Map<PeerId, PublicPlayerProfile>
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+//   peers: PeerId[];
+//   peerPlayers: Map<PeerId, PublicPlayerProfile>
+//   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
-  gameTable: GameTable | null;
-  gameActions: DbGameTableAction[];
+//   gameMetadata: BfgGameEngineMetadata | null;
+//   gameTable: GameTable | null;
+//   gameActions: DbGameTableAction[];
 
-  hasRequestedTableAccess: boolean;
-  myGameTableAccess: GameTableAccessRole;
+//   myPlayerProfile: PrivatePlayerProfile | null;
+//   hasRequestedTableAccess: boolean;
+//   myGameTableAccess: GameTableAccessRole;
 
-  setRoomEventHandlers: (eventHandlers: IP2pGameRoomEventHandlers) => void
-  clearRoomEventHandlers: () => void
+//   setRoomEventHandlers: (eventHandlers: IP2pGameRoomEventHandlers) => void
+//   clearRoomEventHandlers: () => void
 
-  txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
-  rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
+//   // const [txGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
+//   // const [txGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
+
+//   txPublicGameTableData: (gameTable: GameTable) => void
+//   txPublicGameActionsData: (gameActions: DbGameTableAction[]) => void
+
+//   txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
+//   rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
   
-  refreshConnection: () => void
-}
+//   txPrivatePlayerKnowledgeStr: (privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: PeerId) => void
+//   rxPrivatePlayerKnowledgeStr: (callback: (privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: PeerId) => void) => void
+  
+//   refreshConnection: () => void
+// }
 
 
 export interface IP2pGameProps {
   gameTableId: GameTableId;
-  myPlayerProfile: PublicPlayerProfile | null;
+  myPlayerProfile: PrivatePlayerProfile | null;
   requestedRole: GameTableAccessRole;
-  // roomEventHandlers: IP2pGameRoomEventHandlers;
-  // children: React.ReactNode;
 }
 
 
@@ -54,7 +68,6 @@ export const useP2pGame = ({
   gameTableId,
   myPlayerProfile,
   requestedRole,
-  // roomEventHandlers: IP2pGameRoomEventHandlers = {}
 }: IP2pGameProps): IP2pGame => {
 
   const [gameTable, setGameTable] = useState<GameTable | null>(null)
@@ -92,6 +105,9 @@ export const useP2pGame = ({
     console.error('Join error:', error)
     addConnectionEvent('join-error', `Join error: ${error.error}`, 0);
   });
+  // const room = useRoom(trysteroConfig, gameTableId);
+  // const room = useSupabaseRoom(gameTableId);
+  // const room = useTorrentRoom(trysteroConfig, gameTableId);
   console.log('joined p2p game room', room);
 
   const addConnectionEvent = (type: ConnectionEvent['type'], message: string, peerCount: number) => {
@@ -105,10 +121,12 @@ export const useP2pGame = ({
     setConnectionEvents(prev => [...prev, event]);
   };
 
-  const [, rxPublicGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
-  const [, rxPublicGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
   const [txPlayerProfile, rxPlayerProfile] = room.makeAction<PublicPlayerProfile>(P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY)
   const [txPlayerActionStr, rxPlayerActionStr] = room.makeAction<PlayerP2pActionStr>(P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY)
+
+  const [txPublicGameTableData, rxPublicGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
+  const [txPublicGameActionsData, rxPublicGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
+  const [txPrivatePlayerKnowledgeStr, rxPrivatePlayerKnowledgeStr] = room.makeAction<PrivatePlayerKnowledgeStr>(P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY)
 
   const connectionStatus = `Connected to ${peers.length} peers; Connected to ${peerPlayers.size} players`;
 
@@ -118,9 +136,14 @@ export const useP2pGame = ({
 
     return () => {
       console.log('🔌 Leaving P2P game room');
-      // room.leave();
+      room.leave();
     }
   }, []);
+
+  // const isHostPeerId = (peerId: PeerId) => {
+  //   // return peerId === room.peerId;
+  //   return true;
+  // }
 
 
   room.onPeerJoin(peer => {
@@ -151,6 +174,7 @@ export const useP2pGame = ({
       updated.delete(peerId);
       return updated;
     });
+
     if (peers.includes(peerId)) {
       setPeers(prev => prev.filter(p => p !== peerId));
       addConnectionEvent('peer-left', `Peer left (total: ${peers.length})`, peers.length);
@@ -162,18 +186,20 @@ export const useP2pGame = ({
   })
 
   rxPublicGameTableData((publicGameTableData: GameTable, peer: string) => {
-    console.log('🎮 Received game table data from peer:', peer, publicGameTableData)
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('🎮 Received game table data from peer:', peerId, publicGameTableData)
     setGameTable(publicGameTableData)
   })
 
   rxPublicGameActionsData((publicGameActionsData: DbGameTableAction[], peer: string) => {
-    console.log('🎮 Received game actions data from peer:', peer, publicGameActionsData)
+    const peerId = PeerIdSchema.parse(peer);
+    console.log('🎮 Received game actions data from peer:', peerId, publicGameActionsData)
     setGameActions(publicGameActionsData)
   })
 
   rxPlayerProfile((playerProfile: PublicPlayerProfile, peer: string) => {
-    console.log('🎮 Received player profile data from peer:', peer, playerProfile)
     const peerId = PeerIdSchema.parse(peer);
+    console.log('🎮 Received player profile data from peer:', peerId, playerProfile)
     setPeerPlayers(prev => new Map(prev).set(peerId, playerProfile))
   })
 
@@ -199,14 +225,21 @@ export const useP2pGame = ({
   const myPlayerProfileId = myPlayerProfile?.id ?? null;
   const myGameTableAccess = getTableAccessRoleForProfile(myPlayerProfileId, gameTable, requestedRole);
   const hasRequestedTableAccess = hasTableAccessRoleForProfile(myPlayerProfileId, gameTable, requestedRole);
+
+  const gameRegistry = useGameRegistry();
+  const gameMetadata = gameTable ?
+    gameRegistry.getGameMetadata(gameTable.gameTitle) :
+    null;
   
   const retVal: IP2pGame = {
     room,
+    gameMetadata,
     gameTable,
     gameActions,
     connectionStatus,
     connectionEvents,
     
+    myPlayerProfile,
     myGameTableAccess,
     hasRequestedTableAccess,
 
@@ -217,6 +250,9 @@ export const useP2pGame = ({
     setRoomEventHandlers,
     clearRoomEventHandlers,
 
+    txPublicGameTableData,
+    txPublicGameActionsData,
+
     txPlayerActionStr,
     rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => {
       rxPlayerActionStr((move: PlayerP2pActionStr, peer: string) => {
@@ -224,6 +260,15 @@ export const useP2pGame = ({
         callback(move, peerId);
       });
     },
+
+    txPrivatePlayerKnowledgeStr,
+    rxPrivatePlayerKnowledgeStr: (callback: (privatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr, peer: PeerId) => void) => {
+      rxPrivatePlayerKnowledgeStr((privatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr, peer: string) => {
+        const peerId = PeerIdSchema.parse(peer);
+        callback(privatePlayerKnowledgeStr, peerId);
+      });
+    },
+
     refreshConnection,
   }
 

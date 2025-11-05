@@ -35,7 +35,7 @@ export const asHostApplyMoveFromPlayer = async(
   const playerActionSource = getPlayerActionSource(gameTable, playerId);  
 
   const latestAction = gameActions[gameActions.length - 1];
-  const currentGameState = gameMetadata.gameSpecificStateEncoder.decode(latestAction.nextGameStateStr);
+  const currentGameState = gameMetadata.encoders.hostGameStateEncoder.decode(latestAction.nextGameStateStr);
 
   console.log("MAKE MOVE - CURRENT GAME STATE (PARSED)", currentGameState);
 
@@ -43,7 +43,7 @@ export const asHostApplyMoveFromPlayer = async(
     throw new Error("Failed to parse current game state");
   }
 
-  const playerActionEncoder = gameMetadata.playerActionEncoder;
+  const playerActionEncoder = gameMetadata.encoders.playerActionEncoder;
   const p2pToBfgEncoded: BfgEncodedString = playerActionStr as unknown as BfgEncodedString;
   const playerAction = playerActionEncoder.decode(p2pToBfgEncoded);
 
@@ -55,7 +55,7 @@ export const asHostApplyMoveFromPlayer = async(
 
   const { tablePhase, gameSpecificStateSummary } = afterActionResult;
 
-  const nextGameStateJsonStr = gameMetadata.gameSpecificStateEncoder.encode(afterActionResult.gameSpecificState);
+  const nextGameStateJsonStr = gameMetadata.encoders.hostGameStateEncoder.encode(afterActionResult.gameSpecificState);
 
   const now = Date.now();
 
@@ -82,3 +82,74 @@ export const asHostApplyMoveFromPlayer = async(
 
   return retVal;
 }
+
+
+
+// export const asHostApplyMoveFromPlayer = async(
+//   gameRegistry: IGameRegistry,
+//   gameTable: GameTable,
+//   gameActions: DbGameTableAction[],
+//   playerId: PlayerProfileId, 
+//   playerActionStr: PlayerP2pActionStr
+// ): Promise<HostApplyMoveFromPlayerResult> => {
+  
+//   if (!gameTable) {
+//     throw new Error("Table not found");
+//   }
+
+//   console.log("INCOMING PLAYER ACTION", playerActionStr);
+
+//   const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
+//   const gameEngine = gameMetadata.engine;
+//   const gameProcessor = gameEngine;
+
+//   const playerActionSource = getPlayerActionSource(gameTable, playerId);  
+
+//   const latestAction = gameActions[gameActions.length - 1];
+//   const currentGameState = gameMetadata.encoders.hostGameStateEncoder.decode(latestAction.nextGameStateStr);
+
+//   console.log("MAKE MOVE - CURRENT GAME STATE (PARSED)", currentGameState);
+
+//   if (!currentGameState) {
+//     throw new Error("Failed to parse current game state");
+//   }
+
+//   const playerActionEncoder = gameMetadata.encoders.playerActionEncoder;
+//   const p2pToBfgEncoded: BfgEncodedString = playerActionStr as unknown as BfgEncodedString;
+//   const playerAction = playerActionEncoder.decode(p2pToBfgEncoded);
+
+//   if (!playerAction) {
+//     throw new Error("Failed to parse player action: " + playerActionStr);
+//   }
+
+//   const afterActionResult = await gameProcessor.applyPlayerAction(gameTable, currentGameState, playerAction);
+
+//   const { tablePhase, gameSpecificStateSummary } = afterActionResult;
+
+//   const nextGameStateJsonStr = gameMetadata.encoders.hostGameStateEncoder.encode(afterActionResult.gameSpecificState);
+
+//   const now = Date.now();
+
+//   const nextGameTable: GameTable = {
+//     ...gameTable,
+//     tablePhase,
+//     currentStatusDescription: gameSpecificStateSummary,
+//   }
+
+//   const playerMoveAction: DbGameTableAction = {
+//     gameTableId: gameTable.id,
+//     createdAt: now,
+//     source: playerActionSource,
+//     actionType: "game-table-action-player-action",
+//     actionStr: playerActionStr as unknown as BfgEncodedString,
+//     nextGameStateStr: nextGameStateJsonStr as unknown as BfgEncodedString,
+//   }
+
+//   const retVal: HostApplyMoveFromPlayerResult = {
+//     resultTablePhase: tablePhase,
+//     gameTable: nextGameTable,
+//     gameAction: playerMoveAction,
+//   } satisfies HostApplyMoveFromPlayerResult;
+
+//   return retVal;
+// }

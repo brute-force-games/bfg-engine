@@ -19,10 +19,6 @@ export type GameActionJson<GA extends z.ZodTypeAny> = string & {
 };
 
 
-// export type GameAccessRole = 'observer-role' | 'host-role' | 'player-role';
-// export type ViewLevel = 'observer-level' | 'host-level' | 'player-level';
-
-
 export interface GameStateRepresentationProps<GS extends z.ZodTypeAny, GA extends z.ZodTypeAny> {
   hostPlayerProfileId: PlayerProfileId;
   myPlayerProfileId: PlayerProfileId | null;
@@ -66,53 +62,32 @@ export interface GameStateHostComponentProps<GS extends z.ZodTypeAny, GA extends
 }
 
 
-export type BfgGameEngineRendererFactory<
-  GS extends z.ZodTypeAny,
-  GA extends z.ZodTypeAny
-> = {
-  createGameStateRepresentationComponent: (
-    props: GameStateRepresentationProps<GS, GA>,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>
-  ) => React.ReactNode;
+// export type BfgGameEngineRendererFactory<
+//   GS extends z.ZodTypeAny,
+//   GA extends z.ZodTypeAny
+// > = {
+//   createGameStateRepresentationComponent: (
+//     props: GameStateRepresentationProps<GS, GA>,
+//     // gameState: z.infer<GS>,
+//     // mostRecentAction: z.infer<GA>
+//   ) => React.ReactNode;
 
-  createGameStateActionInputComponent: (
-    props: GameStateActionInputProps<GS, GA>,
-    // playerSeat: GameTableSeat,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
-  ) => React.ReactNode;
+//   createGameStateActionInputComponent: (
+//     props: GameStateActionInputProps<GS, GA>,
+//   ) => React.ReactNode;
 
-  createGameStateCombinationRepresentationAndInputComponent: (
-    props: GameStateCombinationRepresentationAndInputProps<GS, GA>,
-    // playerSeat: GameTableSeat,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
-  ) => React.ReactNode | undefined,
+//   createGameStateCombinationRepresentationAndInputComponent: (
+//     props: GameStateCombinationRepresentationAndInputProps<GS, GA>,
+//   ) => React.ReactNode | undefined,
   
-  // // narrowGameActionsToValidGameActions: (gameActions: DbGameTableAction[]) => GA[];
-  // narrowGameActionsToValidGameActions: (
-  //   gameActions: DbGameTableAction[]
-  // ) => BfgGameSpecificTableAction<GA>[];
+//   createGameHistoryComponent?: (
+//     props: GameHistoryComponentProps<GS, GA>,
+//   ) => React.ReactNode;
 
-  createGameHistoryComponent?: (
-    props: GameHistoryComponentProps<GS, GA>,
-    // playerSeat: GameTableSeat,
-    // gameState: z.infer<GS>,
-    // gameActions: BfgGameSpecificTableAction<z.infer<GA>>[]
-  ) => React.ReactNode;
-
-  createGameStateHostComponent: (
-    props: GameStateHostComponentProps<GS, GA>,
-    // gameTable: GameTable,
-    // gameState: z.infer<GS>,
-    // mostRecentAction: z.infer<GA>,
-    // onGameAction: (gameTable: GameTable, gameState: z.infer<GS>, gameAction: z.infer<GA>) => void
-  ) => React.ReactNode;
-}
-
+//   createGameStateHostComponent: (
+//     props: GameStateHostComponentProps<GS, GA>,
+//   ) => React.ReactNode;
+// }
 
 
 export type BfgGameEngineProcessor<
@@ -120,7 +95,7 @@ export type BfgGameEngineProcessor<
   GA extends z.ZodTypeAny
 > = {
 
-  rendererFactory: BfgGameEngineRendererFactory<GS, GA>;
+  // rendererFactory: BfgGameEngineRendererFactory<GS, GA>;
   
   createBfgGameSpecificInitialGameTableAction: (
     gameTable: GameTable
@@ -146,42 +121,6 @@ export type BfgGameEngineProcessor<
     jsonString: GameActionJson<GA>
   ) => z.infer<GA>;
 
-  // createGameStateRepresentationComponent: (
-  //   playerSeat: GameTableSeat,
-  //   gameState: GS,
-  //   mostRecentAction: GA
-  // ) => React.ReactNode;
-
-  // createGameStateActionInputComponent: (
-  //   playerSeat: GameTableSeat,
-  //   gameState: GS,
-  //   mostRecentAction: GA,
-  //   onGameAction: (gameState: GS, gameAction: GA) => void
-  // ) => React.ReactNode;
-
-  // createGameStateCombinationRepresentationAndInputComponent?: (
-  //   playerSeat: GameTableSeat,
-  //   gameState: GS,
-  //   mostRecentAction: GA,
-  //   onGameAction: (gameState: GS, gameAction: GA) => void
-  // ) => React.ReactNode | undefined,
-  
-  // // // narrowGameActionsToValidGameActions: (gameActions: DbGameTableAction[]) => GA[];
-  // // narrowGameActionsToValidGameActions: (
-  // //   gameActions: DbGameTableAction[]
-  // // ) => BfgGameSpecificTableAction<GA>[];
-
-  // createGameHistoryComponent?: (
-  //   playerSeat: GameTableSeat,
-  //   gameState: GS,
-  //   gameActions: BfgGameSpecificTableAction<GA>[]
-  // ) => React.ReactNode;
-
-  // narrowGameStateToValidGameActions: (
-  //   tableState: GameTable,
-  //   gameState: z.infer<GS>,
-  // ) => BfgGameSpecificTableAction<GA>[];
-
   applyGameAction: (
     tableState: GameTable,
     gameState: z.infer<GS>,
@@ -201,102 +140,3 @@ export type BfgGameEngineMetadata<
   definition: GameDefinition;
   processor: BfgGameEngineProcessor<GS, GA>;
 }
-
-// export const TicTacToeGameMetadata: BfgGameEngineMetadata<
-//   typeof TicTacToeGameStateSchema,
-//   typeof TicTacToeGameActionSchema
-// > = {
-//   definition: TicTacToeGameDefinition,
-//   processor: TicTacToeGameStateProcessor,
-// }
-
-// export const FlipACoinGameMetadata: BfgGameEngineMetadata<typeof FlipACoinGameStateSchema, typeof FlipACoinGameActionSchema> = {
-//   definition: FlipACoinGameDefinition,
-//   processor: FlipACoinGameStateProcessor,
-// }
-
-// export const HangmanGameMetadata: BfgGameEngineMetadata<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema> = {
-//   definition: HangmanGameDefinition,
-//   processor: HangmanGameStateProcessor,
-// }
-
-
-// export const AllBfgGameMetadata = {
-//   ['Tic Tac Toe']: TicTacToeGameMetadata,
-//   ['Flip a Coin']: FlipACoinGameMetadata,
-//   ['Hangman']: HangmanGameMetadata,
-
-//   // ['Backgammon']: TicTacToeGameStateProcessor,
-//   // ['Chess']: TicTacToeGameStateProcessor,
-// } as const;
-
-
-// export const getBfgGameMetadata = (gameTable: GameTable) => {
-
-//   const gameTitle = gameTable.gameTitle as keyof typeof AllBfgGameMetadata;
-//   const gameMetadata = AllBfgGameMetadata[gameTitle];
-
-//   return gameMetadata;
-// }
-
-
-// export const getBfgGameEngine = (gameTable: GameTable) => {
-//   const gameMetadata = getBfgGameMetadata(gameTable);
-//   return gameMetadata.processor;
-// }
-
-
-// export const getBfgGameDefinition = (gameTable: GameTable) => {
-//   const gameMetadata = getBfgGameMetadata(gameTable);
-//   return gameMetadata.definition;
-// }
-
-// // Typed accessor for game metadata that eliminates union type complexity
-// export const getTypedBfgGameMetadata = <T extends keyof typeof AllBfgGameMetadata>(
-//   gameTitle: T
-// ): typeof AllBfgGameMetadata[T] => {
-//   return AllBfgGameMetadata[gameTitle];
-// }
-
-// // Typed accessor for game processor that eliminates union type complexity
-// export const getTypedBfgGameProcessor = <T extends keyof typeof AllBfgGameMetadata>(
-//   gameTitle: T
-// ): typeof AllBfgGameMetadata[T]['processor'] => {
-//   return AllBfgGameMetadata[gameTitle].processor;
-// }
-
-// // Helper function to create initial game data with proper typing using games registry
-// export const createInitialGameData = (
-//   gameTitle: keyof typeof AllBfgGameMetadata,
-//   gameTable: GameTable
-// ) => {
-//   const gameEngine = getTypedBfgGameProcessor(gameTitle);
-  
-//   // This is the same pattern for all games, no need for switch statement
-//   // Using type assertions to work around TypeScript's union type limitations
-//   const initGameAction = gameEngine.createBfgGameSpecificInitialGameTableAction(gameTable) as any;
-//   const initialGameSpecificState = gameEngine.createBfgInitialGameSpecificState(initGameAction) as any;
-//   const gameStateJson = gameEngine.createGameSpecificGameStateJson(initialGameSpecificState) as any;
-//   const actionJson = gameEngine.createGameSpecificActionJson(initGameAction.gameSpecificAction) as any;
-  
-//   return { initGameAction, initialGameSpecificState, gameStateJson, actionJson };
-// }
-
-// // Alternative registry-based version that uses the games registry directly
-// export const createInitialGameDataFromRegistry = (
-//   gameTitle: string, // Using string to work with the registry
-//   gameTable: GameTable
-// ) => {
-//   // Import the registry function dynamically to avoid circular dependencies
-//   const { getGameMetadata } = require('../../games-registry/games-registry');
-//   const gameMetadata = getGameMetadata(gameTitle);
-//   const gameEngine = gameMetadata.processor;
-  
-//   // Same pattern for all games - using type assertions for flexibility
-//   const initGameAction = gameEngine.createBfgGameSpecificInitialGameTableAction(gameTable) as any;
-//   const initialGameSpecificState = gameEngine.createBfgInitialGameSpecificState(initGameAction) as any;
-//   const gameStateJson = gameEngine.createGameSpecificGameStateJson(initialGameSpecificState) as any;
-//   const actionJson = gameEngine.createGameSpecificActionJson(initGameAction.gameSpecificAction) as any;
-  
-//   return { initGameAction, initialGameSpecificState, gameStateJson, actionJson };
-// }

@@ -21,7 +21,7 @@ interface P2pConnectionComponentProps {
   connectionEvents?: ConnectionEvent[]
   peers: PeerId[]
   myPeerPlayer?: PublicPlayerProfile;
-  peerPlayers: Map<PeerId, PublicPlayerProfile>
+  peerPlayerIds: Map<PeerId, PlayerProfileId>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   onResendLobbyData?: () => void
   onRefreshConnection?: () => void
@@ -31,7 +31,8 @@ export const P2pConnectionComponent = ({
   connectionStatus,
   connectionEvents = [],
   peers,
-  peerPlayers,
+  peerPlayerIds,
+  allPlayerProfiles,
   myPeerPlayer,
   onResendLobbyData,
   onRefreshConnection
@@ -101,8 +102,9 @@ export const P2pConnectionComponent = ({
       <PeerProfilesComponent
         peers={peers}
         myPeerPlayer={myPeerPlayer}
-        peerPlayers={peerPlayers}
+        peerPlayerIds={peerPlayerIds}
         myPeerId={myPeerId}
+        allPlayerProfiles={allPlayerProfiles}
       />
       
       {connectionEvents.length > 0 && (

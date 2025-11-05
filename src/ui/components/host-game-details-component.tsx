@@ -27,7 +27,7 @@ export const HostedGameDetailsComponent = ({
     gameActions[gameActions.length - 1].nextGameStateStr :
     null;
   const latestGameSpecificState = latestGameSpecificStateStr ?
-    gameMetadata.gameSpecificStateEncoder.decode(latestGameSpecificStateStr) :
+    gameMetadata.encoders.hostGameStateEncoder.decode(latestGameSpecificStateStr) :
     null;
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {

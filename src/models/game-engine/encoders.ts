@@ -3,9 +3,9 @@ import { z } from "zod";
 
 export const BfgDataEncoderFormatSchema = z.enum([
   'custom-string',
-  'json-string',
-  'json-object',
-  'json-zod-object',
+  // 'json-object-string',
+  // 'json-object',
+  'json-zod-object-string',
 ] as const);
 export type BfgDataEncoderFormat = z.infer<typeof BfgDataEncoderFormatSchema>;
 
@@ -24,16 +24,16 @@ export interface IBfgCustomStringDataEncoder<S extends string> extends IBfgDataE
   format: 'custom-string';
 }
 
-export interface IBfgJsonStringDataEncoder extends IBfgDataEncoder<BfgDataEncoderFormat, string> {
-  format: 'json-string';
-}
+// export interface IBfgJsonStringDataEncoder extends IBfgDataEncoder<BfgDataEncoderFormat, string> {
+//   format: 'json-string';
+// }
 
-export interface IBfgJsonObjectDataEncoder extends IBfgDataEncoder<BfgDataEncoderFormat, object> {
-  format: 'json-object';
-}
+// export interface IBfgJsonObjectDataEncoder extends IBfgDataEncoder<BfgDataEncoderFormat, object> {
+//   format: 'json-object-string';
+// }
 
 export interface IBfgJsonZodObjectDataEncoder<TSchema extends z.ZodTypeAny> extends IBfgDataEncoder<BfgDataEncoderFormat, z.infer<TSchema>> {
-  format: 'json-zod-object';
+  format: 'json-zod-object-string';
   schema: TSchema;
 }
 
@@ -55,7 +55,7 @@ export const createJsonZodObjectDataEncoder = <TSchema extends z.ZodTypeAny>(
   schema: TSchema
 ): IBfgJsonZodObjectDataEncoder<TSchema> => {
   return {
-    format: 'json-zod-object',
+    format: 'json-zod-object-string',
     schema,
     encode: (data: z.infer<TSchema>) => JSON.stringify(data) as BfgEncodedString,
     decode: (encoded: BfgEncodedString) => {

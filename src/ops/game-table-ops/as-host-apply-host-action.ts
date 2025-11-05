@@ -30,7 +30,7 @@ export const asHostApplyHostAction = async (
   const gameProcessor = gameEngine;
 
   const latestAction = gameActions[gameActions.length - 1];
-  const currentGameState = gameMetadata.gameSpecificStateEncoder.decode(latestAction.nextGameStateStr);
+  const currentGameState = gameMetadata.encoders.hostGameStateEncoder.decode(latestAction.nextGameStateStr);
 
   console.log("MAKE MOVE - CURRENT GAME STATE (PARSED)", currentGameState);
 
@@ -38,7 +38,7 @@ export const asHostApplyHostAction = async (
     throw new Error("Host action failed to parse current game state");
   }
 
-  const hostActionEncoder = gameMetadata.hostActionEncoder;
+  const hostActionEncoder = gameMetadata.encoders.hostActionEncoder;
   const p2pToBfgEncoded: BfgEncodedString = hostActionStr as unknown as BfgEncodedString;
   const hostAction = hostActionEncoder.decode(p2pToBfgEncoded);
 
@@ -53,7 +53,7 @@ export const asHostApplyHostAction = async (
   console.log("MAKE MOVE - HOST ACTION", hostAction);
   console.log("MAKE MOVE - AFTER ACTION RESULT", afterActionResult);
 
-  const nextGameStateJsonStr = gameMetadata.gameSpecificStateEncoder.encode(afterActionResult.gameSpecificState);
+  const nextGameStateJsonStr = gameMetadata.encoders.hostGameStateEncoder.encode(afterActionResult.gameSpecificState);
 
   console.log("MAKE MOVE - hostActionJson", hostActionStr);
 

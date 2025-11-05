@@ -1,35 +1,45 @@
-import { usePlayerP2pGame } from "../../hooks/p2p/game/use-player-p2p-game"
-import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile"
-import { GameTableId } from "../../models/types/bfg-branded-ids"
+// import { useGameRegistry } from "~/hooks/games-registry/games-registry"
+// import { usePlayerP2pGame } from "../../hooks/p2p/game/use-player-p2p-game"
+// import { PrivatePlayerProfile } from "../../models/player-profile/private-player-profile"
+// import { GameTableId } from "../../models/types/bfg-branded-ids"
+// import { PlayerP2pActionStr } from "~/hooks/p2p/p2p-types"
+import { useP2pGameRoomAsPlayer } from "~/hooks/p2p/game/use-bfg-game-room"
 import { PlayerGameView } from "../components/player-game-view"
-import { Container, TabsContainerPanel } from "../bfg-ui"
-import { P2pConnectionComponent } from "./p2p-connection-component"
-import { PlayerGameTabId } from "./bfg-tabs"
-import { PlayerGameDetailsComponent } from "./player-game-details-component"
-import { PlayerP2pActionStr } from "~/hooks/p2p/p2p-types"
+import { IPlayerBfgGameDetails } from "~/hooks/p2p/game/p2p-game-types";
 
 
+// TODO: Delete this component; convert to hook (hopefully not context) somehow
+// interface IPlayerP2pGameComponentProps {
+//   // gameTableId: GameTableId
+//   // myPlayerProfile: PrivatePlayerProfile
+//   // mode: PlayerGameTabId
+// }
 
-// TODO: Delete this component; convert to context somehow
-interface IPlayerP2pGameComponentProps {
-  gameTableId: GameTableId
-  playerProfile: PrivatePlayerProfile
-  mode: PlayerGameTabId
-}
+export const PlayerP2pGameComponent = (props: IPlayerBfgGameDetails) => {
+  // gameTableId,
+  // myPlayerProfile,
+  // mode
+// }: IPlayerP2pGameComponentProps) => {
 
-export const PlayerP2pGameComponent = ({
-  gameTableId,
-  playerProfile,
-  mode
-}: IPlayerP2pGameComponentProps) => {
+  // const p2pGame = usePlayerP2pGame(gameTableId, myPlayerProfile);
+  // const p2pGame = useP2pGameRoomAsPlayer();
 
-  const p2pGame = usePlayerP2pGame(gameTableId, playerProfile);
+  // if (!p2pGame) {
+  //   return <div>Loading P2P Game...</div>;
+  // }
 
-  if (!p2pGame) {
-    return <div>Loading P2P Game...</div>;
-  }
+  // const {
+  //   gameTable,
+  //   gameActions,
+  //   peerPlayers,
+  //   // allPlayerProfiles,
+  //   myPlayerSeat,
+  //   txPlayerActionStr,
+  //   myPrivatePlayerKnowledgeStr,
+  // } = p2pGame;
 
-  const { gameTable, gameActions, peerPlayers, allPlayerProfiles, myPlayerSeat, txPlayerActionStr } = p2pGame;
+  // const { connectionStatus, connectionEvents, peerIds, peerPlayerIds, allPlayerProfiles } = p2pGame.p2pDetails;
+  const { gameTable, gameActions, gameMetadata, myPlayerProfile, myPlayerSeat, myPrivatePlayerKnowledgeStr, onPlayerAction, allPlayerProfiles } = props;
 
   if (!gameTable || !gameActions) {
     return (
@@ -94,61 +104,72 @@ export const PlayerP2pGameComponent = ({
     return <div>You are not in a seat. Please join a seat to play.</div>;
   }
 
-  const onPlayerGameAction = (actionStr: PlayerP2pActionStr) => {
-    txPlayerActionStr(actionStr);
-  }
+  // const { allPlayerProfiles } = props;
 
+  // const onPlayerGameAction = (actionStr: PlayerP2pActionStr) => {
+  //   txPlayerActionStr(actionStr);
+  // }
+  
+  // const gameRegistry = useGameRegistry();
+  // const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
+
+  // const myPrivatePlayerKnowledge = myPrivatePlayerKnowledgeStr ?
+  //   gameMetadata.privatePlayerKnowledgeEncoder.decode(myPrivatePlayerKnowledgeStr as BfgEncodedString) :
+  //   null;
   // const playerProfiles = new Map(otherPlayerProfiles);
   // const myPlayerPublicProfile = convertPrivateToPublicProfile(playerProfile);
   // playerProfiles.set(myPlayerPublicProfile.id, myPlayerPublicProfile);
 
   return (
-    <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
-      <TabsContainerPanel
-        activeTabId={mode}
-        tabs={[
-          {
-            id: "player-game",
-            icon: <span>🎮</span>,
-            content: (
+    // <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
+    //   <TabsContainerPanel
+    //     activeTabId={mode}
+    //     tabs={[
+    //       {
+    //         id: "player-game",
+    //         icon: <span>🎮</span>,
+    //         content: (
               <PlayerGameView
-                myPlayerProfile={playerProfile}
+                myPlayerProfile={myPlayerProfile}
                 myPlayerSeat={myPlayerSeat}
                 gameTable={gameTable}
-                peers={p2pGame.peers}
-                peerPlayers={peerPlayers}
-                allPlayerProfiles={p2pGame.allPlayerProfiles}
-                gameActions={gameActions}
-                onPlayerGameAction={onPlayerGameAction}
-              />
-            )
-          },
-          {
-            id: "player-game-details",
-            icon: <span>📊</span>,
-            content: (
-              <PlayerGameDetailsComponent
-              />
-            )
-          },
-          {
-            id: "player-p2p-game-details",
-            icon: <span>📡</span>,
-            content: (
-              <P2pConnectionComponent
-                connectionStatus={p2pGame.connectionStatus}
-                connectionEvents={p2pGame.connectionEvents}
-                peers={p2pGame.peers}
-                myPeerPlayer={playerProfile}
-                peerPlayers={p2pGame.peerPlayers}
+                gameMetadata={gameMetadata}
+                // peers={peerIds}
+                // peerPlayerIds={peerPlayerIds}
                 allPlayerProfiles={allPlayerProfiles}
-                onRefreshConnection={p2pGame.refreshConnection}
+                gameActions={gameActions}
+                // myPrivatePlayerKnowledge={myPrivatePlayerKnowledge}
+                myPrivatePlayerKnowledgeStr={myPrivatePlayerKnowledgeStr}
+                onPlayerAction={onPlayerAction}
               />
-            )
-          }
-        ]}
-        tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
-      />
-    </Container>
+    //         )
+    //       },
+    //       {
+    //         id: "player-game-details",
+    //         icon: <span>📊</span>,
+    //         content: (
+    //           <PlayerGameDetailsComponent
+    //           />
+    //         )
+    //       },
+    //       {
+    //         id: "player-p2p-game-details",
+    //         icon: <span>📡</span>,
+    //         content: (
+    //           <P2pConnectionComponent
+    //             connectionStatus={p2pGame.connectionStatus}
+    //             connectionEvents={p2pGame.connectionEvents}
+    //             peers={p2pGame.peers}
+    //             myPeerPlayer={playerProfile}
+    //             peerPlayers={p2pGame.peerPlayers}
+    //             allPlayerProfiles={allPlayerProfiles}
+    //             onRefreshConnection={p2pGame.refreshConnection}
+    //           />
+    //         )
+    //       }
+    //     ]}
+    //     tabColor="linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)"
+    //   />
+    // </Container>
   )
 }

@@ -4,14 +4,14 @@ import { GameTable, GameTableSeat } from "../game-table/game-table";
 import { DbGameTableAction } from "../game-table/game-table-action";
 
 
-export const BfgPrivateGameImplStateSchema = z.object({});
-export type BfgPrivateGameImplState = z.infer<typeof BfgPrivateGameImplStateSchema>;
-
-export const BfgPlayerGameImplStateSchema = z.object({});
-export type BfgPlayerGameImplState = z.infer<typeof BfgPlayerGameImplStateSchema>;
+export const BfgHostGameImplStateSchema = z.object({});
+export type BfgHostGameImplState = z.infer<typeof BfgHostGameImplStateSchema>;
 
 export const BfgPublicGameImplStateSchema = z.object({});
 export type BfgPublicGameImplState = z.infer<typeof BfgPublicGameImplStateSchema>;
+
+export const BfgPrivatePlayerKnowledgeImplStateSchema = z.object({});
+export type BfgPrivatePlayerKnowledgeImplState = z.infer<typeof BfgPrivatePlayerKnowledgeImplStateSchema>;
 
 
 export const BfgPrivateActionSchema = z.object({});
@@ -69,13 +69,15 @@ export interface ObserverComponentProps<GIS extends BfgPublicGameImplState> {
 
 
 export interface PlayerComponentProps<
-  GIS extends BfgPlayerGameImplState,
-  GA extends BfgGameImplPlayerAction
+  GIS extends BfgPublicGameImplState,
+  GA extends BfgGameImplPlayerAction,
+  PPK extends BfgPrivatePlayerKnowledgeImplState,  
 > {
   gameTable: GameTable;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 
   gameState: GIS
+  myPrivatePlayerKnowledge: PPK | null
   hostPlayerProfileId: PlayerProfileId
 
   currentPlayerProfileId: PlayerProfileId
@@ -87,7 +89,7 @@ export interface PlayerComponentProps<
 
 
 export interface GameHostComponentProps<
-  GIS extends BfgPrivateGameImplState,
+  GIS extends BfgHostGameImplState,
   GHA extends BfgGameImplHostAction
 > {
   gameTable: GameTable;
@@ -116,15 +118,23 @@ export interface GameSpineComponentProps<GIS extends BfgPublicGameImplState> {
 }
 
 
+export type BfgGameEngineComponents<
+  PGS extends BfgPublicGameImplState,
+  GPA extends BfgGameImplPlayerAction,
+  GHA extends BfgGameImplHostAction,
+  PPK extends BfgPrivatePlayerKnowledgeImplState,
+> = {
+
+  ObserverComponent: (props: ObserverComponentProps<PGS>) => React.ReactNode;
+  PlayerComponent: (props: PlayerComponentProps<PGS, GPA, PPK>) => React.ReactNode;
+  HostComponent: (props: GameHostComponentProps<PGS, GHA>) => React.ReactNode;
+  HistoryComponent?: (props: GameHistoryComponentProps) => React.ReactNode;
+  GameSpineComponent?: (props: GameSpineComponentProps<PGS>) => React.ReactNode;
+}
+
+
 export type BfgAllPublicKnowledgeGameEngineComponents<
   GIS extends BfgPublicGameImplState,
   GPA extends BfgGameImplPlayerAction,
   GHA extends BfgGameImplHostAction,
-> = {
-
-  ObserverComponent: (props: ObserverComponentProps<GIS>) => React.ReactNode;
-  PlayerComponent: (props: PlayerComponentProps<GIS, GPA>) => React.ReactNode;
-  HostComponent: (props: GameHostComponentProps<GIS, GHA>) => React.ReactNode;
-  HistoryComponent?: (props: GameHistoryComponentProps) => React.ReactNode;
-  GameSpineComponent?: (props: GameSpineComponentProps<GIS>) => React.ReactNode;
-}
+> = BfgGameEngineComponents<GIS, GPA, GHA, never>;

@@ -14,7 +14,7 @@ export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-comp
 export { ObserverP2pGameDetailsComponent } from './ui/components/observer-p2p-game-details-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
 export type { BfgGameEngineProcessor, GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
-export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
+// export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export type { IBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export { GameTableSeatSchema } from './models/game-table/game-table';
 export type { GameTableActionResult } from './models/game-table/table-phase';

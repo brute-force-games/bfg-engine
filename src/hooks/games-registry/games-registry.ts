@@ -1,16 +1,15 @@
 import { BfgSupportedGameTitle, GameDefinition } from "../../models/game-box-definition";
 import { BfgGameEngineMetadata } from "../../models/bfg-game-engines";
-import { BfgGameImplHostAction, BfgGameImplPlayerAction, BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
 
 
 export const GamesRegistry = new Map<BfgSupportedGameTitle, GameDefinition>();
-export const GamesMetadataRegistry = new Map<BfgSupportedGameTitle, BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>>();
+export const GamesMetadataRegistry = new Map<BfgSupportedGameTitle, BfgGameEngineMetadata>();
 
 
 export interface IGameRegistry {
   getAvailableGameTitles: () => BfgSupportedGameTitle[];
   getGameDefinition: (gameTitle: BfgSupportedGameTitle) => GameDefinition;
-  getGameMetadata: (gameTitle: BfgSupportedGameTitle) => BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>;
+  getGameMetadata: (gameTitle: BfgSupportedGameTitle) => BfgGameEngineMetadata;
 }
 
 
@@ -28,7 +27,7 @@ const getGameDefinition = (gameTitle: BfgSupportedGameTitle): GameDefinition => 
   return definition;
 }
 
-const getGameMetadata = (gameTitle: BfgSupportedGameTitle): BfgGameEngineMetadata<any, any, any> => {
+const getGameMetadata = (gameTitle: BfgSupportedGameTitle): BfgGameEngineMetadata => {
   const metadata = GamesMetadataRegistry.get(gameTitle);
   if (!metadata) {
     throw new Error(`Game metadata not found for: ${gameTitle}`);
@@ -36,7 +35,7 @@ const getGameMetadata = (gameTitle: BfgSupportedGameTitle): BfgGameEngineMetadat
   return metadata;
 }
 
-export const registerGame = (gameMetadata: BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>) => {
+export const registerGame = (gameMetadata: BfgGameEngineMetadata) => {
   const { gameTitle, definition } = gameMetadata;
   GamesRegistry.set(gameTitle, definition);
   GamesMetadataRegistry.set(gameTitle, gameMetadata);

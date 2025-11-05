@@ -1,59 +1,71 @@
-import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
-import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
-import { DbGameTableAction } from "../../../models/game-table/game-table-action";
-import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
-import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
-import { ConnectionEvent, PeerId, PlayerP2pActionStr } from "../p2p-types";
-import { useP2pGameContext } from "./p2p-game-context";
+// import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+// import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
+// import { DbGameTableAction } from "../../../models/game-table/game-table-action";
+// import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
+// import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";
+// import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+// import { ConnectionEvent, PeerId, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
+// import { useP2pGameRoomContext } from "./p2p-game-room-context";
+// import { useState } from "react";
 
 
-interface IPlayerP2pGame {
-  connectionStatus: string;
-  connectionEvents: ConnectionEvent[];
+// interface IPlayerP2pGame {
+//   connectionStatus: string;
+//   connectionEvents: ConnectionEvent[];
   
-  gameTable: GameTable | null;
-  gameActions: DbGameTableAction[];
+//   gameTable: GameTable | null;
+//   gameActions: DbGameTableAction[];
 
-  peers: PeerId[];
-  peerPlayers: Map<PeerId, PublicPlayerProfile>
-  // otherPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+//   peers: PeerId[];
+//   peerPlayers: Map<PeerId, PublicPlayerProfile>
+//   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 
-  myPlayerSeat: GameTableSeat | undefined;
+//   myPlayerSeat: GameTableSeat | undefined;
 
-  txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
-  rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
+//   txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
+//   rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
+
+//   myPrivatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr | null;
   
-  refreshConnection: () => void
-}
+//   refreshConnection: () => void
+// }
 
 
-export const usePlayerP2pGame = (
-  gameTableId: GameTableId,
-  myPlayerProfile: PrivatePlayerProfile,
-): IPlayerP2pGame | null => {
+// export const usePlayerP2pGame = (
+//   gameTableId: GameTableId,
+//   myPlayerProfile: PrivatePlayerProfile,
+// ): IPlayerP2pGame | null => {
 
-  // const p2pGame = useP2pGame(gameTableId, myPlayerProfile);
-  const p2pGame = useP2pGameContext();
+//   const p2pGameRoom = useP2pGameRoomContext();
 
-  const { gameTable } = p2pGame;
+//   const { gameTable, rxPrivatePlayerKnowledgeStr } = p2pGameRoom;
+
+//   const [myPrivatePlayerKnowledgeStr, setMyPrivatePlayerKnowledgeStr] = useState<PrivatePlayerKnowledgeStr | null>(null)
   
-  if (!gameTable) {
-    return null;
-  }
+//   // if (!gameTable) {
+//   //   console.warn("MISSING GAME TABLE");
+//   //   return null;
+//   // }
 
-  const p2pGameTable = p2pGame.gameTable;
+//   // const p2pGameTable = p2pGame.gameTable;
 
-  if (p2pGameTable?.id !== gameTableId) {
-    throw new Error('P2P game table ID does not match the game table ID: ' + p2pGameTable?.id + ' !== ' + gameTableId);
-  }
+//   // if (p2pGameTable?.id !== gameTableId) {
+//   //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGameTable?.id + ' !== ' + gameTableId);
+//   // }
+
+//   const myPlayerSeat = gameTable === null ? undefined : matchPlayerToSeat(myPlayerProfile.id, gameTable);
+
+//   // rxPrivatePlayerKnowledgeStr((privatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr, peer: PeerId) => {
+//   //   console.log('🎮 Received private player knowledge data from peer:', peer, privatePlayerKnowledgeStr);
+//   //   setMyPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr);
+//   // });
 
 
-  const myPlayerSeat = matchPlayerToSeat(myPlayerProfile.id, gameTable);
+//   const retVal: IPlayerP2pGame = {
+//     ...p2pGame,
+//     myPlayerSeat,
+//     myPrivatePlayerKnowledgeStr,
+//   };
 
-  return {
-    ...p2pGame,
-    myPlayerSeat,
-  };
-}
+//   return retVal;
+// }

@@ -2,6 +2,7 @@ import { GameTableActionSource } from "../../models/game-table/game-table-action
 import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { GameTable, PLAYER_SEATS } from "../../models/game-table/game-table";
 import { GameTableSeat } from "../../models/game-table/game-table";
+import { PeerId } from "~/hooks/p2p/p2p-types";
 
 
 export const getPlayerActionSource = (
@@ -99,13 +100,13 @@ export const isPlayerSeatedAtGameTable = (playerId: PlayerProfileId, gameTable: 
 
 
 export const isPlayerAtGameTable = (playerId: PlayerProfileId, gameTable: GameTable | null): boolean => {
-  return matchPlayerToSeat(playerId, gameTable) !== undefined;
+  return matchPlayerToSeat(playerId, gameTable) !== null;
 }
 
 
-export const matchPlayerToSeat = (playerId: PlayerProfileId, gameTable: GameTable | null): GameTableSeat | undefined => {
+export const matchPlayerToSeat = (playerId: PlayerProfileId | null, gameTable: GameTable | null): GameTableSeat | null => {
   if (!gameTable) {
-    return undefined;
+    return null;
   }
 
   if (gameTable.p1 === playerId) {
@@ -133,7 +134,7 @@ export const matchPlayerToSeat = (playerId: PlayerProfileId, gameTable: GameTabl
     return 'p8';
   }
 
-  return undefined;
+  return null;
 }
 
 
@@ -142,46 +143,40 @@ export const getActivePlayerSeatsForGameTable = (gameTable: GameTable): GameTabl
   const playerSeats = PLAYER_SEATS.filter(seat => gameTable[seat] !== undefined);
 
   return playerSeats;
-  
-
-  // const playerSeats: GameTableSeat[] = [];
-  
-  // if (gameTable.p1) {
-  //   playerSeats.push('p1');
-  // }
-  
-  // if (gameTable.p2) {
-  //   playerSeats.push('p2');
-  // }
-  
-  // if (gameTable.p3) {
-  //   playerSeats.push('p3');
-  // }
-  
-  // if (gameTable.p4) {
-  //   playerSeats.push('p4');
-  // }
-  
-  // if (gameTable.p5) {
-  //   playerSeats.push('p5');
-  // }
-  
-  // if (gameTable.p6) {
-  //   playerSeats.push('p6');
-  // }
-  
-  // if (gameTable.p7) {
-  //   playerSeats.push('p7');
-  // }
-  
-  // if (gameTable.p8) {
-  //   playerSeats.push('p8');
-  // }
-  
-  // return playerSeats;
 }
 
 
 export const convertPlayerPoolToPlayerSeats = (playerPool: PlayerProfileId[]): GameTableSeat[] => {
   return playerPool.map((_, index) => PLAYER_SEATS[index]);
+}
+
+
+export const getPlayerIdForPlayerSeat = (playerSeat: GameTableSeat, gameTable: GameTable): PlayerProfileId | null => {
+  const playerProfileId = gameTable[playerSeat];
+  if (!playerProfileId) {
+    return null;
+  }
+  return playerProfileId;
+}
+
+
+export const getPeerIdForPlayerSeat = (
+  playerSeat: GameTableSeat,
+  gameTable: GameTable,
+  peerPlayerIds: Map<PeerId, PlayerProfileId>
+): PeerId | null => {
+
+  const seatPlayerProfileId = gameTable[playerSeat];
+  if (!seatPlayerProfileId) {
+    throw new Error('Player profile ID not found for player seat: ' + playerSeat);
+  }
+
+  peerPlayerIds.forEach((playerProfileId, peerId) => {
+    if (seatPlayerProfileId === playerProfileId) {
+      return peerId;
+    }
+  });
+  
+  console.warn('Player seat not found: ' + playerSeat);
+  return null;
 }
