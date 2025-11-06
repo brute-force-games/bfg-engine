@@ -96,12 +96,6 @@ export interface IP2pGameRoomValue {
 
   // host-only
   rxPlayerActionStr: (handler: (data: PlayerP2pActionStr, peer: PeerId) => void) => (() => void);
-
-  // peers: PeerId[];
-  // peerPlayers: Map<PeerId, PublicPlayerProfile>;
-  // allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  // myPlayerProfile: PrivatePlayerProfile | null;
-  // myGameTableAccess: GameTableAccessRole;
 }
 
 

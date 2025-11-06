@@ -15,12 +15,12 @@ import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
 interface IPeerProfilesComponentProps {
   myPeerId: PeerId;
   myPeerPlayer?: PublicPlayerProfile;
-  peers: PeerId[];
+  peerIds: PeerId[];
   peerPlayerIds: Map<PeerId, PlayerProfileId>;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 }
 
-export const PeerProfilesComponent = ({ myPeerId, myPeerPlayer, peers, peerPlayerIds, allPlayerProfiles }: IPeerProfilesComponentProps) => {
+export const PeerProfilesComponent = ({ myPeerId, myPeerPlayer, peerIds, peerPlayerIds, allPlayerProfiles }: IPeerProfilesComponentProps) => {
   const peerProfileEntries = Array.from(peerPlayerIds.entries());
   // const hasPeers = peerProfileEntries.length > 0;
 
@@ -73,7 +73,7 @@ export const PeerProfilesComponent = ({ myPeerId, myPeerPlayer, peers, peerPlaye
           />
         )}
         {
-          peers.map((peerId) => {
+          peerIds.map((peerId: PeerId) => {
             const peerPlayerId = peerPlayerIds.get(peerId);
             if (!peerPlayerId) {
               return null;

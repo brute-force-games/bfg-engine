@@ -1,38 +1,37 @@
-import { useP2pGameRoomAsObserver } from "~/hooks/p2p/game/use-bfg-game-room"
-import { GameTableId } from "../../models/types/bfg-branded-ids"
 import { Container, Typography } from "../bfg-ui"
-// import { useP2pGameAsObserver } from "../../hooks/p2p/game/create-p2p-game-as-observer"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
+import { IPublicBfgGameDetails } from "~/hooks/p2p/game/p2p-game-types"
 
 
 // TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
-interface IObserverP2pGameDetailsComponentProps {
-  gameTableId: GameTableId
-  // activeTabId: PlayerGameTabId
-}
+// interface IObserverP2pGameDetailsComponentProps {
+//   gameTableId: GameTableId
+//   // activeTabId: PlayerGameTabId
+// }
 
-export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGameDetailsComponentProps) => {
+// export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGameDetailsComponentProps) => {
+export const ObserverP2pGameDetailsComponent = (props: IPublicBfgGameDetails) => {
 
-  const p2pGame = useP2pGameRoomAsObserver();
+  const { gameTable, gameActions } = props;
   // const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
 
-  if (!p2pGame) {
-    return (
-      <ContentLoading
-        message="Loading P2P Game Observer View..."
-      />
-    )
-  }
+  // if (!p2pGame) {
+  //   return (
+  //     <ContentLoading
+  //       message="Loading P2P Game Observer View..."
+  //     />
+  //   )
+  // }
 
-  const p2p = p2pGame.p2p;
-  if (!p2p) {
-    return (
-      <ContentLoading
-        message="Loading P2P Observer Data..."
-      />
-    )
-  }
-  const { gameTable, gameActions } = p2p;
+  // const p2p = p2pGame.p2p;
+  // if (!p2p) {
+  //   return (
+  //     <ContentLoading
+  //       message="Loading P2P Observer Data..."
+  //     />
+  //   )
+  // }
+  // const { gameTable, gameActions } = p2p;
 
   if (!gameTable || !gameActions) {
     return (
@@ -42,9 +41,9 @@ export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGam
     )
   }
 
-  if (gameTable.id !== gameTableId) {
-    throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + gameTableId);
-  }
+  // if (gameTable.id !== gameTableId) {
+  //   throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + gameTableId);
+  // }
   
   const latestAction = gameActions[gameActions.length - 1];
   if (!latestAction) {
@@ -82,7 +81,7 @@ export const ObserverP2pGameDetailsComponent = ({ gameTableId }: IObserverP2pGam
       <div style={{ padding: '20px' }}>
         <h2>Game Details</h2>
         <div style={{ marginBottom: '16px' }}>
-          <strong>Game Table ID:</strong> {gameTableId}
+          <strong>Game Table ID:</strong> {gameTable.id}
         </div>
         <div style={{ marginBottom: '16px' }}>
           <strong>Game State:</strong>

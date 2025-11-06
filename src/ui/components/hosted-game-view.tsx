@@ -10,14 +10,14 @@ import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-en
 import { HostP2pActionStr, PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
 
 
-interface HostedGameViewProps {
+export interface HostedGameViewProps {
   myPlayerSeat: GameTableSeat | null;
   myPlayerProfile: PublicPlayerProfile;
   hostedGame: GameTable;
   gameActions: DbGameTableAction[];
 
-  peers: PeerId[];
-  peerPlayers: Map<PeerId, PublicPlayerProfile>;
+  peerIds: PeerId[];
+  peerPlayerIds: Map<PeerId, PlayerProfileId>;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   
   onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: PlayerP2pActionStr) => void

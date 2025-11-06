@@ -4,7 +4,7 @@ import { BfgStarterNavBar } from "../bfg-nav-bar/bfg-starter-nav-bar";
 import { BfgGameSpineNavBar } from "../bfg-nav-bar/bfg-game-spine-nav-bar";
 import { AppBarTabItem } from "../bfg-app-bar/tab-item-hook";
 import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
-import { BfgGameImplHostAction, BfgGameImplPlayerAction, BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
+import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
 import { GameTable } from "~/models/game-table/game-table";
 import { GameLogPanel } from "../game-log-panel";
 import { DbGameTableAction } from "~/models/game-table/game-table-action";
@@ -38,7 +38,8 @@ interface BfgGameScreenFrameProps<TTabId extends string = string> {
     activeTabId: TTabId;
     onTabChange: (tabId: TTabId) => void;
   } | null;
-  gameMetadata: BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>;
+  // gameMetadata: BfgGameEngineMetadata<BfgPublicGameImplState, BfgGameImplPlayerAction, BfgGameImplHostAction>;
+  gameMetadata: BfgGameEngineMetadata;
   gameTable: GameTable;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   gameState: BfgPublicGameImplState;

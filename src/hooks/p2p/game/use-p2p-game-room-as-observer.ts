@@ -11,7 +11,7 @@ import { isMessageFromHost } from "~/models/game-table/utils";
 import { useRoomUserDetails } from "./use-bfg-game-room";
 
 
-export const useP2pGameAsObserver = (): IBfgGameRoomForObserver => {
+export const useP2pGameRoomAsObserver = (): IBfgGameRoomForObserver => {
 
   const p2pGameRoom = useP2pGameRoomContext();
   const roomUserDetails = useRoomUserDetails(p2pGameRoom.gameTableId, 'watch');
@@ -73,7 +73,7 @@ export const useP2pGameAsObserver = (): IBfgGameRoomForObserver => {
   }, []);
 
   const p2pDetails: IP2pDetails = {
-    peers,
+    peerIds: peers,
     peerPlayerIds,
     allPlayerProfiles,
     connectionStatus: p2pGameRoom.connectionStatus,

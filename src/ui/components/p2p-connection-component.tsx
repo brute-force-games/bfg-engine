@@ -19,7 +19,7 @@ import { selfId } from "trystero"
 interface P2pConnectionComponentProps {
   connectionStatus: string
   connectionEvents?: ConnectionEvent[]
-  peers: PeerId[]
+  peerIds: PeerId[]
   myPeerPlayer?: PublicPlayerProfile;
   peerPlayerIds: Map<PeerId, PlayerProfileId>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
@@ -30,7 +30,7 @@ interface P2pConnectionComponentProps {
 export const P2pConnectionComponent = ({
   connectionStatus,
   connectionEvents = [],
-  peers,
+  peerIds,
   peerPlayerIds,
   allPlayerProfiles,
   myPeerPlayer,
@@ -100,7 +100,7 @@ export const P2pConnectionComponent = ({
       </Typography>
       
       <PeerProfilesComponent
-        peers={peers}
+        peerIds={peerIds}
         myPeerPlayer={myPeerPlayer}
         peerPlayerIds={peerPlayerIds}
         myPeerId={myPeerId}

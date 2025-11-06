@@ -17,7 +17,7 @@ import { updateHostedGame } from "~/tb-store/hosted-games-store";
 import { addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
 
 
-export const useP2pGameAsHost = (): IBfgGameRoomForHost | null => {
+export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
 
   const p2pGameRoom = useP2pGameRoomContext();
   const roomUserDetails = useRoomUserDetails(p2pGameRoom.gameTableId, 'host');
@@ -36,7 +36,6 @@ export const useP2pGameAsHost = (): IBfgGameRoomForHost | null => {
   const myHostProfile = roomUserDetails.myHostProfile;
   if (!myHostProfile) {
     console.error('❌ My host profile not found');
-    // return;
   }
   const myPlayerSeat = myHostProfile ? matchPlayerToSeat(myHostProfile.id, hostedGame) : null;
 
@@ -145,7 +144,7 @@ export const useP2pGameAsHost = (): IBfgGameRoomForHost | null => {
   }, [doSendGameUpdates])
 
   const p2pDetails: IP2pDetails = {
-    peers,
+    peerIds: peers,
     peerPlayerIds,
     allPlayerProfiles,
     connectionStatus: p2pGameRoom.connectionStatus,
@@ -158,38 +157,6 @@ export const useP2pGameAsHost = (): IBfgGameRoomForHost | null => {
   ) {
     return null;
   }
-
-
-
-  // const handleSelfPlayerActionStr = async (actionStr: PlayerP2pActionStr) => {
-  //   const validationResult = PlayerP2pActionStrSchema.safeParse(actionStr);
-  //   if (!validationResult.success) {
-  //     console.error('❌ Invalid player action received:', actionStr);
-  //     return;
-  //   }
-
-  //   const validatedActionStr = validationResult.data;
-
-  //   console.log('🎮 HOST RECEIVED self player action:', validatedActionStr);
-
-  //   const playerActionEncoder = gameMetadata.encoders.playerActionEncoder;
-  //   const p2pToBfgEncoded: BfgEncodedString = validatedActionStr as unknown as BfgEncodedString;
-  //   const validatedAction = playerActionEncoder.decode(p2pToBfgEncoded);
-
-  //   if (!validatedAction) {
-  //     console.error('❌ Invalid move received:', validatedActionStr);
-  //     return;
-  //   }
-    
-  //   const moveResult = await asHostApplyMoveFromPlayer(gameRegistry, hostedGame, gameActions, hostPlayerProfile.id, validatedActionStr);
-  //   if (moveResult) {
-  //     const updatedGameTable = moveResult.gameTable;
-  //     const updatedGameAction = moveResult.gameAction;
-  //     updateHostedGame(hostedGame.id, updatedGameTable);
-  //     addGamePlayerAction(hostedGame.id, updatedGameAction);
-  //   }
-  // }
-
 
   const onPlayerAction = useCallback(async (playerAction: BfgGameImplPlayerAction) => {
     console.log('🎮 Host received player action:', playerAction);

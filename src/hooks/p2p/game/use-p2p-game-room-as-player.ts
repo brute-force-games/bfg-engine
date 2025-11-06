@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useGameRegistry } from "~/hooks/games-registry/games-registry";
 import { GameTable } from "~/models/game-table/game-table";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
@@ -12,7 +12,7 @@ import { BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-ty
 import { DbGameTableAction } from "~/models/game-table/game-table-action";
 
 
-export const useP2pGameAsPlayer = (): IBfgGameRoomForPlayer | null => {
+export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
 
   const p2pGameRoom = useP2pGameRoomContext();
   const roomUserDetails = useRoomUserDetails(p2pGameRoom.gameTableId, 'play');
@@ -24,20 +24,20 @@ export const useP2pGameAsPlayer = (): IBfgGameRoomForPlayer | null => {
   const [gameTable, setGameTable] = useState<GameTable | null>(null);
   const [gameActions, setGameActions] = useState<DbGameTableAction[]>([]);
 
-  const gameRegistry = useGameRegistry();
-  
   const { txPlayerActionStr } = p2pGameRoom;
 
+  const gameRegistry = useGameRegistry();  
+  const gameMetadata = gameTable ? gameRegistry.getGameMetadata(gameTable.gameTitle) : null;
 
-  const onPlayerAction = useCallback(async (playerAction: BfgGameImplPlayerAction) => {
+
+  const onPlayerAction = async (playerAction: BfgGameImplPlayerAction) => {
     
-    if (!gameTable) {
-      console.error('❌ Game table not found - cannot call onPlayerAction');
+    if (!gameMetadata) {
+      console.error('❌ Game metadata not found - cannot call onPlayerAction');
       return;
     }
 
-    const gmd = gameRegistry.getGameMetadata(gameTable.gameTitle);
-    const encoder = gmd.encoders.playerActionEncoder;
+    const encoder = gameMetadata.encoders.playerActionEncoder;
     
     if (encoder.format !== 'json-zod-object-string') {
       throw new Error('Player action encoder format is not json-zod-object-string');
@@ -46,7 +46,7 @@ export const useP2pGameAsPlayer = (): IBfgGameRoomForPlayer | null => {
     const playerActionStr = encoder.encode(playerAction) as unknown as PlayerP2pActionStr;
     txPlayerActionStr(playerActionStr);
 
-  }, [txPlayerActionStr]);
+  }
 
   const myPlayerProfile = roomUserDetails.myPlayerProfile;
   if (!myPlayerProfile) {
@@ -119,14 +119,12 @@ export const useP2pGameAsPlayer = (): IBfgGameRoomForPlayer | null => {
   }
 
   const p2pDetails: IP2pDetails = {
-    peers,
+    peerIds: peers,
     peerPlayerIds,
     allPlayerProfiles,
     connectionStatus: p2pGameRoom.connectionStatus,
     connectionEvents: p2pGameRoom.connectionEvents,
   }
-
-  const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
 
   const publicGameDetails: IPublicBfgGameDetails | null = gameTable ? {
     gameMetadata,

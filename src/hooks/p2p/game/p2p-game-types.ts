@@ -7,7 +7,7 @@ import { GameTableAccessRole } from "~/models/game-roles";
 import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
 import { DbGameTableAction } from "~/models/game-table/game-table-action";
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
-import { BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
+import { BfgGameImplHostAction, BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
 
 
 export interface IP2pDetails {
@@ -15,7 +15,7 @@ export interface IP2pDetails {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peers: PeerId[];
+  peerIds: PeerId[];
   peerPlayerIds: Map<PeerId, PlayerProfileId>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 }
@@ -32,7 +32,6 @@ export interface IBfgGameRoomForUserBase {
   p2pDetails: IP2pDetails;
   publicGameDetails: IPublicBfgGameDetails | null;
 }
-
 
 
 
@@ -94,6 +93,7 @@ export interface IPlayerBfgGameDetails extends IPublicBfgGameDetails {
 
 export interface IHostBfgGameDetails extends IBfgGameDetailsBase {
   myHostProfile: PrivatePlayerProfile;
+  onHostAction: (hostAction: BfgGameImplHostAction) => Promise<void>;
 }
 
 
@@ -101,8 +101,8 @@ export interface IBfgGameRoomForHost extends IBfgGameRoomForUserBase {
   accessRole: 'host';
   myHostProfile: PrivatePlayerProfile;
 
-  hostGameDetails: IHostBfgGameDetails | null;
-  playerGameDetails: IPlayerBfgGameDetails | null;
+  hostGameDetails: IHostBfgGameDetails;
+  playerGameDetails: IPlayerBfgGameDetails;
 }
 
 export interface IBfgGameRoomForPlayer extends IBfgGameRoomForUserBase {

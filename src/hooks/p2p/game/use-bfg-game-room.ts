@@ -1,13 +1,14 @@
-import { IBfgGameRoomForHost, IBfgGameRoomForObserver, IBfgGameRoomForPlayer, IBfgGameRoomValue } from "./p2p-game-types";
+import { IBfgGameRoomValue } from "./p2p-game-types";
 import { useHostedGame } from "~/hooks/stores/use-hosted-games-store";
 import { useMyDefaultPlayerProfile } from "~/hooks/stores/use-my-player-profiles-store";
-import { useP2pGameAsObserver } from "./use-p2p-game-as-observer";
-import { useP2pGameAsHost } from "./use-p2p-game-as-host";
-import { useP2pGameAsPlayer } from "./use-p2p-game-as-player";
+import { useP2pGameRoomAsObserver } from "./use-p2p-game-room-as-observer";
+import { useP2pGameRoomAsHost } from "./use-p2p-game-room-as-host";
+import { useP2pGameRoomAsPlayer } from "./use-p2p-game-room-as-player";
 import { isProfileIdOkForPlayerAccess, isProfileOkForHostAccess } from "~/models/game-table/utils";
 import { GameTableAccessRole } from "~/models/game-roles";
 import { GameTableId } from "~/models/types/bfg-branded-ids";
 import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
+import { useP2pGameRoomContext } from "./p2p-game-room-context";
 
 
 // interface RoomObserverDetails {
@@ -33,12 +34,10 @@ interface RoomUserDetails {
   maxAllowedAccessRole: GameTableAccessRole;
   allowedRoles: GameTableAccessRole[];
 
-  // myObserverProfile: PrivatePlayerProfile | null;
   myPlayerProfile: PrivatePlayerProfile | null;
   myHostProfile: PrivatePlayerProfile | null;
 }
 
-// type RoomUserDetails = RoomObserverDetails | RoomPlayerDetails | RoomHostDetails;
 
 export const useRoomUserDetails = (gameTableId: GameTableId, requestedRole: GameTableAccessRole): RoomUserDetails => {
   const myPlayerProfile = useMyDefaultPlayerProfile();
@@ -50,7 +49,6 @@ export const useRoomUserDetails = (gameTableId: GameTableId, requestedRole: Game
       maxAllowedAccessRole: 'watch',
       allowedRoles: ['watch'],
 
-      // myObserverProfile: null,
       myPlayerProfile: null,
       myHostProfile: null,
     };
@@ -68,7 +66,6 @@ export const useRoomUserDetails = (gameTableId: GameTableId, requestedRole: Game
       maxAllowedAccessRole: 'host',
       allowedRoles: amIPlayer ? ['host', 'play', 'watch'] : ['host', 'watch'],
 
-      // myObserverProfile: null,
       myPlayerProfile: amIPlayer ? myPlayerProfile : null,
       myHostProfile: myPlayerProfile,
     };
@@ -125,20 +122,20 @@ export const useRoomUserDetails = (gameTableId: GameTableId, requestedRole: Game
 // }
 
 
-export const useP2pGameRoomAsObserver = (): IBfgGameRoomForObserver | null => {
-  const p2pGame = useP2pGameAsObserver();
-  return p2pGame as IBfgGameRoomForObserver | null;
-}
+// export const useP2pGameRoomAsObserver = (): IBfgGameRoomForObserver | null => {
+//   const p2pGame = useP2pGameAsObserver();
+//   return p2pGame as IBfgGameRoomForObserver | null;
+// }
 
-export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
-  const p2pGame = useP2pGameAsPlayer();
-  return p2pGame as IBfgGameRoomForPlayer | null;
-}
+// export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
+//   const p2pGame = useP2pGameAsPlayer();
+//   return p2pGame as IBfgGameRoomForPlayer | null;
+// }
 
-export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
-  const p2pGame = useP2pGameAsHost();
-  return p2pGame as IBfgGameRoomForHost | null;
-}
+// export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
+//   const p2pGame = useP2pGameAsHost();
+//   return p2pGame as IBfgGameRoomForHost | null;
+// }
 
 
 export const useBfgGameRoomForRole = (role: GameTableAccessRole): IBfgGameRoomValue | null => {
@@ -151,5 +148,14 @@ export const useBfgGameRoomForRole = (role: GameTableAccessRole): IBfgGameRoomVa
   if (role === 'host') {
     return useP2pGameRoomAsHost();
   }
-  throw new Error('Invalid role: ' + role);
+
+  throw new Error('Invalid role for getting BFG game room: ' + role);
+}
+
+
+export const useBfgGameRoomForContextRole = (): IBfgGameRoomValue | null => {
+  const p2pGameRoom = useP2pGameRoomContext();
+  const { requestedRole } = p2pGameRoom;
+  const roomForRole = useBfgGameRoomForRole(requestedRole);
+  return roomForRole;
 }
