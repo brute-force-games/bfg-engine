@@ -1,27 +1,29 @@
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
 import { AppBarTabItem } from "../bfg-app-bar/tab-item-hook";
 import { NavSpine } from "../bfg-app-bar/nav-spine";
+import { OptionalGameContext } from "~/hooks/p2p/game/use-optional-game-context";
 
 
 interface BfgStarterNavBarProps<TTabId extends string = string> {
   tabsConfig: {
     tabItems: readonly AppBarTabItem<TTabId>[];
     activeTabId: TTabId;
-    onTabChange: (tabId: TTabId) => void;
+    onTabClicked: (tabId: TTabId) => void;
   } | null;
+  gameContext?: OptionalGameContext;
 }
 
 export const BfgStarterNavBar = <TTabId extends string = string>(props: BfgStarterNavBarProps<TTabId>) => {
-  const { tabsConfig } = props;
+  const { tabsConfig, gameContext } = props;
 
   if (!tabsConfig) {
     return (
-      <BruteForceGamesAppBar />
+      <BruteForceGamesAppBar gameContext={gameContext} />
     )
   }
 
   return (
-    <BruteForceGamesAppBar>
+    <BruteForceGamesAppBar gameContext={gameContext}>
       {({ isNarrowScreen }) => (
         <NavSpine
           title="Brute Force Games Starter"

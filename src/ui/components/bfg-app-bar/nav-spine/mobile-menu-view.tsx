@@ -8,12 +8,12 @@ import { NavSpineProps } from "./types";
 //   title: string;
 //   tabItems: readonly AppBarTabItem<TTabId>[];
 //   activeTabId: TTabId;
-//   onTabChange: (tabId: TTabId) => void;
+//   onTabClicked: (tabId: TTabId) => void;
 // }
 
 export const MobileMenuView = <TTabId extends string = string>(props: NavSpineProps<TTabId>) => {
 
-  const { title, tabItems, activeTabId, onTabChange } = props;
+  const { title, tabItems, activeTabId, onTabClicked } = props;
 
   const [navMenuAnchor, setNavMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -59,7 +59,7 @@ export const MobileMenuView = <TTabId extends string = string>(props: NavSpinePr
           return (
             <MenuItem 
               key={tabItem.id} 
-              onClick={() => onTabChange(tabItem.id)}
+              onClick={() => onTabClicked(tabItem.id)}
               style={{
                 backgroundColor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                 fontWeight: isActive ? 'bold' : 'normal'
@@ -72,7 +72,7 @@ export const MobileMenuView = <TTabId extends string = string>(props: NavSpinePr
                 </Link>
               ) : (
                 <Box 
-                  onClick={() => onTabChange(tabItem.id)}
+                  onClick={() => onTabClicked(tabItem.id)}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                 >
                   {tabItem.icon}

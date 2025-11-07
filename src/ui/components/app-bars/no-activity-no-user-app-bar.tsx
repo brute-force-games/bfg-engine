@@ -22,7 +22,7 @@ export const NoActivityNoUserAppBar = () => {
   //       },
   //     ],
   //       activeTabId: "home",
-  //       onTabChange: () => {},
+  //       onTabClicked: () => {},
   //     }}
   //   />
   // )
@@ -50,7 +50,7 @@ export const NoActivityNoUserAppBar = () => {
       //   },
       // ],
       //   activeTabId: "home",
-      //   onTabChange: () => {},
+      //   onTabClicked: () => {},
       // }}
     >
       {({ isNarrowScreen }) => (
@@ -60,7 +60,7 @@ export const NoActivityNoUserAppBar = () => {
           tabsConfig={{
             tabItems,
             activeTabId: "home",
-            onTabChange: () => {}
+            onTabClicked: () => {}
           }}
         />
       )}

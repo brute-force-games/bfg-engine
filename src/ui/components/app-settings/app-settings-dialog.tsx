@@ -5,12 +5,10 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Select,
-  Option,
-  Stack,
 } from '../../bfg-ui/index';
 import { useAppSettings, useAppSettingsActions } from '../../../hooks/stores/use-my-app-settings-store';
 import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
+import { SharedSettingsFields } from './shared-settings-fields';
 
 
 interface AppSettingsDialogProps {
@@ -75,73 +73,18 @@ export const AppSettingsDialog = ({ open, onClose }: AppSettingsDialogProps) => 
     });
   };
 
-  const gameSpineLocationOptions: { value: GameSpineLocation; label: string }[] = [
-    { value: 'nav-bar', label: 'Navigation Bar' },
-    { value: 'top', label: 'Top of Screen' },
-    { value: 'left', label: 'Left Side' },
-    { value: 'right', label: 'Right Side' },
-    { value: 'bottom', label: 'Bottom' },
-    { value: 'hidden', label: 'Hidden' },
-  ];
-
-  const gameLogPanelLocationOptions: { value: GameLogPanelLocation; label: string }[] = [
-    { value: 'none', label: 'None (Hidden)' },
-    { value: 'left', label: 'Left Side' },
-    { value: 'right', label: 'Right Side' },
-  ];
-
-  const playerAgentModeOptions: { value: PlayerAgentMode; label: string }[] = [
-    { value: 'none', label: 'None (Manual Play)' },
-    { value: 'chaotic-random', label: 'Chaotic Random' },
-    { value: 'try-to-win', label: 'Try to Win' },
-    { value: 'try-to-lose', label: 'Try to Lose' },
-  ];
-
-
   return (
     <Dialog open={open} onClose={handleCancel}>
       <DialogTitle>App Settings</DialogTitle>
       <DialogContent>
-        <Stack spacing={3} style={{ paddingTop: '8px' }}>
-          <Select
-            label="Game Spine Location"
-            value={formValues.gameSpineLocation}
-            onChange={handleGameSpineLocationChange}
-            fullWidth
-          >
-            {gameSpineLocationOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-          
-          <Select
-            label="Game Log Panel Location"
-            value={formValues.gameLogPanelLocation}
-            onChange={handleGameLogPanelLocationChange}
-            fullWidth
-          >
-            {gameLogPanelLocationOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-          
-          <Select
-            label="Player Agent Mode"
-            value={formValues.playerAgentMode}
-            onChange={handlePlayerAgentModeChange}
-            fullWidth
-          >
-            {playerAgentModeOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-        </Stack>
+        <SharedSettingsFields
+          gameSpineLocation={formValues.gameSpineLocation}
+          gameLogPanelLocation={formValues.gameLogPanelLocation}
+          playerAgentMode={formValues.playerAgentMode}
+          onGameSpineLocationChange={handleGameSpineLocationChange}
+          onGameLogPanelLocationChange={handleGameLogPanelLocationChange}
+          onPlayerAgentModeChange={handlePlayerAgentModeChange}
+        />
       </DialogContent>
       <DialogActions>
         <Button variant="outlined" onClick={handleCancel}>

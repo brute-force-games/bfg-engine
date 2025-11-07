@@ -31,9 +31,15 @@
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.menuItem:disabled {
+.menuItem:disabled,
+.menuItem.disabled {
   opacity: 0.38;
   cursor: not-allowed;
+  pointer-events: none;
+}
+
+.menuItem.disabled:hover {
+  background-color: transparent;
 }
 
 .dense {

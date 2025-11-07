@@ -102,7 +102,7 @@ export interface IBfgGameRoomForHost extends IBfgGameRoomForUserBase {
   myHostProfile: PrivatePlayerProfile;
 
   hostGameDetails: IHostBfgGameDetails;
-  playerGameDetails: IPlayerBfgGameDetails;
+  playerGameDetails: IPlayerBfgGameDetails | null;
 }
 
 export interface IBfgGameRoomForPlayer extends IBfgGameRoomForUserBase {

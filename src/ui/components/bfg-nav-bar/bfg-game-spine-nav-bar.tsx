@@ -5,6 +5,7 @@ import { GameTable } from "~/models/game-table/game-table";
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
 import { BfgGameSpine } from "~/ui/bfg-ui";
+import { OptionalGameContext } from "~/hooks/p2p/game/use-optional-game-context";
 
 
 interface BfgGameSpineNavBarProps {
@@ -12,10 +13,11 @@ interface BfgGameSpineNavBarProps {
   gameTable: GameTable;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   gameState: BfgPublicGameImplState;
+  gameContext?: OptionalGameContext;
 }
 
 export const BfgGameSpineNavBar = (props: BfgGameSpineNavBarProps) => {
-  const { gameMetadata, gameTable, allPlayerProfiles, gameState } = props;
+  const { gameMetadata, gameTable, allPlayerProfiles, gameState, gameContext } = props;
 
   // const gameSpineComponent = gameMetadata.components.GameSpineComponent?.({
   //   gameTable,
@@ -42,7 +44,7 @@ export const BfgGameSpineNavBar = (props: BfgGameSpineNavBarProps) => {
   const playerDetailsLineFn = gameMetadata.engine.getPlayerDetailsLine;
 
   return (
-    <BruteForceGamesAppBar>
+    <BruteForceGamesAppBar gameContext={gameContext}>
       {(_props) => (
         <>
           {/* {gameSpineComponent} */}

@@ -14,8 +14,6 @@ export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-comp
 export { ObserverP2pGameDetailsComponent } from './ui/components/observer-p2p-game-details-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
 export type { BfgGameEngineProcessor, GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
-// export { createBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
-export type { IBfgGameEngineProcessor } from './models/bfg-game-engine-metadata';
 export { GameTableSeatSchema } from './models/game-table/game-table';
 export type { GameTableActionResult } from './models/game-table/table-phase';
 export type { BfgGameSpecificTableAction } from './models/game-table/game-table-action';
@@ -42,3 +40,53 @@ export * from './ui/bfg-ui';
 
 // BFG Routes - for combining with app routes
 export { combineBfgRoutesWithAppRoutes, getBfgRouteChildren } from './bfg-routes'
+
+// User game settings exports (per game type - serves as defaults)
+export type { UserGameSettings } from './models/user-game-settings';
+export { DEFAULT_USER_GAME_SETTINGS } from './models/user-game-settings';
+export { 
+  getUserGameSettings,
+  updateUserGameSettings,
+  resetUserGameSettings,
+  deleteUserGameSettings,
+  getAllUserGameSettings,
+  clearAllUserGameSettings,
+  userGameSettingsStore
+} from './tb-store/user-game-settings-store';
+export {
+  useUserGameSettings,
+  useUserGameSettingsActions
+} from './hooks/stores/use-user-game-settings-store';
+
+// User game table settings exports (per game table - overrides game settings)
+export type { UserGameTableSettings } from './models/user-game-table-settings';
+export { DEFAULT_USER_GAME_TABLE_SETTINGS } from './models/user-game-table-settings';
+export { 
+  getUserGameTableSettings,
+  updateUserGameTableSettings,
+  resetUserGameTableSettings,
+  deleteUserGameTableSettings,
+  getAllUserGameTableSettings,
+  clearAllUserGameTableSettings,
+  userGameTableSettingsStore
+} from './tb-store/user-game-table-settings-store';
+export {
+  useUserGameTableSettings,
+  useUserGameTableSettingsActions
+} from './hooks/stores/use-user-game-table-settings-store';
+
+// User game settings helpers (hierarchical lookup)
+export { 
+  getEffectiveUserGameSettings,
+  hasTableSpecificSettings
+} from './tb-store/user-game-settings-helpers';
+
+// Settings dialog components
+export { AppSettingsDialog } from './ui/components/app-settings/app-settings-dialog';
+export { GameSettingsDialog } from './ui/components/app-settings/game-settings-dialog';
+export { TableSettingsDialog } from './ui/components/app-settings/table-settings-dialog';
+export { SharedSettingsFields } from './ui/components/app-settings/shared-settings-fields';
+
+// Game context utilities
+export type { OptionalGameContext } from './hooks/p2p/game/use-optional-game-context';
+export { createGameContext, EMPTY_GAME_CONTEXT } from './hooks/p2p/game/use-optional-game-context';

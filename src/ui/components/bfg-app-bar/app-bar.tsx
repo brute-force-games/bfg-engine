@@ -2,27 +2,27 @@ import { useState, useEffect } from "react";
 import { AppBar, Toolbar } from "../../bfg-ui/index";
 import { useRiskyMyDefaultPlayerProfile, useMyPlayerProfiles } from "../../../hooks/stores/use-my-player-profiles-store";
 import { UserProfileAccessComponent } from "./user-profile-access-component";
+import { OptionalGameContext } from "../../../hooks/p2p/game/use-optional-game-context";
 
 
 interface BruteForceGamesAppBarProps {
   // tabsConfig: {
   //   tabItems: readonly AppBarTabItem<TTabId>[];
   //   activeTabId: TTabId;
-  //   onTabChange?: (tabId: TTabId) => void;
+  //   onTabClicked?: (tabId: TTabId) => void;
   // } | null;
-  // childContent?: (props: { isNarrowScreen: boolean }) => React.ReactElement;
   children?: ((props: { isNarrowScreen: boolean }) => React.ReactElement) | React.ReactNode;
+  gameContext?: OptionalGameContext;
 }
 
 export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
   
-  const { children } = props;
+  const { children, gameContext } = props;
 
   const myPlayerProfiles = useMyPlayerProfiles();
   const myDefaultPlayerProfile = useRiskyMyDefaultPlayerProfile();
 
   
-  // const [navMenuAnchor, setNavMenuAnchor] = useState<null | HTMLElement>(null);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
   
   useEffect(() => {
@@ -97,7 +97,7 @@ export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
                 return (
                   <MenuItem 
                     key={tabItem.id} 
-                    onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+                    onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
                     style={{
                       backgroundColor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                       fontWeight: isActive ? 'bold' : 'normal'
@@ -110,7 +110,7 @@ export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
                       </Link>
                     ) : (
                       <Box 
-                        onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+                        onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
                         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                       >
                         {tabItem.icon}
@@ -176,7 +176,7 @@ export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
                     backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                     outline: 'none'
                   }}
-                  onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+                  onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
                 >
                   {tabItem.icon}
                   {tabItem.label}
@@ -199,6 +199,7 @@ export const BruteForceGamesAppBar = (props: BruteForceGamesAppBarProps) => {
         <UserProfileAccessComponent
           myPlayerProfiles={myPlayerProfiles}
           myDefaultPlayerProfile={myDefaultPlayerProfile}
+          gameContext={gameContext}
         />
 
       </Toolbar>

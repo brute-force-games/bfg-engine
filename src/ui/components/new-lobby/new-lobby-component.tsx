@@ -60,7 +60,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
   // const gameHosting = useGameHosting();
 
   // Calculate default lobby name (safe even if profile is null)
-  const defaultLobbyName = defaultPlayerProfile ? `${defaultPlayerProfile.handle}'s Lobby` : '';
+  const defaultLobbyName = defaultPlayerProfile ? `${defaultPlayerProfile.handle}'s Table` : '';
 
   // TanStack Form with Zod validation - MUST be called before any early returns
   const form = useForm({

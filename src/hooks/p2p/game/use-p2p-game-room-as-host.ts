@@ -3,7 +3,7 @@ import { useGameRegistry } from "~/hooks/games-registry/games-registry";
 import { GameTable } from "~/models/game-table/game-table";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
-import { PeerId, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
+import { PeerId, PlayerP2pActionStr, PrivatePlayerKnowledgeStr, HostP2pActionStr } from "../p2p-types";
 import { useP2pGameRoomContext } from "./p2p-game-room-context";
 import { IBfgGameRoomForHost, IHostBfgGameDetails, IP2pDetails, IPlayerBfgGameDetails, IPublicBfgGameDetails } from "./p2p-game-types";
 import { useRoomUserDetails } from "./use-bfg-game-room";
@@ -13,8 +13,9 @@ import { BfgEncodedString } from "~/models/game-engine/encoders";
 import { getPeerIdForPlayerSeat, matchPlayerToSeat } from "~/ops/game-table-ops/player-seat-utils";
 import { BfgGameImplHostAction, BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
 import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player";
+import { asHostApplyHostAction } from "~/ops/game-table-ops/as-host-apply-host-action";
 import { updateHostedGame } from "~/tb-store/hosted-games-store";
-import { addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
+import { addGamePlayerAction, addGameHostAction } from "~/tb-store/hosted-game-actions-store";
 
 
 export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
@@ -186,7 +187,22 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
   }, [gameMetadata, gameRegistry, hostedGame, gameActions, roomUserDetails.myHostProfile]);
 
   const onHostAction = useCallback(async (hostAction: BfgGameImplHostAction) => {
-    console.log('🎮 Host received host action:', hostAction);
+    // Convert to encoded string if needed (hosted-game-view.tsx sends it as a string)
+    // let hostActionStr: HostP2pActionStr;
+    // if (typeof hostAction === 'string') {
+    //   hostActionStr = hostAction as unknown as HostP2pActionStr;
+    // } else {
+    //   hostActionStr = gameMetadata.encoders.hostActionEncoder.encode(hostAction) as unknown as HostP2pActionStr;
+    // }
+    const hostActionStr = gameMetadata.encoders.hostActionEncoder.encode(hostAction) as unknown as HostP2pActionStr;
+
+    // Use the existing helper function to apply the host action
+    const result = await asHostApplyHostAction(gameRegistry, hostedGame, gameActions, hostActionStr);
+
+    // Update the stored game table and add the action
+    updateHostedGame(hostedGame.id, result.gameTable);
+    await addGameHostAction(hostedGame.id, result.gameAction);
+
   }, [gameMetadata, gameRegistry, hostedGame, gameActions, roomUserDetails.myHostProfile]);
 
 
@@ -219,7 +235,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
       onPlayerAction,
     } : null;
 
-  if (!hostGameDetails || !playerGameDetails) {
+  if (!hostGameDetails) {
     return null;
   }
 

@@ -1,0 +1,47 @@
+import { BfgSupportedGameTitle } from '~/models/game-box-definition';
+import { GameTableId } from '~/models/types/bfg-branded-ids';
+
+export interface OptionalGameContext {
+  gameTitle: BfgSupportedGameTitle | null;
+  gameTableId: GameTableId | null;
+  tableName: string | null;
+}
+
+/**
+ * This interface allows passing game context to components that may not
+ * be inside a P2pGameRoomContextProvider. Use this when you want to
+ * conditionally enable features based on game context.
+ * 
+ * @example
+ * ```tsx
+ * // In a game page component that has access to game room
+ * const gameRoom = useBfgGameRoomForContextRole();
+ * const gameContext = gameRoom?.publicGameDetails?.gameTable 
+ *   ? createGameContext(
+ *       gameRoom.publicGameDetails.gameTable.gameTitle,
+ *       gameRoom.gameTableId,
+ *       gameRoom.publicGameDetails.gameTable.currentStatusDescription
+ *     )
+ *   : EMPTY_GAME_CONTEXT;
+ * 
+ * // Pass to components
+ * <UserProfileAccessComponent gameContext={gameContext} />
+ * ```
+ */
+export const createGameContext = (
+  gameTitle: BfgSupportedGameTitle | null,
+  gameTableId: GameTableId | null,
+  tableName: string | null = null
+): OptionalGameContext => {
+  return { gameTitle, gameTableId, tableName };
+};
+
+/**
+ * Default empty game context for when not in a game
+ */
+export const EMPTY_GAME_CONTEXT: OptionalGameContext = {
+  gameTitle: null,
+  gameTableId: null,
+  tableName: null,
+};
+

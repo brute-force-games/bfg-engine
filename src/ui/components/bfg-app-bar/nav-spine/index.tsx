@@ -1,16 +1,12 @@
-import { AppBarTabItem } from "../tab-item-hook";
 import { MobileMenuView } from "./mobile-menu-view";
 import { DesktopBarView } from "./desktop-bar-view";
+import { AppBarTabsConfig } from "../tabs-config";
 
 
 interface NavSpineProps<TTabId extends string = string> {
   title: string;
   isNarrowScreen: boolean;
-  tabsConfig: {
-    tabItems: readonly AppBarTabItem<TTabId>[];
-    activeTabId: TTabId;
-    onTabChange: (tabId: TTabId) => void;
-  }
+  tabsConfig: AppBarTabsConfig<TTabId>;
 }
 
 export const NavSpine = <TTabId extends string = string>({
@@ -25,7 +21,7 @@ export const NavSpine = <TTabId extends string = string>({
         title={title}
         tabItems={tabsConfig.tabItems}
         activeTabId={tabsConfig.activeTabId}
-        onTabChange={tabsConfig.onTabChange}
+        onTabClicked={tabsConfig.onTabClicked}
       />
     )
   }
@@ -35,7 +31,7 @@ export const NavSpine = <TTabId extends string = string>({
       title={title}
       tabItems={tabsConfig.tabItems}
       activeTabId={tabsConfig.activeTabId}
-      onTabChange={tabsConfig.onTabChange}
+      onTabClicked={tabsConfig.onTabClicked}
     />
   )
 
@@ -57,7 +53,7 @@ export const NavSpine = <TTabId extends string = string>({
   //           title={title}
   //           tabItems={tabsConfig.tabItems}
   //           activeTabId={tabsConfig.activeTabId}
-  //           onTabChange={tabsConfig.onTabChange}
+  //           onTabClicked={tabsConfig.onTabClicked}
   //         />
   //         {/* <Box style={{ flexGrow: 1 }} />
   //         <UserProfileAccessComponent
@@ -70,7 +66,7 @@ export const NavSpine = <TTabId extends string = string>({
   //         title={title}
   //         tabItems={tabsConfig.tabItems}
   //         activeTabId={tabsConfig.activeTabId}
-  //         onTabChange={tabsConfig.onTabChange}
+  //         onTabClicked={tabsConfig.onTabClicked}
   //       />
   //     )}
   //   </Toolbar>
@@ -110,7 +106,7 @@ export const NavSpine = <TTabId extends string = string>({
         //       return (
         //         <MenuItem 
         //           key={tabItem.id} 
-        //           onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+        //           onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
         //           style={{
         //             backgroundColor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
         //             fontWeight: isActive ? 'bold' : 'normal'
@@ -123,7 +119,7 @@ export const NavSpine = <TTabId extends string = string>({
         //             </Link>
         //           ) : (
         //             <Box 
-        //               onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+        //               onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
         //               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
         //             >
         //               {tabItem.icon}
@@ -190,7 +186,7 @@ export const NavSpine = <TTabId extends string = string>({
       //             backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
       //             outline: 'none'
       //           }}
-      //           onClick={() => props.tabsConfig?.onTabChange?.(tabItem.id)}
+      //           onClick={() => props.tabsConfig?.onTabClicked?.(tabItem.id)}
       //         >
       //           {tabItem.icon}
       //           {tabItem.label}

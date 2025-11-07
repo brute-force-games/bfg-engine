@@ -5,5 +5,5 @@ export interface NavSpineProps<TTabId extends string = string> {
   title: string;
   tabItems: readonly AppBarTabItem<TTabId>[];
   activeTabId: TTabId;
-  onTabChange: (tabId: TTabId) => void;
+  onTabClicked: (tabId: TTabId) => void;
 }

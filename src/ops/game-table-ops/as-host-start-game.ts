@@ -30,6 +30,7 @@ const createNewGameTableFromLobbyState = (lobbyState: GameLobby, newGameTableId:
     lastUpdatedAt: now,
     
     gameTitle,
+    tableName: lobbyState.lobbyName,
     gameHostPlayerProfileId: lobbyState.gameHostPlayerProfile.id,
     tablePhase: 'table-phase-game-setup',
     currentStatusDescription: lobbyState.currentStatusDescription,

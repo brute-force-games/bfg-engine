@@ -4,7 +4,7 @@ import { NavSpineProps } from "./types";
 
 
 export const DesktopBarView = <TTabId extends string = string>(props: NavSpineProps<TTabId>) => {
-  const { title, tabItems, activeTabId, onTabChange } = props;
+  const { title, tabItems, activeTabId, onTabClicked } = props;
   
   return (
     <>
@@ -55,7 +55,7 @@ export const DesktopBarView = <TTabId extends string = string>(props: NavSpinePr
               backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
               outline: 'none'
             }}
-            onClick={() => onTabChange(tabItem.id)}
+            onClick={() => onTabClicked(tabItem.id)}
           >
             {tabItem.icon}
             {tabItem.label}

@@ -1,4 +1,4 @@
-import { Divider, Menu, MenuItem, Typography } from "../../bfg-ui/index";
+import { Divider, Menu, MenuItem, Tooltip, Typography } from "../../bfg-ui/index";
 import { useState } from 'react';
 import { BfgAppBarSubMenu } from './app-bar-sub-menu';
 import { Link, LinkProps } from '@tanstack/react-router';
@@ -28,6 +28,8 @@ export type MenuAction = {
   type: 'menu-action';
   title: string;
   action: () => Promise<void>;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export type MenuLink = {
@@ -94,6 +96,30 @@ export const DbkAppBarMenu = ({ anchorElUser, userMenuItems, handleCloseUserMenu
       {
         userMenuItems.map((menuItem, index) => {
           if (menuItem.type === 'menu-action') {
+            // Wrap disabled items with tooltip showing the reason
+            if (menuItem.disabled && menuItem.disabledReason) {
+              return (
+                <li key={`action-${menuItem.title}-${index}`} style={{ width: '100%', listStyle: 'none', padding: 0, margin: 0 }}>
+                  <Tooltip 
+                    title={menuItem.disabledReason} 
+                    placement="left"
+                  >
+                    <div style={{ display: 'block', width: '100%' }}>
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Do nothing - item is disabled
+                        }}
+                        style={{ cursor: 'not-allowed' }}
+                      >
+                        <Typography style={{ textAlign: 'center', opacity: 0.38 }}>{menuItem.title}</Typography>
+                      </MenuItem>
+                    </div>
+                  </Tooltip>
+                </li>
+              );
+            }
+
             return (
               <MenuItem
                 key={`action-${menuItem.title}-${index}`}
@@ -106,7 +132,7 @@ export const DbkAppBarMenu = ({ anchorElUser, userMenuItems, handleCloseUserMenu
               >
                 <Typography style={{ textAlign: 'center' }}>{menuItem.title}</Typography>
               </MenuItem>
-            )
+            );
           } else if (menuItem.type === 'menu-link') {
             return (
               <Link

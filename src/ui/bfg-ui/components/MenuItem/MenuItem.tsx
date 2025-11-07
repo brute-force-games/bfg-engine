@@ -14,8 +14,17 @@ export const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
     const menuItemClassName = classNames(
       styles.menuItem,
       dense && styles.dense,
+      disabled && styles.disabled,
       className
     );
+
+    const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
+      if (disabled) {
+        e.preventDefault();
+        return;
+      }
+      onClick?.(e);
+    };
 
     // Handle both button and li elements properly
     if (Component === 'li') {
@@ -24,7 +33,9 @@ export const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
           ref={ref}
           className={menuItemClassName}
           role="menuitem"
-          onClick={onClick as any}
+          aria-disabled={disabled}
+          onClick={handleClick as any}
+          style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
           {...props}
         >
           {children}
@@ -36,6 +47,7 @@ export const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(
       <Component
         ref={ref}
         className={menuItemClassName}
+        disabled={disabled}
         onClick={onClick}
         {...props}
       >

@@ -1,39 +1,42 @@
 import { z } from "zod";
-import { GameTable, GameTableSeat } from "../../models/game-table/game-table";
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
-import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Typography, Stack, Box } from "../bfg-ui";
 import { GameHostComponentProps } from "~/models/game-engine/bfg-game-engine-types";
 import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders";
-import { HostP2pActionStr, PeerId, PlayerP2pActionStr } from "~/hooks/p2p/p2p-types";
+import { IBfgGameRoomForHost } from "~/hooks/p2p/game/p2p-game-types";
 
 
-export interface HostedGameViewProps {
-  myPlayerSeat: GameTableSeat | null;
-  myPlayerProfile: PublicPlayerProfile;
-  hostedGame: GameTable;
-  gameActions: DbGameTableAction[];
+// export interface HostedGameViewProps {
+//   myPlayerSeat: GameTableSeat | null;
+//   myPlayerProfile: PublicPlayerProfile;
+//   hostedGame: GameTable;
+//   gameActions: DbGameTableAction[];
 
-  peerIds: PeerId[];
-  peerPlayerIds: Map<PeerId, PlayerProfileId>;
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+//   peerIds: PeerId[];
+//   peerPlayerIds: Map<PeerId, PlayerProfileId>;
+//   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   
-  onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: PlayerP2pActionStr) => void
-  onHostGameAction: (hostAction: HostP2pActionStr) => void
-}
+//   onActingAsPlayerGameAction: (actingAsPlayerSeat: GameTableSeat, playerAction: PlayerP2pActionStr) => void
+//   onHostGameAction: (hostAction: HostP2pActionStr) => void
+// }
 
-export const HostedGameView = (props: HostedGameViewProps) => {
-  const { hostedGame, gameActions, onHostGameAction } = props;
-
+// export const HostedGameView = (props: HostedGameViewProps) => {
+export const HostedGameView = (props: IBfgGameRoomForHost) => {
+  // const { hostedGame, gameActions, onHostGameAction, ...hostComponentProps } = props;
+  const { hostGameDetails, p2pDetails } = props;
+  const { gameTable, gameActions, onHostAction, myHostProfile } = hostGameDetails;
+  const { allPlayerProfiles } = p2pDetails;
   const latestAction = gameActions[gameActions.length - 1];
   
+  if (!gameTable) {
+    return <Typography variant="body1">Game table not found...</Typography>;
+  }
+
   if (!latestAction) {
     return <Typography variant="body1">No game actions yet...</Typography>;
   }
   
-  const gameTitle = hostedGame.gameTitle;
+  const gameTitle = gameTable.gameTitle;
 
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
@@ -57,22 +60,23 @@ export const HostedGameView = (props: HostedGameViewProps) => {
   const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
   const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
 
-  const onHostAction = (hostAction: z.infer<typeof zodHostActionSchema>) => {
-    const encodedHostAction = zodHostActionEncoder.encode(hostAction);
-    const encodedHostActionStr = encodedHostAction as unknown as HostP2pActionStr;
-    onHostGameAction(encodedHostActionStr);
-  }
+  // const onHostAction = (hostAction: z.infer<typeof zodHostActionSchema>) => {
+  //   const encodedHostAction = zodHostActionEncoder.encode(hostAction);
+  //   const encodedHostActionStr = encodedHostAction as unknown as HostP2pActionStr;
+  //   onHostGameAction(encodedHostActionStr);
+  //   onHostAction(hostAction);
+  // }
   
   const hostComponentProps: GameHostComponentProps<
     z.infer<typeof zodGameSpecificStateSchema>,
     z.infer<typeof zodHostActionSchema>
   > = {
     gameState: gameSpecificState,
-    gameTable: hostedGame,
-    allPlayerProfiles: props.allPlayerProfiles,
-    hostPlayerProfileId: props.myPlayerProfile.id,
-    actingAsPlayerProfileId: props.myPlayerProfile.id,
-    actingAsPlayerSeat: props.myPlayerSeat,
+    gameTable,
+    allPlayerProfiles,
+    hostPlayerProfileId: myHostProfile.id,
+    actingAsPlayerProfileId: null,
+    actingAsPlayerSeat: null,
     latestGameAction: latestAction,
     onHostAction,
   };

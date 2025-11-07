@@ -32,7 +32,9 @@ export const BruteForceGamesUserAppBar = (_props: BruteForceGamesUserAppBarProps
           tabsConfig={{
             tabItems,
             activeTabId: "home",
-            onTabChange: () => {}
+            onTabClicked: () => {
+              console.warn('onTabClicked not implemented');
+            }
           }}
         />
       )}

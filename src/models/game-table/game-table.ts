@@ -26,6 +26,7 @@ export const GameTableSchema = z.object({
   latestActionId: BfgGameTableActionId.idSchema,
 
   gameTitle: BfgSupportedGameTitleSchema,
+  tableName: z.string(),
   gameHostPlayerProfileId: BfgPlayerProfileId.idSchema,
   tablePhase: TablePhaseEnumSchema,
 

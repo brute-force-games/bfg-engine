@@ -21,7 +21,7 @@ export const NewLobbyAppBar = () => {
           tabsConfig={{
             tabItems,
             activeTabId: "new-lobby",
-            onTabChange: () => {}
+            onTabClicked: () => {}
           }}
         />
       )}

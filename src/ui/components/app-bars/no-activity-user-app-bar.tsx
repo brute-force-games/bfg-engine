@@ -1,5 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
+import { Typography, Button, Box } from "../../bfg-ui";
 
 
 interface NoActivityUserAppBarProps {
@@ -10,20 +12,19 @@ interface NoActivityUserAppBarProps {
 export const NoActivityUserAppBar = (_props: NoActivityUserAppBarProps) => {
 
   return (
-    <BruteForceGamesAppBar 
-      tabsConfig={{
-        tabItems: [
-        {
-          id: "new-lobby",
-          label: "Create Lobby",          
-          link: {
-            to: "/new-lobby"
-          }
-        }
-        ],
-        activeTabId: "new-lobby",
-        onTabChange: () => {}
-      }}
-    />
+    <BruteForceGamesAppBar>
+      <Box style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <Typography variant="h6" style={{ fontWeight: 'bold' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            Brute Force Games
+          </Link>
+        </Typography>
+        <Link to="/new-lobby" style={{ textDecoration: 'none' }}>
+          <Button variant="text" style={{ color: 'inherit' }}>
+            Create Lobby
+          </Button>
+        </Link>
+      </Box>
+    </BruteForceGamesAppBar>
   )
 }

@@ -16,7 +16,7 @@ export const NoUserAppBar = () => {
       tabsConfig={{
         tabItems,
         activeTabId: "home",
-        onTabChange: () => {}
+        onTabClicked: () => {}
       }}
     />
   )
