@@ -11,7 +11,7 @@ import { useHostedGame } from "~/hooks/stores/use-hosted-games-store";
 import { useGameActions } from "~/hooks/stores/use-game-actions-store";
 import { BfgEncodedString } from "~/models/game-engine/encoders";
 import { getPeerIdForPlayerSeat, matchPlayerToSeat } from "~/ops/game-table-ops/player-seat-utils";
-import { BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
+import { BfgGameImplHostAction, BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
 import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player";
 import { updateHostedGame } from "~/tb-store/hosted-games-store";
 import { addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
@@ -137,7 +137,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
       rxPlayerProfileUnsubscribe();
       rxPlayerActionStrUnsubscribe();
     };
-  }, []);
+  }, [hostedGame, gameActions, myHostProfile, gameRegistry, p2pGameRoom]);
 
   useEffect(() => {
     doSendGameUpdates();
@@ -157,6 +157,8 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
   ) {
     return null;
   }
+
+  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
 
   const onPlayerAction = useCallback(async (playerAction: BfgGameImplPlayerAction) => {
     console.log('🎮 Host received player action:', playerAction);
@@ -181,9 +183,12 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
       addGamePlayerAction(hostedGame.id, updatedGameAction);
     }
 
-  }, []);
+  }, [gameMetadata, gameRegistry, hostedGame, gameActions, roomUserDetails.myHostProfile]);
 
-  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+  const onHostAction = useCallback(async (hostAction: BfgGameImplHostAction) => {
+    console.log('🎮 Host received host action:', hostAction);
+  }, [gameMetadata, gameRegistry, hostedGame, gameActions, roomUserDetails.myHostProfile]);
+
 
   const publicGameDetails: IPublicBfgGameDetails | null = hostedGame ? {
     gameMetadata,
@@ -197,6 +202,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
     myHostProfile: roomUserDetails.myHostProfile,
     gameTable: hostedGame,
     gameActions,
+    onHostAction,
   } : null;
 
   const playerGameDetails: IPlayerBfgGameDetails | null = hostedGame && 
@@ -212,6 +218,10 @@ export const useP2pGameRoomAsHost = (): IBfgGameRoomForHost | null => {
       myPlayerSeat,
       onPlayerAction,
     } : null;
+
+  if (!hostGameDetails || !playerGameDetails) {
+    return null;
+  }
 
   const retVal: IBfgGameRoomForHost = {
     gameTableId: p2pGameRoom.gameTableId,

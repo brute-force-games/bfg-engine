@@ -57,7 +57,7 @@ export type TBfgGameEngineMetadata<
       never;
 
   engine: IBfgGameProcessor<HGS, GPA, GHA, PPK>,
-  components: BfgGameEngineComponents<HGS, GPA, GHA, PPK>,
+  components: BfgGameEngineComponents<HGS, PGS, GPA, GHA, PPK>,
 }
 
 

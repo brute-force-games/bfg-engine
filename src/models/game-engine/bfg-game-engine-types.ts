@@ -119,6 +119,7 @@ export interface GameSpineComponentProps<GIS extends BfgPublicGameImplState> {
 
 
 export type BfgGameEngineComponents<
+  HGS extends BfgHostGameImplState,
   PGS extends BfgPublicGameImplState,
   GPA extends BfgGameImplPlayerAction,
   GHA extends BfgGameImplHostAction,
@@ -127,14 +128,14 @@ export type BfgGameEngineComponents<
 
   ObserverComponent: (props: ObserverComponentProps<PGS>) => React.ReactNode;
   PlayerComponent: (props: PlayerComponentProps<PGS, GPA, PPK>) => React.ReactNode;
-  HostComponent: (props: GameHostComponentProps<PGS, GHA>) => React.ReactNode;
+  HostComponent: (props: GameHostComponentProps<HGS, GHA>) => React.ReactNode;
   HistoryComponent?: (props: GameHistoryComponentProps) => React.ReactNode;
   GameSpineComponent?: (props: GameSpineComponentProps<PGS>) => React.ReactNode;
 }
 
 
 export type BfgAllPublicKnowledgeGameEngineComponents<
-  GIS extends BfgPublicGameImplState,
+  PGS extends BfgPublicGameImplState,
   GPA extends BfgGameImplPlayerAction,
   GHA extends BfgGameImplHostAction,
-> = BfgGameEngineComponents<GIS, GPA, GHA, never>;
+> = BfgGameEngineComponents<PGS, PGS, GPA, GHA, never>;
