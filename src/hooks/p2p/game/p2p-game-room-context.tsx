@@ -76,7 +76,7 @@ export interface IP2pGameRoomValue {
   connectionEvents: ConnectionEvent[];
 
   // Transmit functions
-  txPlayerProfile: (playerProfile: PublicPlayerProfile, peer: PeerId) => void;
+  txPlayerProfile: (playerProfile: PublicPlayerProfile, peer?: PeerId) => void;
   txPlayerActionStr: (playerActionStr: PlayerP2pActionStr) => void;
   txPublicGameTableData: (gameTable: GameTable) => void;
   txPublicGameActionsData: (gameActions: DbGameTableAction[]) => void;

@@ -171,12 +171,14 @@ export const getPeerIdForPlayerSeat = (
     throw new Error('Player profile ID not found for player seat: ' + playerSeat);
   }
 
-  peerPlayerIds.forEach((playerProfileId, peerId) => {
+  // Use for...of loop instead of forEach so we can return properly
+  for (const [peerId, playerProfileId] of peerPlayerIds.entries()) {
     if (seatPlayerProfileId === playerProfileId) {
       return peerId;
     }
-  });
+  }
   
-  console.warn('Player seat not found: ' + playerSeat);
+  console.warn('Peer ID not found for player seat:', playerSeat, 'with profile ID:', seatPlayerProfileId);
+  console.warn('Available peer mappings:', Array.from(peerPlayerIds.entries()));
   return null;
 }

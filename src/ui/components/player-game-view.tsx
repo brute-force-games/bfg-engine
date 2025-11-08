@@ -6,20 +6,6 @@ import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-en
 import { IPlayerBfgGameDetails } from "~/hooks/p2p/game/p2p-game-types";
 
 
-// interface PlayerGameViewProps {
-//   myPlayerSeat: GameTableSeat;
-//   myPlayerProfile: PublicPlayerProfile;
-//   gameTable: GameTable;
-//   peers: PeerId[];
-//   peerPlayerIds: Map<PeerId, PlayerProfileId>;
-//   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-//   gameActions: DbGameTableAction[];
-
-//   myPrivatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr | null;
-//   onPlayerGameAction: (playerActionStr: PlayerP2pActionStr) => void
-// }
-
-// export const PlayerGameView = (props: PlayerGameViewProps) => {
 export const PlayerGameView = (props: IPlayerBfgGameDetails) => {
   const { gameTable, gameActions, myPrivatePlayerKnowledgeStr, onPlayerAction } = props;
 
@@ -34,7 +20,7 @@ export const PlayerGameView = (props: IPlayerBfgGameDetails) => {
   const gameRegistry = useGameRegistry();
   const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
   
-  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  const gameSpecificStateEncoder = gameMetadata.encoders.publicGameStateEncoder;
   if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
     throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
@@ -63,22 +49,37 @@ export const PlayerGameView = (props: IPlayerBfgGameDetails) => {
     if (privatePlayerKnowledgeEncoder.format !== 'json-zod-object-string') {
       throw new Error('Private player knowledge encoder format is not json-zod-object-string');
     }
-
-    // const zodPrivatePlayerKnowledgeEncoder = privatePlayerKnowledgeEncoder as IBfgJsonZodObjectDataEncoder<any>;
-    // const zodPrivatePlayerKnowledgeSchema = zodPrivatePlayerKnowledgeEncoder.schema as z.ZodTypeAny;
     
     myPrivatePlayerKnowledge = myPrivatePlayerKnowledgeStr ?
       privatePlayerKnowledgeEncoder.decode(myPrivatePlayerKnowledgeStr as unknown as BfgEncodedString) :
       null;
   }
 
-  // const onPlayerAction = (playerAction: z.infer<typeof zodPlayerActionSchema>) => {
-  //   console.log('🎮 PLAYER SENDING ACTION:', playerAction);
-  //   const encodedPlayerAction = zodPlayerActionEncoder.encode(playerAction);
-  //   const encodedPlayerActionStr = encodedPlayerAction as unknown as PlayerP2pActionStr;
-  //   onPlayerGameAction(encodedPlayerActionStr);
+  // if (!gameMetadata) {
+  //   return (
+  //     <Container style={{ padding: '24px' }}>
+  //       <Stack spacing={3}>
+  //         <Typography variant="h3">Loading Game Metadata...</Typography>
+  //         <Typography variant="body1" color="secondary">
+  //           Loading game metadata...
+  //         </Typography>
+  //       </Stack>
+  //     </Container>
+  //   )
   // }
 
+  if (!gameSpecificState) {
+    return (
+      <Container style={{ padding: '24px' }}>
+        <Stack spacing={3}>
+          <Typography variant="h3">Loading Game State...</Typography>
+          <Typography variant="body1" color="secondary">
+            Waiting for game state from host...
+          </Typography>
+        </Stack>
+      </Container>
+    )
+  }
 
   const playerGameComponentProps: PlayerComponentProps<
     z.infer<typeof zodGameSpecificStateSchema>,
@@ -99,20 +100,6 @@ export const PlayerGameView = (props: IPlayerBfgGameDetails) => {
     onPlayerAction,
   };
   const playerGameRepresentation = gameMetadata.components.PlayerComponent(playerGameComponentProps);
-
-  
-  if (!gameMetadata) {
-    return (
-      <Container style={{ padding: '24px' }}>
-        <Stack spacing={3}>
-          <Typography variant="h3">Loading Game Metadata...</Typography>
-          <Typography variant="body1" color="secondary">
-            Loading game metadata...
-          </Typography>
-        </Stack>
-      </Container>
-    )
-  }
 
   return (
     <Box>

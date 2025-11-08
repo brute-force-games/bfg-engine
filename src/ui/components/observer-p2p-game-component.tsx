@@ -62,7 +62,7 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
     );
   }
 
-  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  const gameSpecificStateEncoder = gameMetadata.encoders.publicGameStateEncoder;
   if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
     throw new Error('Game specific state encoder format is not json-zod-object-string');
   }
@@ -72,6 +72,17 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
 
   const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
   const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+
+  if (!gameSpecificState) {
+    return (
+      <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
+        <Typography variant="h6">Loading Game State...</Typography>
+        <Typography variant="body2" color="secondary">
+          Waiting for game state from host...
+        </Typography>
+      </Container>
+    )
+  }
 
   const gameRepresentation = gameMetadata.components.ObserverComponent({
     gameState: gameSpecificState,

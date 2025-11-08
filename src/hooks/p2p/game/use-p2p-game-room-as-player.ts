@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useGameRegistry } from "~/hooks/games-registry/games-registry";
 import { GameTable } from "~/models/game-table/game-table";
 import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
+import { convertPrivateToPublicProfile } from "~/models/player-profile/utils";
 import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
 import { PeerId, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
 import { useP2pGameRoomContext } from "./p2p-game-room-context";
@@ -24,7 +25,7 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
   const [gameTable, setGameTable] = useState<GameTable | null>(null);
   const [gameActions, setGameActions] = useState<DbGameTableAction[]>([]);
 
-  const { txPlayerActionStr } = p2pGameRoom;
+  const { txPlayerActionStr, txPlayerProfile } = p2pGameRoom;
 
   const gameRegistry = useGameRegistry();  
   const gameMetadata = gameTable ? gameRegistry.getGameMetadata(gameTable.gameTitle) : null;
@@ -55,12 +56,30 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
   }
   
   useEffect(() => {
+    // Send our profile immediately when joining
+    const myPublicProfile = convertPrivateToPublicProfile(myPlayerProfile);
+    console.log('🎮 Player: Broadcasting profile to all peers on join:', myPublicProfile);
+    txPlayerProfile(myPublicProfile);
+    
     const onRoomPeerJoinUnsubscribe = p2pGameRoom.onRoomPeerJoin((peerId: PeerId) => {
+      console.log('🎮 Player: Peer joined (likely host):', peerId);
       setPeers(prev => [...prev, peerId]);
+      
+      // Send our profile to the new peer as well
+      console.log('🎮 Player: Sending profile to new peer:', peerId, myPublicProfile);
+      txPlayerProfile(myPublicProfile, peerId);
     });
 
     const onRoomPeerLeaveUnsubscribe = p2pGameRoom.onRoomPeerLeave((peerId: PeerId) => {
+      console.log('🎮 Player: Peer left:', peerId);
       setPeers(prev => prev.filter(p => p !== peerId));
+      
+      // Clean up the peerPlayerIds mapping
+      setPeerPlayerIds(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(peerId);
+        return newMap;
+      });
     });
 
     const rxPlayerProfileUnsubscribe = p2pGameRoom.rxPlayerProfile((playerProfile, peerId) => {
@@ -87,7 +106,7 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
     });
 
     const rxPrivatePlayerKnowledgeStrUnsubscribe = p2pGameRoom.rxPrivatePlayerKnowledgeStr((privatePlayerKnowledgeStr, peerId) => {
-      console.log('🎮 Received private player knowledge data from peer:', peerId, privatePlayerKnowledgeStr);
+      console.log('🎮 Player: Received private player knowledge from peer:', peerId);
       setMyPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr);
     });
 
@@ -99,7 +118,7 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameRoomForPlayer | null => {
       rxPublicGameActionsDataUnsubscribe();
       rxPrivatePlayerKnowledgeStrUnsubscribe();
     };
-  }, []);
+  }, [myPlayerProfile, txPlayerProfile, p2pGameRoom]);
 
   // useEffect(() => {
   //   doSendGameUpdates();
