@@ -1,3 +1,3 @@
-export { PrettyJsonString } from './PrettyJsonObject';
-export type { PrettyJsonStringProps } from './PrettyJsonObject';
+export { PrettyJsonObject } from './PrettyJsonObject';
+export type { PrettyJsonObjectProps } from './PrettyJsonObject';
 

@@ -3,12 +3,12 @@
 // import { useGameRegistry } from "../../hooks/games-registry/games-registry"
 // import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 // import { useState } from "react"
-// import { GameTable, GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
+// import { GameTable, GameTableSeat, ALL_PLAYER_SEATS } from "../../models/game-table/game-table"
 // import { DbGameTableAction } from "../../models/game-table/game-table-action"
-// import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "~/models/game-engine/encoders"
-// import { ObserverComponentProps } from "~/models/game-engine/bfg-game-engine-types"
-// import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile"
-// import { PlayerProfileId } from "~/models/types/bfg-branded-ids"
+// import { IBfgJsonZodObjectDataEncoder, BfgEncodedString } from "@bfg-engine/models/game-engine/encoders"
+// import { ObserverComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types"
+// import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile"
+// import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids"
 
 
 // interface IHostObserverP2pGameComponentProps {
@@ -80,7 +80,7 @@
 //           fullWidth
 //         >
 //           <Option value="">No Player (Observer)</Option>
-//           {PLAYER_SEATS.map((seat) => {
+//           {ALL_PLAYER_SEATS.map((seat) => {
 //             const playerId = hostedGame[seat];
 //             if (!playerId) return null;
 //             return (

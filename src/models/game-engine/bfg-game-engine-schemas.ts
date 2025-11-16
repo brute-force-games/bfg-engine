@@ -1,20 +1,19 @@
-import z from "zod";
-import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema, BfgHostGameImplStateSchema, BfgPrivatePlayerKnowledgeImplStateSchema, BfgPublicGameImplStateSchema } from "./bfg-game-engine-types";
+import type { z } from "zod";
 
-
-export const BfgGameEngineSchemasSchema = z.object({
-  hostGameStateSchema: BfgHostGameImplStateSchema,
-  hostActionSchema: BfgGameImplHostActionSchema,
-  publicGameStateSchema: BfgPublicGameImplStateSchema,
-
-  playerActionSchema: BfgGameImplPlayerActionSchema,
-  privatePlayerKnowledgeSchema: BfgPrivatePlayerKnowledgeImplStateSchema,
-});
-
-export type BfgGameEngineSchemas = {
-  hostGameStateSchema: z.ZodTypeAny;
-  publicGameStateSchema: z.ZodTypeAny;
-  playerActionSchema: z.ZodTypeAny;
-  hostActionSchema: z.ZodTypeAny;
-  privatePlayerKnowledgeSchema: z.ZodTypeAny;
+export type BfgGameEngineSchemas<
+  HostGameStateSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  PublicGameStateSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  PlayerActionSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  HostActionSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  PlayerActionOutcomeSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  HostActionOutcomeSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  PrivatePlayerKnowledgeSchema extends z.ZodTypeAny = z.ZodTypeAny,
+> = {
+  hostGameStateSchema: HostGameStateSchema;
+  publicGameStateSchema: PublicGameStateSchema;
+  playerActionSchema: PlayerActionSchema;
+  hostActionSchema: HostActionSchema;
+  playerActionOutcomeSchema: PlayerActionOutcomeSchema;
+  hostActionOutcomeSchema: HostActionOutcomeSchema;
+  privatePlayerKnowledgeSchema: PrivatePlayerKnowledgeSchema;
 };

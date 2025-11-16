@@ -9,16 +9,16 @@ import {
 import { useUserGameTableSettings, useUserGameTableSettingsActions } from '../../../hooks/stores/use-user-game-table-settings-store';
 import { useUserGameSettings } from '../../../hooks/stores/use-user-game-settings-store';
 import { useAppSettings } from '../../../hooks/stores/use-my-app-settings-store';
-import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { UserGameTableSettings } from '~/models/user-game-table-settings';
+import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '../../../models/app-settings';
+import { BfgGameTableId } from '../../../models/types/bfg-branded-uuids';
+import { BfgSupportedGameTitle } from '../../../models/game-box-definition';
+import { UserGameTableSettings } from '../../../models/user-game-table-settings';
 import { SharedSettingsFields } from './shared-settings-fields';
 
 interface TableSettingsDialogProps {
   open: boolean;
   onClose: () => void;
-  gameTableId: GameTableId;
+  gameTableId: BfgGameTableId;
   gameTitle: BfgSupportedGameTitle;
   tableName: string | null;
 }

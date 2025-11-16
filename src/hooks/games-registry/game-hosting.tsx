@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { GameFriendId, GameTableId } from "../../models/types/bfg-branded-ids";
+import { GameFriendId, BfgGameTableId } from "../../models/types/bfg-branded-uuids";
 import { TrysteroConfig } from "../../models/trystero-config";
 
 
@@ -7,11 +7,11 @@ export interface GameHostingContextType {
   getSiteTitle(): string;
   getTrysteroConfig(): TrysteroConfig;
   getBaseUrl(): string;
-  createJoinGameUrl: (gameTableId: GameTableId) => string;
+  createJoinGameUrl: (gameTableId: BfgGameTableId) => string;
   createFriendUrl: (friendId: GameFriendId) => string;
-  createHostedGameUrl: (gameTableId: GameTableId) => string;
-  createPlayerGameUrl: (gameTableId: GameTableId) => string;
-  createObserverGameUrl: (gameTableId: GameTableId) => string;
+  createHostedGameUrl: (gameTableId: BfgGameTableId) => string;
+  createPlayerGameUrl: (gameTableId: BfgGameTableId) => string;
+  createObserverGameUrl: (gameTableId: BfgGameTableId) => string;
 }
 
 export const GameHostingContext = createContext<GameHostingContextType>({

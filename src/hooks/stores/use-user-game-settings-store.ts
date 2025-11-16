@@ -7,8 +7,8 @@ import {
   resetUserGameSettings,
   parseRawUserGameSettings,
 } from '../../tb-store/user-game-settings-store';
-import { UserGameSettings } from '~/models/user-game-settings';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
+import { UserGameSettings } from '../../models/user-game-settings';
+import { BfgSupportedGameTitle } from '../../models/game-box-definition';
 
 /**
  * Hook to get user game settings for a specific game with reactive updates

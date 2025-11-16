@@ -1,23 +1,25 @@
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby"
-import { BfgGameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
+import { BfgGameTableIdToolbox, PlayerProfileId, type BfgGameTableId } from "../../../models/types/bfg-branded-uuids"
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
 import { asHostStartNewGame } from "../../../ops/game-table-ops/as-host-start-game"
 import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
 import { BfgShareableLinkComponent } from "../bfg-shareable-link-component"
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Stack, 
-  Chip, 
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Chip,
   Alert,
   Clear,
   PersonRemove,
   Gamepad,
-  Settings
+  Settings,
+  Groups
 } from "../../bfg-ui" 
 import { useGameHosting } from "../../../hooks/games-registry/game-hosting"
-import { useGameRegistry } from "../../../hooks/games-registry/games-registry"
+import { useGameRegistry } from "../../../hooks/games-registry/games-registry-hook"
 import { PlayerProfileChip } from "../player-profile-chip"
 import { validateLobby } from "../../../ops/game-lobby-ops/lobby-utils"
 import { LobbyHostOptionsDialog } from "../dialogs/lobby-host-options-dialog"
@@ -27,7 +29,7 @@ interface ILobbyHostStateComponentProps {
   playerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   lobbyState: GameLobby
   updateLobbyState: (lobbyState: GameLobby) => void
-  setLobbyPlayerPool: (playerPool: PlayerProfileId[]) => void
+  // setLobbyPlayerPool: (playerPool: PlayerProfileId[]) => void
 
   lobbyOptions: LobbyOptions
   setLobbyOptions: (lobbyOptions: LobbyOptions) => void
@@ -37,14 +39,15 @@ export const LobbyHostStateComponent = ({
   playerProfiles,
   lobbyState,
   updateLobbyState,
-  setLobbyPlayerPool,
+  // setLobbyPlayerPool,
   lobbyOptions,
   setLobbyOptions,
 }: ILobbyHostStateComponentProps) => {
 
   const gameHosting = useGameHosting();
   const gameRegistry = useGameRegistry();
-  
+  const navigate = useNavigate();
+
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [isLobbyOptionsDialogOpen, setIsLobbyOptionsDialogOpen] = useState(false);
 
@@ -61,11 +64,21 @@ export const LobbyHostStateComponent = ({
       return;
     }
 
-    setIsStartingGame(true);
+    // const metadata = gameRegistry.getGameMetadata(lobbyState.gameTitle);
+    // const gameProcessor = metadata.gameProcessor;
+
+    // const gameSchema = metadata.schemas;
+
     
+
+    // const initialGameSpecificAction = gameProcessor.createHostStartsGameAction(newGameTable, lobbyState);
+    // const initialGameSpecificState = gameProcessor.createHostOpensGameState(newGameTable, initialGameSpecificAction);
+
+    setIsStartingGame(true);
+
     try {
-      const newGameTableId = BfgGameTableId.createId();
-      
+      const newGameTableId = BfgGameTableIdToolbox.createRandomId() as BfgGameTableId;
+
       console.log("starting game", lobbyState);
       const gameTable = await asHostStartNewGame(gameRegistry, lobbyState, newGameTableId);
       console.log("NEW GAME TABLE", gameTable);
@@ -79,11 +92,20 @@ export const LobbyHostStateComponent = ({
     }
   }
 
-  const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
+  const startNewLobby = () => {
+    navigate({
+      to: '/new-lobby',
+      search: {
+        gameTitle: lobbyState.gameTitle || undefined,
+      },
+    });
+  }
+
+  const playerPoolChips = lobbyState.playerPool.map(playerProfile => {
     return (
       <PlayerProfileChip
-        key={playerProfileId}
-        playerProfileId={playerProfileId}
+        key={playerProfile.id}
+        playerProfileId={playerProfile.id}
         playerProfiles={playerProfiles}
         myPlayerProfile={lobbyState.gameHostPlayerProfile}
       />
@@ -169,6 +191,17 @@ export const LobbyHostStateComponent = ({
               </Box>
             </Box>
           )}
+
+          <Box>
+            <Button
+              variant="outlined"
+              onClick={startNewLobby}
+              color="primary"
+              startIcon={<Groups />}
+            >
+              Start New {lobbyState.gameTitle} Lobby
+            </Button>
+          </Box>
         </Stack>
       </>
     )
@@ -246,7 +279,9 @@ export const LobbyHostStateComponent = ({
             <Button
               variant="outlined"
               size="small"
-              onClick={() => setLobbyPlayerPool([])}
+              onClick={() => {
+                updateLobbyState({ ...lobbyState, playerPool: [] });
+              }}
               disabled={isGameStarted || lobbyState.playerPool.length === 0}
               color="warning"
               style={{ minWidth: 'auto', padding: '4px 8px' }}

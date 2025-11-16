@@ -1,27 +1,26 @@
-import { PlayerProfileId } from "../../../models/types/bfg-branded-ids";
-import { DbGameTableAction } from "../../../models/game-table/game-table-action";
-import { GameTable } from "../../../models/game-table/game-table";
+import { PlayerProfileId } from "../../../models/types/bfg-branded-uuids";
+import { type GameRoomP2p } from "../../../models/game-table/game-room-p2p";
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { PeerId } from "../p2p-types";
 import { useP2pGameRoomContext } from "./p2p-game-room-context";
-import { IBfgGameRoomForObserver, IP2pDetails, IPublicBfgGameDetails } from "./p2p-game-types";
-import { useGameRegistry } from "~/hooks/games-registry/games-registry";
+import { IBfgGameTableForObserver, IP2pDetails, IPublicBfgGameDetails } from "./p2p-game-types";
+import { useGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry-hook";
 import { useEffect, useState } from "react";
-import { isMessageFromHost } from "~/models/game-table/utils";
 import { useRoomUserDetails } from "./use-bfg-game-room";
+import type { GameTableEventForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import { isMessageFromHost } from "../../../models/game-table/utils";
 
 
-export const useP2pGameRoomAsObserver = (): IBfgGameRoomForObserver => {
+export const useP2pGameRoomAsObserver = (): IBfgGameTableForObserver => {
 
   const p2pGameRoom = useP2pGameRoomContext();
   const roomUserDetails = useRoomUserDetails(p2pGameRoom.gameTableId, 'watch');
 
   const [peers, setPeers] = useState<PeerId[]>([]);
-  const [peerPlayerIds, setPeerPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(new Map());
+  const [peerIdsToPlayerIds, setPeerIdsToPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(new Map());
   const [allPlayerProfiles, setAllPlayerProfiles] = useState<Map<PlayerProfileId, PublicPlayerProfile>>(new Map());
-  const [gameTable, setGameTable] = useState<GameTable | null>(null);
-  const [gameActions, setGameActions] = useState<DbGameTableAction[]>([]);
-
+  const [gameRoom, setGameRoom] = useState<GameRoomP2p | null>(null);
+  const [gameEvents, setGameEvents] = useState<GameTableEventForWatcherP2p[]>([]);
 
   useEffect(() => {
     const onRoomPeerJoinUnsubscribe = p2pGameRoom.onRoomPeerJoin((peerId: PeerId) => {
@@ -38,59 +37,65 @@ export const useP2pGameRoomAsObserver = (): IBfgGameRoomForObserver => {
         newMap.set(playerProfile.id, playerProfile);
         return newMap;
       });
-      setPeerPlayerIds(prev => {
+      setPeerIdsToPlayerIds(prev => {
         const newMap = new Map(prev);
         newMap.set(peerId, playerProfile.id);
         return newMap;
       });
     });
 
-    const rxPublicGameTableDataUnsubscribe = p2pGameRoom.rxPublicGameTableData((gameTable, peerId) => {
+    const rxPublicGameRoomDataUnsubscribe = p2pGameRoom.rxPublicGameRoomData((gameRoom, peerId) => {
       const isFromHost = isMessageFromHost(peerId);
       if (!isFromHost) {
-        console.log('🎮 Received game table data from non-host peer:', peerId, gameTable);
+        console.log('🎮 Received game room data from non-host peer:', peerId, gameRoom);
         return;
       }
-      setGameTable(gameTable);
+      setGameRoom(gameRoom);
     });
 
-    const rxPublicGameActionsDataUnsubscribe = p2pGameRoom.rxPublicGameActionsData((gameActions, peerId) => {
+    const rxPublicGameEventsDataUnsubscribe = p2pGameRoom.rxPublicGameEventsData((gameEvents, peerId) => {
       const isFromHost = isMessageFromHost(peerId);
       if (!isFromHost) {
-        console.log('🎮 Received game actions data from non-host peer:', peerId, gameActions);
+        console.log('🎮 Received game events data from non-host peer:', peerId, gameEvents);
         return;
       }
-      setGameActions(gameActions);
+      setGameEvents(gameEvents);
     });
 
     return () => {
       onRoomPeerJoinUnsubscribe();
       onRoomPeerLeaveUnsubscribe();
       rxPlayerProfileUnsubscribe();
-      rxPublicGameTableDataUnsubscribe();
-      rxPublicGameActionsDataUnsubscribe();
+      rxPublicGameRoomDataUnsubscribe();
+      rxPublicGameEventsDataUnsubscribe();
     };
   }, []);
 
   const p2pDetails: IP2pDetails = {
     peerIds: peers,
-    peerPlayerIds,
+    peerIdsToPlayerIds,
     allPlayerProfiles,
+    myPeerProfile: roomUserDetails.myPlayerProfile,
     connectionStatus: p2pGameRoom.connectionStatus,
     connectionEvents: p2pGameRoom.connectionEvents,
   }
 
   const gameRegistry = useGameRegistry();
-  const gameMetadata = gameTable ? gameRegistry.getGameMetadata(gameTable.gameTitle) : null;
+  const gameMetadata = gameRoom ? gameRegistry.getGameMetadata(gameRoom.gameTitle) : null;
 
-  const publicGameDetails: IPublicBfgGameDetails | null = gameTable ? {
+  const latestGameEventForWatcher = gameEvents[gameEvents.length - 1];
+
+  const publicGameDetails: IPublicBfgGameDetails | null = gameRoom && gameMetadata ? {
     gameMetadata,
-    gameTable,
-    gameActions,
+    gameRoom,
+    // gameEvents,
+    // latestGameEventForWatcher,
+    latestWatcherGameEvent: latestGameEventForWatcher,
+    watcherGameEvents: gameEvents,
     allPlayerProfiles,
   } : null;
 
-  const retVal: IBfgGameRoomForObserver = {
+  const retVal: IBfgGameTableForObserver = {
     gameTableId: p2pGameRoom.gameTableId,
     gameMetadata,
 

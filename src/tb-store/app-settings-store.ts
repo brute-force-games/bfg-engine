@@ -1,6 +1,6 @@
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { AppSettings, AppSettingsSchema } from '~/models/app-settings';
+import { AppSettings, AppSettingsSchema } from '../models/app-settings';
 
 /**
  * TinyBase store for user app settings
@@ -18,6 +18,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   gameSpineLocation: 'top',
   gameLogPanelLocation: 'right',
   playerAgentMode: 'none',
+  debugSettingShowTinybaseInspector: false,
 };
 
 // Create the store
@@ -43,16 +44,21 @@ export const parseRawAppSettings = (rawData: any): AppSettings => {
   if (!rawData || typeof rawData !== 'object' || Object.keys(rawData).length === 0) {
     return DEFAULT_APP_SETTINGS;
   }
-  
+
   const result = AppSettingsSchema.safeParse(rawData);
-  
+
   if (!result.success) {
     console.error('Error parsing app settings:', result.error);
     // Return default settings if parsing fails
     return DEFAULT_APP_SETTINGS;
   }
-  
-  return result.data;
+
+  // Ensure all nested objects are properly initialized with defaults
+  const parsedData = result.data;
+  return {
+    ...DEFAULT_APP_SETTINGS,
+    ...parsedData,
+  };
 };
 
 /**
@@ -80,18 +86,20 @@ export const getAppSettings = (): AppSettings => {
 export const updateAppSettings = (updates: Partial<AppSettings>): boolean => {
   try {
     const currentSettings = getAppSettings();
+
+    // Deep merge for nested objects
     const updatedSettings = {
       ...currentSettings,
       ...updates,
     };
-    
+
     // Validate the updated settings
     const validationResult = AppSettingsSchema.safeParse(updatedSettings);
     if (!validationResult.success) {
       console.error('Error validating updated app settings:', validationResult.error);
       return false;
     }
-    
+
     appSettingsStore.setValues(updatedSettings);
     return true;
   } catch (error) {

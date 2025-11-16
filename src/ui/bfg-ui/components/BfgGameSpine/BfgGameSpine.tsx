@@ -1,12 +1,12 @@
 import { Box, PlayersRow, Stack } from "@bfg-engine/ui/bfg-ui";
 import { BfgBasicGameTitleBox } from "./BfgBasicGameTitleBox";
-import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
 import { VerticalBfgGameSpine } from "./VerticalBfgGameSpine";
 import { BfgGameSpineProps } from "./types";
+import type { BfgGameStateForWatcher } from "../../../../game-metadata/metadata-types/game-state-types";
 
 
-export const BfgGameSpine = <GIS extends BfgPublicGameImplState>(props: BfgGameSpineProps<GIS>) => {
-  const { gameTitle, gameSourceUrl, orientation, gameTable, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
+export const BfgGameSpine = <GSW extends BfgGameStateForWatcher>(props: BfgGameSpineProps<GSW>) => {
+  const { gameTitle, gameSourceUrl, orientation, gameRoom, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
 
   if (orientation === 'vertical') {
     return (
@@ -14,7 +14,7 @@ export const BfgGameSpine = <GIS extends BfgPublicGameImplState>(props: BfgGameS
         gameTitle={gameTitle}
         gameSourceUrl={gameSourceUrl}
         orientation={orientation}
-        gameTable={gameTable}
+        gameRoom={gameRoom}
         allPlayerProfiles={allPlayerProfiles}
         nextToActPlayers={nextToActPlayers}
         gameState={gameState}
@@ -29,13 +29,14 @@ export const BfgGameSpine = <GIS extends BfgPublicGameImplState>(props: BfgGameS
         <BfgBasicGameTitleBox
           gameTitle={gameTitle}
           gameSourceUrl={gameSourceUrl}
+          orientation={orientation}
         />
         <Box style={{ flex: 1, minWidth: 0 }}>
           <PlayersRow
-            gameTable={gameTable}
             allPlayerProfiles={allPlayerProfiles}
             nextToActPlayers={nextToActPlayers}
             gameState={gameState}
+            gameRoom={gameRoom}
             playerDetailsLineFn={playerDetailsLineFn}
           />
         </Box>

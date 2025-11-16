@@ -1,17 +1,21 @@
 import { GameLobby } from "../../models/p2p-lobby";
-import { PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import type { SharedPublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { validateLobby } from "./lobby-utils";
-import { IGameRegistry } from "../../hooks/games-registry/games-registry";
+import { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
 
 
 export const playerLeaveSeat = async (
   gameRegistry: IGameRegistry,
   lobby: GameLobby,
-  playerProfileId: PlayerProfileId
-): Promise<GameLobby | null> => {
+  playerProfile: SharedPublicPlayerProfile
+): Promise<GameLobby> => {
   // Create updated lobby with the player removed from the seat
 
-  const updatedPlayerPool = lobby.playerPool.filter(id => id !== playerProfileId);
+  if (!lobby.playerPool.some(p => p.id === playerProfile.id)) {
+    return lobby;
+  }
+
+  const updatedPlayerPool = lobby.playerPool.filter(p => p.id !== playerProfile.id);
 
   const updatedLobby: GameLobby = {
     ...lobby,

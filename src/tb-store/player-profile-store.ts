@@ -3,7 +3,7 @@ import { createLocalPersister } from 'tinybase/persisters/persister-browser';
 import { PrivatePlayerProfile, PrivatePlayerProfileSchema } from "@bfg-engine/models/player-profile/private-player-profile";
 import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
 import { createPrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
-import { createPlayerProfileId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-ids";
+import { createPlayerProfileId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
 
 
 /**
@@ -255,7 +255,7 @@ export const getPublicProfile = (profileId: PlayerProfileId): PublicPlayerProfil
     publicKey: privateProfile.publicKey, // Legacy
     walletAddress: privateProfile.walletAddress, // Legacy
     walletPublicKey: privateProfile.walletPublicKey, // Legacy
-    identityType: privateProfile.identityType,
+    // identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,
   };
@@ -274,7 +274,7 @@ export const getAllPublicProfiles = (): PublicPlayerProfile[] => {
     publicKey: privateProfile.publicKey, // Legacy
     walletAddress: privateProfile.walletAddress, // Legacy
     walletPublicKey: privateProfile.walletPublicKey, // Legacy
-    identityType: privateProfile.identityType,
+    // identityType: privateProfile.identityType,
     createdAt: privateProfile.createdAt,
     updatedAt: privateProfile.updatedAt,
   }));

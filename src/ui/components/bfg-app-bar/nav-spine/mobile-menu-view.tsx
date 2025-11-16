@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { IconButton, MenuIcon, Menu, MenuItem, Box } from "~/ui/bfg-ui";
+import { IconButton, MenuIcon, Menu, MenuItem, Box } from "@bfg-engine/ui/bfg-ui";
 import { NavSpineProps } from "./types";
 
 

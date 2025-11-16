@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Typography, Box, Button } from "~/ui/bfg-ui";
+import { Typography, Box, Button } from "@bfg-engine/ui/bfg-ui";
 import { NavSpineProps } from "./types";
 
 

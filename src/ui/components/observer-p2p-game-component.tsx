@@ -1,21 +1,21 @@
-import { z } from "zod"
 import { Container, Box, Typography, Select, Option } from "../bfg-ui"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
-import { GameTableSeat, PLAYER_SEATS } from "../../models/game-table/game-table"
-import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders"
-import { IPublicBfgGameDetails } from "~/hooks/p2p/game/p2p-game-types"
+import { GameTableSeat } from "../../models/game-table/game-room-p2p"
+// import { BfgEncodedString } from "@bfg-engine/game-metadata/encoders"
+// import type { IBfgJsonZodObjectDataEncoder } from "@bfg-engine/game-metadata/encoders"
+import { IPublicBfgGameDetails } from "@bfg-engine/hooks/p2p/game/p2p-game-types"
 
 
 // // TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
 // interface IObserverP2pGameComponentProps {
-//   gameTableId: GameTableId
+//   gameTableId: BfgGameTableId
 // }
 
 export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
 
   // const p2pGame = useP2pGameRoomAsObserver();
-  const { gameTable, gameActions, gameMetadata, allPlayerProfiles } = props;
+  const { gameRoom, latestWatcherGameEvent, watcherGameEvents, gameMetadata, allPlayerProfiles } = props;
   const [viewPerspective, setViewPerspective] = useState<GameTableSeat | null>(null);
 
   // if (!p2pGame) {
@@ -38,7 +38,7 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
 
   // const { gameTable, gameActions } = p2p;
 
-  if (!gameTable || !gameActions || !gameMetadata) {
+  if (!gameRoom || !watcherGameEvents || !gameMetadata) {
     return (
       <ContentLoading
         message="Loading Game xDetails..."
@@ -46,14 +46,16 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
     )
   }
 
-  // if (gameTable.id !== gameTableId) {
-  //   throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + gameTableId);
+  // if (gameTable.id !== BfgGameTableId) {
+  //   throw new Error('Game Table ID does not match: ' + gameTable.id + ' !== ' + BfgGameTableId);
   // }
 
   // const gameRegistry = useGameRegistry();
   // const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
+
+  const latestAction = latestWatcherGameEvent;
   
-  const latestAction = gameActions[gameActions.length - 1];
+  // const latestAction = gameActions[gameActions.length - 1];
   if (!latestAction) {
     return (
       <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
@@ -62,16 +64,18 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
     );
   }
 
-  const gameSpecificStateEncoder = gameMetadata.encoders.publicGameStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
-    throw new Error('Game specific state encoder format is not json-zod-object-string');
-  }
+  // const gameSpecificStateEncoder = gameMetadata.encoders.publicGameStateEncoder;
+  // if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+  //   throw new Error('Game specific state encoder format is not json-zod-object-string');
+  // }
 
-  const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
-  const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
+  // const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  // const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
-  const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
-  const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+  // const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
+  // const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+
+  const gameSpecificState = latestAction.nextGameWatcherState;
 
   if (!gameSpecificState) {
     return (
@@ -86,10 +90,11 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
 
   const gameRepresentation = gameMetadata.components.ObserverComponent({
     gameState: gameSpecificState,
-    gameTable,
+    gameRoom,
     allPlayerProfiles,
-    latestGameAction: latestAction,
-    hostPlayerProfileId: gameTable.gameHostPlayerProfileId,
+    latestWatcherGameEvent,
+    watcherGameEvents,
+    hostPlayerProfileId: gameRoom.gameHostPlayerProfileId,
     observedPlayerProfileId: null,
     observedPlayerSeat: viewPerspective,
   });
@@ -120,15 +125,23 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
                     fullWidth
                   >
                     <Option value="">No Player (Observer)</Option>
-                    {PLAYER_SEATS.map((seat) => {
-                      const playerId = gameTable[seat];
+                    {gameRoom.players.map((player) => {
+                      return (
+                        <Option key={player.playerProfileId} value={player.playerProfileId}>
+                          {player.playerProfileId.substring(0, 16)}...
+                          {player.playerName}
+                        </Option>
+                      );
+                    })}
+                    {/* {ALL_PLAYER_SEATS.map((seat) => {
+                      const playerId = gameRoom.gameTable[seat];
                       if (!playerId) return null;
                       return (
                         <Option key={seat} value={seat}>
                           {seat.toUpperCase()} - {playerId.substring(0, 16)}...
                         </Option>
                       );
-                    })}
+                    })} */}
                   </Select>
                 </Box>
                 

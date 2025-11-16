@@ -15,9 +15,28 @@
 }
 
 .currentPlayer {
-  border-color: var(--primary-color, #1976d2);
-  background-color: rgba(25, 118, 210, 0.05);
-  box-shadow: 0 0 0 1px var(--primary-color, #1976d2);
+  border-color: #2e7d32;
+  background: linear-gradient(45deg,
+    rgba(27, 94, 32, 0.4),
+    rgba(129, 199, 132, 0.2),
+    rgba(27, 94, 32, 0.4)
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 1.2s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(46, 125, 50, 0.4);
+  transform: scale(1.02);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .gameOver {

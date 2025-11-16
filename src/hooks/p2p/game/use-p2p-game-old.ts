@@ -4,16 +4,16 @@
 // import { GameTable } from "../../../models/game-table/game-table";
 // import { DbGameTableAction } from "../../../models/game-table/game-table-action";
 // import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
-// import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
+// import { BfgGameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
 // import { PrivatePlayerProfile, useGameHosting, useGameRegistry } from "../../../index";
 // import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
-// import { GameTableAccessRole } from "~/models/game-roles";
-// // import { getTableAccessRoleForProfile, hasTableAccessRoleForProfile } from "~/models/game-table/utils";
-// // import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
-// // import { useRoom } from "~/hooks/use-trystero-room";
-// // import { useSupabaseRoom } from "~/hooks/use-trystero-supabase-room";
-// // import { useMqttRoom } from "~/hooks/use-trystero-mqtt-room";
-// // import { useTorrentRoom } from "~/hooks/use-trystero-torrent-room";
+// import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+// // import { getTableAccessRoleForProfile, hasTableAccessRoleForProfile } from "@bfg-engine/models/game-table/utils";
+// // import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+// // import { useRoom } from "@bfg-engine/hooks/use-trystero-room";
+// // import { useSupabaseRoom } from "@bfg-engine/hooks/use-trystero-supabase-room";
+// // import { useMqttRoom } from "@bfg-engine/hooks/use-trystero-mqtt-room";
+// // import { useTorrentRoom } from "@bfg-engine/hooks/use-trystero-torrent-room";
 
 
 // export interface IP2pGameRoomEventHandlers {
@@ -58,14 +58,14 @@
 
 
 // export interface IP2pGameProps {
-//   gameTableId: GameTableId;
+//   gameTableId: BfgGameTableId;
 //   myPlayerProfile: PrivatePlayerProfile | null;
 //   requestedRole: GameTableAccessRole;
 // }
 
 
 // export const useP2pGame = ({
-//   gameTableId,
+//   BfgGameTableId,
 //   myPlayerProfile,
 //   requestedRole,
 // }: IP2pGameProps): IP2pGame => {
@@ -94,9 +94,9 @@
 //   const gameHosting = useGameHosting();
 //   const trysteroConfig = gameHosting.getTrysteroConfig();
 
-//   console.log('useP2pGame - gameTableId', gameTableId)
+//   console.log('useP2pGame - BfgGameTableId', BfgGameTableId)
   
-//   const room = joinRoom(trysteroConfig, gameTableId, (error: {
+//   const room = joinRoom(trysteroConfig, BfgGameTableId, (error: {
 //     error: string;
 //     appId: string;
 //     roomId: string;
@@ -105,9 +105,9 @@
 //     console.error('Join error:', error)
 //     addConnectionEvent('join-error', `Join error: ${error.error}`, 0);
 //   });
-//   // const room = useRoom(trysteroConfig, gameTableId);
+//   // const room = useRoom(trysteroConfig, BfgGameTableId);
 //   // const room = useSupabaseRoom(gameTableId);
-//   // const room = useTorrentRoom(trysteroConfig, gameTableId);
+//   // const room = useTorrentRoom(trysteroConfig, BfgGameTableId);
 //   console.log('joined p2p game room', room);
 
 //   const addConnectionEvent = (type: ConnectionEvent['type'], message: string, peerCount: number) => {

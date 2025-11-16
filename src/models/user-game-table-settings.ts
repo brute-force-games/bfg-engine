@@ -3,7 +3,7 @@ import { PlayerAgentModeSchema, GameSpineLocationSchema, GameLogPanelLocationSch
 
 /**
  * User-specific game settings per game table
- * These settings are stored per gameTableId and persist across sessions
+ * These settings are stored per BfgGameTableId and persist across sessions
  * These are the most specific settings and override user-game-settings defaults
  */
 export const UserGameTableSettingsSchema = z.object({

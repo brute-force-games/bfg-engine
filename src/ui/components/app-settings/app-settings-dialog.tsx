@@ -7,7 +7,7 @@ import {
   Button,
 } from '../../bfg-ui/index';
 import { useAppSettings, useAppSettingsActions } from '../../../hooks/stores/use-my-app-settings-store';
-import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
+import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '../../../models/app-settings';
 import { SharedSettingsFields } from './shared-settings-fields';
 
 

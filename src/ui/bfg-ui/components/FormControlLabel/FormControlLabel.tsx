@@ -3,7 +3,7 @@ import styles from './FormControlLabel.module.css';
 import { classNames } from '../../utils/classNames';
 
 export interface FormControlLabelProps {
-  control: React.ReactElement;
+  control: React.ReactElement<{ disabled?: boolean }>;
   label: React.ReactNode;
   className?: string;
   disabled?: boolean;

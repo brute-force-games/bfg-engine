@@ -10,33 +10,25 @@ import {
   History
 } from "../bfg-ui"
 import { PeerProfilesComponent } from "../../ui/components/peer-profiles-component"
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
-import { PlayerProfileId } from "../../models/types/bfg-branded-ids"
-import { ConnectionEvent, PeerId, PeerIdSchema } from "../../hooks/p2p/p2p-types"
+import { ConnectionEvent, PeerIdSchema } from "../../hooks/p2p/p2p-types"
 import { selfId } from "trystero"
+import { IP2pDetails } from "@bfg-engine/hooks/p2p/game/p2p-game-types"
 
 
-interface P2pConnectionComponentProps {
-  connectionStatus: string
-  connectionEvents?: ConnectionEvent[]
-  peerIds: PeerId[]
-  myPeerPlayer?: PublicPlayerProfile;
-  peerPlayerIds: Map<PeerId, PlayerProfileId>
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
-  onResendLobbyData?: () => void
-  onRefreshConnection?: () => void
-}
 
-export const P2pConnectionComponent = ({
-  connectionStatus,
-  connectionEvents = [],
-  peerIds,
-  peerPlayerIds,
-  allPlayerProfiles,
-  myPeerPlayer,
-  onResendLobbyData,
-  onRefreshConnection
-}: P2pConnectionComponentProps) => {
+// export const P2pConnectionComponent = ({
+//   connectionStatus,
+//   connectionEvents = [],
+//   peerIds,
+//   peerPlayerIds,
+//   allPlayerProfiles,
+//   myPeerPlayer,
+//   onResendLobbyData,
+//   onRefreshConnection
+// }: P2pConnectionComponentProps) => {
+export const P2pConnectionComponent = (props: IP2pDetails) => {
+
+  const { connectionStatus, connectionEvents, peerIds, peerIdsToPlayerIds, allPlayerProfiles, myPeerProfile } = props;
   
   const getEventColor = (type: ConnectionEvent['type']) => {
     switch (type) {
@@ -57,6 +49,14 @@ export const P2pConnectionComponent = ({
       default: return '📡';
     }
   };
+
+  const onResendLobbyData = () => {
+    console.error('onResendLobbyData not implemented');
+  }
+
+  const onRefreshConnection = () => {
+    console.error('onRefreshConnection not implemented');
+  }
 
   const myPeerId = PeerIdSchema.parse(selfId);
   console.log("My peer ID:", myPeerId);
@@ -101,8 +101,8 @@ export const P2pConnectionComponent = ({
       
       <PeerProfilesComponent
         peerIds={peerIds}
-        myPeerPlayer={myPeerPlayer}
-        peerPlayerIds={peerPlayerIds}
+        myPeerProfile={myPeerProfile}
+        peerIdsToPlayerIds={peerIdsToPlayerIds}
         myPeerId={myPeerId}
         allPlayerProfiles={allPlayerProfiles}
       />

@@ -1,4 +1,4 @@
-import { IGameRegistry } from "../../hooks/games-registry/games-registry";
+import { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
 import { InvalidLobbyReason, GameLobby, InvalidLobbyReasonSchema } from "../../models/p2p-lobby";
 
 

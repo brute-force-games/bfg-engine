@@ -1,9 +1,19 @@
-import z from 'zod';
+import { z } from 'zod';
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { GameLobbyId, PlayerProfileId } from '../models/types/bfg-branded-ids';
-import { GameLobby, GameLobbySchema } from '../models/p2p-lobby';
-import { PublicPlayerProfileJsonStr, PublicPlayerProfileJsonStrSchema, PublicPlayerProfileSchema } from '../models/player-profile/public-player-profile';
+import { GameLobbyId } from '../models/types/bfg-branded-uuids';
+import {
+  GameLobby,
+  GameLobbySchema,
+  GameLobbySchemaForTbStore,
+  GameHostPlayerProfileStringifier,
+  PlayerPoolStringifier,
+} from '../models/p2p-lobby';
+import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
+import { BfgGameTableIdToolbox } from '../models/types/bfg-branded-uuids';
+import type { SharedPublicPlayerProfile } from '../models/player-profile/public-player-profile';
+import type { EnsureCells, InvalidCellFields } from '../models/tb-utils';
+import type { AssertNever } from '../models/ts-type-utils';
 
 
 /**
@@ -23,89 +33,99 @@ const persister = createLocalPersister(hostedLobbiesStore, TB_HOSTED_LOBBIES_STO
 persister.startAutoLoad();
 persister.startAutoSave();
 
+export type GameLobbyUpdateFields = Partial<Omit<GameLobby, 'id' | 'createdAt'>>;
 
-const TbStoreLobbySchema = GameLobbySchema
-  .omit({
-    gameHostPlayerProfile: true,
-    playerPool: true,
-  })
-  .extend({
-    playerPoolCsvStr: z.string(),
-    gameHostPlayerProfileJsonStr: PublicPlayerProfileJsonStrSchema,
+export type GameLobbyForTbStoreFields = z.infer<typeof GameLobbySchemaForTbStore>;
+
+export type GameLobbyForTbStore = EnsureCells<GameLobbyForTbStoreFields>;
+
+export type GameLobbyForTbStoreInvalidFields = AssertNever<
+  InvalidCellFields<GameLobbyForTbStoreFields>
+>;
+
+export const serializeGameLobbyForTinybase = (
+  gameLobby: GameLobby,
+): GameLobbyForTbStore => {
+  const { gameHostPlayerProfile, playerPool, gameTitle, gameTableId, playGameLink, ...rest } = gameLobby;
+  const stringifiedGameHostPlayerProfile = GameHostPlayerProfileStringifier.stringify(gameHostPlayerProfile);
+  const stringifiedPlayerPool = PlayerPoolStringifier.stringify(playerPool);
+
+  return GameLobbySchemaForTbStore.parse({
+    ...rest,
+    stringifiedGameHostPlayerProfile,
+    stringifiedPlayerPool,
+    gameTitle: gameTitle ?? '',
+    gameTableId: gameTableId ?? '',
+    playGameLink: playGameLink ?? '',
   });
-type TbStoreLobby = z.infer<typeof TbStoreLobbySchema>;
+};
 
-export type GameLobbyUpdateFields = Partial<Omit<GameLobby, 'id' | 'createdAt' | 'gameHostPlayerProfile' | 'playerPool'>>;
+export const deserializeGameLobbyFromTinybase = (
+  tinybaseRow: GameLobbyForTbStore,
+): GameLobby => {
+  const { stringifiedGameHostPlayerProfile, stringifiedPlayerPool, gameTitle, gameTableId, playGameLink, ...rest } = tinybaseRow;
+  const gameHostPlayerProfile = GameHostPlayerProfileStringifier.parseString(stringifiedGameHostPlayerProfile);
+  const playerPool = PlayerPoolStringifier.parseString(stringifiedPlayerPool);
+
+  const parsedGameTitle = gameTitle === '' ? undefined : BfgSupportedGameTitleSchema.parse(gameTitle);
+  const parsedGameTableId = gameTableId === '' ? undefined : BfgGameTableIdToolbox.idSchema.parse(gameTableId);
+  const parsedPlayGameLink = playGameLink === '' ? undefined : playGameLink;
+
+  return GameLobbySchema.parse({
+    ...rest,
+    gameHostPlayerProfile,
+    playerPool,
+    gameTitle: parsedGameTitle,
+    gameTableId: parsedGameTableId,
+    playGameLink: parsedPlayGameLink,
+  });
+};
 
 
 /**
  * Safely parse hosted lobby data from TinyBase store
  */
-export const parseRawHostedLobbyData = (lobbyId: string, rawData: any): GameLobby | null => {
-  const result = TbStoreLobbySchema.safeParse(rawData);
-  
+export const parseRawHostedLobbyData = (lobbyId: string, rawData: unknown): GameLobby | null => {
+  const result = GameLobbySchemaForTbStore.safeParse(rawData);
+
   if (!result.success) {
-    console.error(`Error validating hosted lobby data for ${lobbyId}:`, result.error);
+    console.error(`Error parsing hosted lobby data for ${lobbyId}:`, result.error);
+    console.log("rawData", rawData);
     return null;
   }
 
-  const tbLobby = result.data;
-
-  const gameHostPlayerProfileJsonStr = tbLobby.gameHostPlayerProfileJsonStr;
-  const gameHostPlayerProfileJson = JSON.parse(gameHostPlayerProfileJsonStr);
-
-  const gameHostPlayerProfileResult = PublicPlayerProfileSchema.safeParse(gameHostPlayerProfileJson);
-  if (!gameHostPlayerProfileResult.success) {
-    console.error(`Error validating game host player profile data for ${lobbyId}:`, gameHostPlayerProfileResult.error);
+  try {
+    return deserializeGameLobbyFromTinybase(result.data);
+  } catch (error) {
+    console.error(`Error parsing hosted lobby data for ${lobbyId}:`, error);
+    console.log("rawData", rawData);
     return null;
   }
-
-  const playerPool = tbLobby.playerPoolCsvStr.length > 0 ?
-    tbLobby.playerPoolCsvStr.split(',') as PlayerProfileId[] :
-    [];
-
-  const gameLobby = GameLobbySchema.parse({
-    ...tbLobby,
-    gameHostPlayerProfile: gameHostPlayerProfileResult.data,
-    playerPool,
-  });
-  
-  return gameLobby;
 };
 
 /**
  * Add a new hosted lobby to the store
  */
 export const addHostedLobby = async (lobby: GameLobby): Promise<boolean> => {
-  try {
-    console.log('addHostedLobby: lobby', lobby);
-    // Validate the lobby data
-    const validationResult = GameLobbySchema.safeParse(lobby);
-    if (!validationResult.success) {
-      console.error('Error validating lobby data:', validationResult.error);
-      return false;
-    }
-
-    console.log('addHostedLobby: validationResult', validationResult);
-
-    const gameHostPlayerProfileJsonStr = JSON.stringify(lobby.gameHostPlayerProfile) as PublicPlayerProfileJsonStr;
-    const playerPoolCsvStr = lobby.playerPool.join(',');
-
-    const tbLobby: TbStoreLobby = {
-      ...lobby,
-      gameHostPlayerProfileJsonStr,
-      playerPoolCsvStr,
-    };
-
-    console.log('addHostedLobby: tbLobby', tbLobby);
-    
-    hostedLobbiesStore.setRow(TB_HOSTED_LOBBIES_TABLE_KEY, tbLobby.id, tbLobby);
-
-    return true;
-  } catch (error) {
-    console.error('Error adding hosted lobby:', error);
+  // Validate the lobby data
+  const validationResult = GameLobbySchema.safeParse(lobby);
+  if (!validationResult.success) {
+    console.error('Error validating lobby data:', validationResult.error);
     return false;
   }
+
+  const lobbyId = lobby.id as GameLobbyId;
+
+  hostedLobbiesStore.transaction(
+    () => {
+      const serializedLobby = serializeGameLobbyForTinybase(validationResult.data);
+      hostedLobbiesStore.setRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId, serializedLobby);
+      console.log("Hosted lobby added:", lobbyId);
+      console.log("Hosted lobby added:", serializedLobby);
+    },
+  );
+
+  return true;
 };
 
 /**
@@ -113,30 +133,37 @@ export const addHostedLobby = async (lobby: GameLobby): Promise<boolean> => {
  */
 export const updateHostedLobby = (
   lobbyId: GameLobbyId,
-  updates: GameLobbyUpdateFields
+  updates: Partial<Omit<GameLobby, 'id' | 'createdAt'>>
 ): boolean => {
-
-  console.log('updateHostedLobby: updates', updates);
-
   try {
     const existingLobby = hostedLobbiesStore.getRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId);
     if (!existingLobby) {
       return false;
     }
 
-    const updatedLobby = {
-      ...existingLobby,
+    const existingParseResult = GameLobbySchemaForTbStore.safeParse(existingLobby);
+    if (!existingParseResult.success) {
+      console.error('Error parsing existing hosted lobby for update:', existingParseResult.error);
+      return false;
+    }
+
+    const existingGameLobby = deserializeGameLobbyFromTinybase(existingParseResult.data);
+
+    const updatedLobby: GameLobby = {
+      ...existingGameLobby,
       ...updates,
     };
-    
-    // Ignore validation for now until Tinybase can handle more complex objects
-    // const validationResult = LobbySchema.safeParse(updatedLobby);
-    // if (!validationResult.success) {
-    //   console.error('Error validating updated lobby data:', validationResult.error);
-    //   return false;
-    // }
-    
-    hostedLobbiesStore.setRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId, updatedLobby);
+
+    // Validate the updated data
+    const validationResult = GameLobbySchema.safeParse(updatedLobby);
+    if (!validationResult.success) {
+      console.error('Error validating updated lobby data:', validationResult.error);
+      return false;
+    }
+
+    const serializedLobby = serializeGameLobbyForTinybase(validationResult.data);
+
+    hostedLobbiesStore.setRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId, serializedLobby);
     return true;
   } catch (error) {
     console.error('Error updating hosted lobby:', error);
@@ -147,22 +174,9 @@ export const updateHostedLobby = (
 
 export const updateHostedLobbyPlayerPool = (
   lobbyId: GameLobbyId,
-  playerPool: PlayerProfileId[]
+  playerPool: SharedPublicPlayerProfile[]
 ): boolean => {
-  const existingLobby = hostedLobbiesStore.getRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId);
-  if (!existingLobby) {
-    return false;
-  }
-
-  const updatedPlayerPoolCsvStr = playerPool.join(',');
-  
-  const updatedLobby = {
-    ...existingLobby,
-    playerPoolCsvStr: updatedPlayerPoolCsvStr,
-  };
-
-  hostedLobbiesStore.setRow(TB_HOSTED_LOBBIES_TABLE_KEY, lobbyId, updatedLobby);
-  return true;
+  return updateHostedLobby(lobbyId, { playerPool });
 }
 
 /**

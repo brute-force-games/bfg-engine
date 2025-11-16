@@ -5,8 +5,8 @@ import {
   usePlayerProfileActions 
 } from '../../hooks/stores/use-my-player-profiles-store';
 import { PrivatePlayerProfile } from '../../models/player-profile/private-player-profile';
-import { PlayerProfileId } from '../../models/types/bfg-branded-ids';
-import { CryptoTestDialog } from '../../ui/components/dialogs/crypto-test-dialog';
+import { PlayerProfileId } from '../../models/types/bfg-branded-uuids';
+// import { CryptoTestDialog } from '../../ui/components/dialogs/crypto-test-dialog';
 import { NoActivityAppBar } from '../components/app-bars/no-activity-app-bar';
 import {
   Alert,
@@ -31,7 +31,7 @@ interface PlayerProfileCardProps {
   isDefault: boolean;
   onSetDefault: (profileId: PlayerProfileId) => void;
   onDelete: (profileId: PlayerProfileId) => void;
-  onTestCrypto: (profile: PrivatePlayerProfile) => void;
+  // onTestCrypto: (profile: PrivatePlayerProfile) => void;
 }
 
 const PlayerProfileCard = ({ 
@@ -39,7 +39,7 @@ const PlayerProfileCard = ({
   isDefault, 
   onSetDefault, 
   onDelete,
-  onTestCrypto
+  // onTestCrypto
 }: PlayerProfileCardProps) => {
   const [showSeedWords, setShowSeedWords] = useState(false);
   
@@ -109,14 +109,14 @@ const PlayerProfileCard = ({
             {isDefault ? '⭐ Default' : 'Set as Default'}
           </Button>
           
-          <Button
+          {/* <Button
             onClick={() => onTestCrypto(profile)}
             variant="contained"
             color="success"
             size="small"
           >
             🔐 Test Crypto
-          </Button>
+          </Button> */}
           
           <Button
             onClick={() => onDelete(profile.id as PlayerProfileId)}
@@ -275,8 +275,8 @@ export const MyPlayerProfilesPage = () => {
   const { addProfile, removeProfile, setDefault, clearAll } = usePlayerProfileActions();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showCryptoTestDialog, setShowCryptoTestDialog] = useState(false);
-  const [selectedProfileForCryptoTest, setSelectedProfileForCryptoTest] = useState<PrivatePlayerProfile | null>(null);
+  // const [showCryptoTestDialog, setShowCryptoTestDialog] = useState(false);
+  // const [selectedProfileForCryptoTest, setSelectedProfileForCryptoTest] = useState<PrivatePlayerProfile | null>(null);
 
   const handleAddProfile = async (data: { handle: string; avatarImageUrl?: string; isDefault: boolean }) => {
     const newProfileId = await addProfile(data.handle, data.avatarImageUrl);
@@ -302,15 +302,11 @@ export const MyPlayerProfilesPage = () => {
     }
   };
 
-  const handleTestCrypto = (profile: PrivatePlayerProfile) => {
-    setSelectedProfileForCryptoTest(profile);
-    setShowCryptoTestDialog(true);
-  };
+  // const handleTestCrypto = (profile: PrivatePlayerProfile) => {
+  //   setSelectedProfileForCryptoTest(profile);
+  //   setShowCryptoTestDialog(true);
+  // };
 
-  const handleCloseCryptoTestDialog = () => {
-    setShowCryptoTestDialog(false);
-    setSelectedProfileForCryptoTest(null);
-  };
 
   const hasProfiles = profiles.length > 0;
   const hasDefaultProfile = !!defaultProfile;
@@ -377,7 +373,7 @@ export const MyPlayerProfilesPage = () => {
                 isDefault={defaultProfile?.id === profile.id}
                 onSetDefault={handleSetDefault}
                 onDelete={handleDeleteProfile}
-                onTestCrypto={handleTestCrypto}
+                // onTestCrypto={handleTestCrypto}
               />
             ))}
           </div>
@@ -390,13 +386,13 @@ export const MyPlayerProfilesPage = () => {
           existingProfiles={profiles}
         />
 
-        {selectedProfileForCryptoTest && (
+        {/* {selectedProfileForCryptoTest && (
           <CryptoTestDialog
             open={showCryptoTestDialog}
             onClose={handleCloseCryptoTestDialog}
             profile={selectedProfileForCryptoTest}
           />
-        )}
+        )} */}
       </Stack>
     </Container>
     </>

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { classNames } from '../../utils/classNames';
 import { Typography } from '../Typography';
-import { IconButton } from '../IconButton';
 import styles from './Table.module.css';
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -112,7 +111,7 @@ export const Table = <T extends Record<string, any>>({
                   column.sortable && styles.sortable,
                   column.align && styles[column.align]
                 )}
-                style={{ width: column.width }}
+                style={{ width: column.width, minWidth: column.width, maxWidth: column.width }}
                 onClick={() => column.sortable && handleSort(column.key)}
               >
                 <div className={styles.headerContent}>
@@ -139,6 +138,7 @@ export const Table = <T extends Record<string, any>>({
                     styles.dataCell,
                     column.align && styles[column.align]
                   )}
+                  style={{ width: column.width, minWidth: column.width, maxWidth: column.width }}
                 >
                   {column.render ? (
                     column.render(row[column.key], row, index)

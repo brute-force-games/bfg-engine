@@ -1,9 +1,9 @@
-import { GameLobbyId } from "~/models/types/bfg-branded-ids";
-import { useP2pLobby } from "~/hooks/p2p/lobby/use-p2p-lobby";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { HostP2pLobbyDetails } from "~/models/p2p-details";
-import { PeerId } from "~/hooks/p2p/p2p-types";
-import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
+import { GameLobbyId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { useP2pLobby } from "@bfg-engine/hooks/p2p/lobby/use-p2p-lobby";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { HostP2pLobbyDetails } from "@bfg-engine/models/p2p-details";
+import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
+import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
 
 
 interface IPlayerP2pLobbyData {

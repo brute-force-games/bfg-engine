@@ -1,7 +1,7 @@
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
 import { AppBarTabItem } from "../bfg-app-bar/tab-item-hook";
 import { NavSpine } from "../bfg-app-bar/nav-spine";
-import { OptionalGameContext } from "~/hooks/p2p/game/use-optional-game-context";
+import { OptionalGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
 
 
 interface BfgStarterNavBarProps<TTabId extends string = string> {

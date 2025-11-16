@@ -1,5 +1,5 @@
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby"
-import { PlayerProfileId } from "../../../models/types/bfg-branded-ids"
+import { PlayerProfileId } from "../../../models/types/bfg-branded-uuids"
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
 import { BfgShareableLinkComponent } from "../bfg-shareable-link-component"
 import { BfgSupportedGameTitle } from "../../../models/game-box-definition"
@@ -70,11 +70,11 @@ export const LobbyPlayerStateComponent = ({
     )
   }
 
-  const playerPoolChips = lobbyState.playerPool.map(playerProfileId => {
+  const playerPoolChips = lobbyState.playerPool.map(player => {
     return (
       <PlayerProfileChip
-        key={playerProfileId}
-        playerProfileId={playerProfileId}
+        key={player.id}
+        playerProfileId={player.id}
         playerProfiles={playerProfiles}
         myPlayerProfile={currentPlayerProfile}
       />
@@ -153,7 +153,10 @@ export const LobbyPlayerStateComponent = ({
               variant="contained"
               size="small"
               onClick={onTakeSeat}
-              disabled={lobbyState.playerPool.length >= lobbyState.maxNumPlayers || lobbyState.playerPool.includes(currentPlayerProfile.id)}
+              disabled={
+                lobbyState.playerPool.length >= lobbyState.maxNumPlayers || 
+                lobbyState.playerPool.some(p => p.id === currentPlayerProfile.id)
+              }
               color="primary"
             >
               Take Seat
@@ -162,7 +165,7 @@ export const LobbyPlayerStateComponent = ({
               variant="outlined"
               size="small"
               onClick={onLeaveSeat}
-              disabled={!lobbyState.playerPool.includes(currentPlayerProfile.id)}
+              disabled={!lobbyState.playerPool.some(p => p.id === currentPlayerProfile.id)}
               color="secondary"
             >
               Leave Seat

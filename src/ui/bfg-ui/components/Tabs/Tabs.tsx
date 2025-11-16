@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { classNames } from '../../utils/classNames';
 import styles from './Tabs.module.css';
 
-export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TabsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value: number;
   onChange?: (event: React.SyntheticEvent, newValue: number) => void;
   children: React.ReactNode;
@@ -16,9 +16,9 @@ export const Tabs: React.FC<TabsProps> = ({ value, onChange, className, children
       {React.Children.map(children, (child, index) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, {
-            ...child.props,
             selected: value === index,
             onClick: (e: React.SyntheticEvent) => onChange?.(e, index),
+            ...(child.props as object),
           } as any);
         }
         return child;

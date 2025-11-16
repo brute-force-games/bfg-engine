@@ -1,13 +1,14 @@
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { PeerId, PrivatePlayerKnowledgeStr } from "../p2p-types";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { PeerId } from "../p2p-types";
 import { ConnectionEvent } from "../p2p-types";
-import { GameTableId, PlayerProfileId } from "~/models/types/bfg-branded-ids";
-import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
-import { GameTableAccessRole } from "~/models/game-roles";
-import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
-import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
-import { BfgGameImplHostAction, BfgGameImplPlayerAction } from "~/models/game-engine/bfg-game-engine-types";
+import { BfgGameTableId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+import { GameTableSeat, type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
+import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
+import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../../../game-metadata/metadata-types/game-action-types";
+import type { GenericGameMetadata } from "../../../game-metadata/games-registry";
+import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+
 
 
 export interface IP2pDetails {
@@ -15,15 +16,24 @@ export interface IP2pDetails {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
+  myPeerProfile: PublicPlayerProfile | null;
+
   peerIds: PeerId[];
-  peerPlayerIds: Map<PeerId, PlayerProfileId>
+  peerIdsToPlayerIds: Map<PeerId, PlayerProfileId>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
 }
 
 
-export interface IBfgGameRoomForUserBase {
-  gameTableId: GameTableId;
-  gameMetadata: BfgGameEngineMetadata | null;
+export interface IBfgGameTableForUserBase <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> {
+  gameTableId: BfgGameTableId;
+  gameMetadata: GenericGameMetadata | null;
   
   accessRole: GameTableAccessRole;
   maxAllowedAccessRole: GameTableAccessRole;
@@ -35,69 +45,65 @@ export interface IBfgGameRoomForUserBase {
 
 
 
-export interface IBfgGameDetailsBase {
-
-  // maxAllowedRole: GameTableAccessRole;
-  // allowedRoles: GameTableAccessRole[];
-  // p2pDetails: IP2pDetails;
-
-
-  // // room: Room
-  // connectionStatus: string
-  // connectionEvents: ConnectionEvent[]
-
-  // peers: PeerId[];
-  // peerPlayerIds: Map<PeerId, PlayerProfileId>
-  // allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
-
-  gameMetadata: BfgGameEngineMetadata | null;
-  gameTable: GameTable | null;
-  gameActions: DbGameTableAction[];
-
-  // myPlayerProfile: PrivatePlayerProfile | null;
-  // hasRequestedTableAccess: boolean;
-  // myGameTableAccess: GameTableAccessRole;
-
-  // setRoomEventHandlers: (eventHandlers: IP2pGameRoomEventHandlers) => void
-  // clearRoomEventHandlers: () => void
-
-  // const [txGameTableData] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
-  // const [txGameActionsData] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
-
-  // txPublicGameTableData: (gameTable: GameTable) => void
-  // txPublicGameActionsData: (gameActions: DbGameTableAction[]) => void
-
-  // txPlayerActionStr: (actionStr: PlayerP2pActionStr) => void
-  // rxPlayerActionStr: (callback: (actionStr: PlayerP2pActionStr, peer: PeerId) => void) => void
-  
-  // txPrivatePlayerKnowledgeStr: (privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: PeerId) => void
-  // rxPrivatePlayerKnowledgeStr: (callback: (privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: PeerId) => void) => void
-  
-  // refreshConnection: () => void
+export interface IBfgGameDetailsBase <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> {
+  gameMetadata: GenericGameMetadata;
+  gameRoom: GameRoomP2p;
+  latestWatcherGameEvent: GameTableEventForWatcherP2p;
+  watcherGameEvents: GameTableEventForWatcherP2p[];
 }
 
-export interface IPublicBfgGameDetails extends IBfgGameDetailsBase {
-  gameTable: GameTable;
-  gameActions: DbGameTableAction[];
+export interface IPublicBfgGameDetails <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> extends IBfgGameDetailsBase {
+  // gameTable: GameTable;
+  gameMetadata: GenericGameMetadata;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-
-  // myObserverProfile: PrivatePlayerProfile | null;
 }
 
-export interface IPlayerBfgGameDetails extends IPublicBfgGameDetails {
+export interface IPlayerBfgGameDetails <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> extends IPublicBfgGameDetails {
   myPlayerProfile: PrivatePlayerProfile;
   myPlayerSeat: GameTableSeat;
-  myPrivatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr | null;
-  onPlayerAction: (playerAction: BfgGameImplPlayerAction) => Promise<void>;
+  latestPlayerGameEvent: GameTableEventForPlayerP2p;
+  playerGameEvents: GameTableEventForPlayerP2p[];
+  // myPrivatePlayerKnowledgeStr: PrivatePlayerKnowledgeStr | null;
+  onPlayerAction: (playerAction: BfgGameActionByPlayer) => Promise<void>;
 }
 
-export interface IHostBfgGameDetails extends IBfgGameDetailsBase {
+export interface IHostBfgGameDetails <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> extends IBfgGameDetailsBase {
   myHostProfile: PrivatePlayerProfile;
-  onHostAction: (hostAction: BfgGameImplHostAction) => Promise<void>;
+  latestHostGameEvent: GameTableEventForHostP2p;
+  hostGameEvents: GameTableEventForHostP2p[];
+  onHostAction: <HGA extends BfgGameActionByHost>(hostAction: HGA) => Promise<void>;
 }
 
 
-export interface IBfgGameRoomForHost extends IBfgGameRoomForUserBase {
+export interface IBfgGameTableForHost extends IBfgGameTableForUserBase {
   accessRole: 'host';
   myHostProfile: PrivatePlayerProfile;
 
@@ -105,18 +111,51 @@ export interface IBfgGameRoomForHost extends IBfgGameRoomForUserBase {
   playerGameDetails: IPlayerBfgGameDetails | null;
 }
 
-export interface IBfgGameRoomForPlayer extends IBfgGameRoomForUserBase {
+export interface IBfgGameTableForPlayer extends IBfgGameTableForUserBase {
   accessRole: 'play';
   myPlayerProfile: PrivatePlayerProfile;
 
   playerGameDetails: IPlayerBfgGameDetails;
 }
 
-export interface IBfgGameRoomForObserver extends IBfgGameRoomForUserBase {
+export interface IBfgGameTableForObserver <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> extends IBfgGameTableForUserBase {
   accessRole: 'watch';
   myObserverProfile: PrivatePlayerProfile | null;
 
   // publicGameDetails: IPublicBfgGameDetails;
 }
 
-export type IBfgGameRoomValue = IBfgGameRoomForHost | IBfgGameRoomForPlayer | IBfgGameRoomForObserver;
+export type IBfgGameTableValue <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> = IBfgGameTableForHost | IBfgGameTableForPlayer | IBfgGameTableForObserver;
+
+
+export type IBfgGameRoomForRole <
+  // GSH extends BfgGameStateForHost,
+  // GSP extends BfgGameStateForPlayer,
+  // GSW extends BfgGameStateForWatcher,
+  // PGA extends BfgGameActionByPlayer,
+  // HGA extends BfgGameActionByHost,
+  // AllPGA extends AllPGAExt,
+> = {
+  role: 'host',
+  gameRoom: IBfgGameTableForHost;
+} | {
+  role: 'play',
+  gameRoom: IBfgGameTableForPlayer;
+} | {
+  role: 'watch',
+  gameRoom: IBfgGameTableForObserver;
+}

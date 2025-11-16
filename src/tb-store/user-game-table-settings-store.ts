@@ -4,13 +4,13 @@ import {
   UserGameTableSettings, 
   UserGameTableSettingsSchema, 
   DEFAULT_USER_GAME_TABLE_SETTINGS 
-} from '~/models/user-game-table-settings';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
+} from '../models/user-game-table-settings';
+import { BfgGameTableId } from '../models/types/bfg-branded-uuids';
 
 /**
  * TinyBase store for user game table settings
  * Provides reactive state management for per-game-table settings
- * Each row is keyed by gameTableId
+ * Each row is keyed by BfgGameTableId
  * These settings are more specific than user-game-settings and take precedence
  */
 
@@ -51,7 +51,7 @@ export const parseRawUserGameTableSettings = (rawData: any): UserGameTableSettin
  * Get user game table settings for a specific game table
  * Returns default settings if none exist for the table
  */
-export const getUserGameTableSettings = (gameTableId: GameTableId): UserGameTableSettings => {
+export const getUserGameTableSettings = (gameTableId: BfgGameTableId): UserGameTableSettings => {
   try {
     const rawSettings = userGameTableSettingsStore.getRow(TB_USER_GAME_TABLE_SETTINGS_TABLE_KEY, gameTableId);
     if (!rawSettings || Object.keys(rawSettings).length === 0) {
@@ -70,7 +70,7 @@ export const getUserGameTableSettings = (gameTableId: GameTableId): UserGameTabl
  * Creates new settings if none exist, otherwise merges with existing
  */
 export const updateUserGameTableSettings = (
-  gameTableId: GameTableId,
+  gameTableId: BfgGameTableId,
   updates: Partial<UserGameTableSettings>
 ): boolean => {
   try {
@@ -106,7 +106,7 @@ export const updateUserGameTableSettings = (
 /**
  * Reset user game table settings for a specific game table to defaults
  */
-export const resetUserGameTableSettings = (gameTableId: GameTableId): boolean => {
+export const resetUserGameTableSettings = (gameTableId: BfgGameTableId): boolean => {
   try {
     userGameTableSettingsStore.setRow(TB_USER_GAME_TABLE_SETTINGS_TABLE_KEY, gameTableId, DEFAULT_USER_GAME_TABLE_SETTINGS as any);
     return true;
@@ -119,7 +119,7 @@ export const resetUserGameTableSettings = (gameTableId: GameTableId): boolean =>
 /**
  * Delete user game table settings for a specific game table
  */
-export const deleteUserGameTableSettings = (gameTableId: GameTableId): boolean => {
+export const deleteUserGameTableSettings = (gameTableId: BfgGameTableId): boolean => {
   try {
     userGameTableSettingsStore.delRow(TB_USER_GAME_TABLE_SETTINGS_TABLE_KEY, gameTableId);
     return true;
@@ -131,16 +131,16 @@ export const deleteUserGameTableSettings = (gameTableId: GameTableId): boolean =
 
 /**
  * Get all user game table settings (for debugging/admin purposes)
- * Returns a map of gameTableId to settings
+ * Returns a map of BfgGameTableId to settings
  */
-export const getAllUserGameTableSettings = (): Record<GameTableId, UserGameTableSettings> => {
+export const getAllUserGameTableSettings = (): Record<BfgGameTableId, UserGameTableSettings> => {
   try {
     const rawSettings = userGameTableSettingsStore.getTable(TB_USER_GAME_TABLE_SETTINGS_TABLE_KEY);
-    const result: Record<GameTableId, UserGameTableSettings> = {};
+    const result: Record<BfgGameTableId, UserGameTableSettings> = {};
     
     Object.entries(rawSettings).forEach(([gameTableId, rawData]) => {
       const parsedSettings = parseRawUserGameTableSettings(rawData);
-      result[gameTableId as GameTableId] = parsedSettings;
+      result[gameTableId as BfgGameTableId] = parsedSettings;
     });
     
     return result;

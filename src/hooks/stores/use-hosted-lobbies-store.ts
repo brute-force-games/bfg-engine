@@ -9,9 +9,8 @@ import {
   clearAllHostedLobbies,
   parseRawHostedLobbyData,
   GameLobbyUpdateFields,
-  updateHostedLobbyPlayerPool,
 } from "../../tb-store/hosted-lobbies-store";
-import { GameLobbyId, PlayerProfileId } from "../../models/types/bfg-branded-ids";
+import { GameLobbyId } from "../../models/types/bfg-branded-uuids";
 import { GameLobby } from "../../models/p2p-lobby";
 
 
@@ -80,7 +79,7 @@ export const useHostedLobbiesCount = () => {
 export interface IHostedLobbyActions {
   addLobby: (lobby: GameLobby) => Promise<boolean>;
   updateLobby: (lobbyId: GameLobbyId, updates: GameLobbyUpdateFields) => boolean;
-  updateLobbyPlayerPool: (lobbyId: GameLobbyId, playerPool: PlayerProfileId[]) => boolean;
+  // updateLobbyPlayerPool: (lobbyId: GameLobbyId, playerPool: PlayerProfileId[]) => boolean;
   removeLobby: (lobbyId: GameLobbyId) => boolean;
   clearAll: () => void;
 }
@@ -97,12 +96,12 @@ export const useHostedLobbyActions = (): IHostedLobbyActions => {
     return updateHostedLobby(lobbyId, updates);
   }, []);
 
-  const updateLobbyPlayerPool = useCallback((
-    lobbyId: GameLobbyId, 
-    playerPool: PlayerProfileId[]
-  ): boolean => {
-    return updateHostedLobbyPlayerPool(lobbyId, playerPool);
-  }, []);
+  // const updateLobbyPlayerPool = useCallback((
+  //   lobbyId: GameLobbyId, 
+  //   playerPool: PlayerProfileId[]
+  // ): boolean => {
+  //   return updateHostedLobbyPlayerPool(lobbyId, playerPool);
+  // }, []);
 
   const removeLobby = useCallback((lobbyId: GameLobbyId): boolean => {
     return deleteHostedLobby(lobbyId);
@@ -116,7 +115,7 @@ export const useHostedLobbyActions = (): IHostedLobbyActions => {
   return {
     addLobby,
     updateLobby,
-    updateLobbyPlayerPool,
+    // updateLobbyPlayerPool,
     removeLobby,
     clearAll,
   };

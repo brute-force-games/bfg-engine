@@ -1,33 +1,33 @@
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
 import { Stack } from "../bfg-ui/components/Stack";
 import { Typography } from "../bfg-ui/components/Typography";
+import type { GameTableEventWithTransition } from "../../models/game-table/game-table-event";
 
 
 interface GameLogPanelProps {
-  gameActions: DbGameTableAction[];
+  boardEvents: GameTableEventWithTransition[];
 }
 
-const GameLogItem = (props: { gameAction: DbGameTableAction }) => {
-  const { gameAction } = props;
+const GameLogItem = (props: { boardEvent: GameTableEventWithTransition }) => {
+  const { boardEvent } = props;
 
   return (
     <Stack direction="row">
-      <Typography variant="body2">{gameAction.createdAt}</Typography>
-      <Typography variant="body2">{gameAction.actionType}</Typography>
-      <Typography variant="body2">{gameAction.actionStr}</Typography>
+      <Typography variant="body2">{boardEvent.createdAt}</Typography>
+      <Typography variant="body2">{boardEvent.source}</Typography>
+      <Typography variant="body2">{boardEvent.eventType}</Typography>
     </Stack>
   )
 }
 
 export const GameLogPanel = (props: GameLogPanelProps) => {
-  const { gameActions } = props;
+  const { boardEvents } = props;
 
   return (
     <Stack direction="column">
-      {gameActions.map((gameAction, index) => (
+      {boardEvents.map((boardEvent, index) => (
         <GameLogItem
           key={index}
-          gameAction={gameAction}
+          boardEvent={boardEvent}
         />
       ))}
     </Stack>

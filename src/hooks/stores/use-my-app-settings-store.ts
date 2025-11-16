@@ -6,7 +6,7 @@ import {
   resetAppSettings,
   parseRawAppSettings,
 } from '../../tb-store/app-settings-store';
-import { AppSettings, GameSpineLocation } from '~/models/app-settings';
+import { AppSettings, GameSpineLocation } from '../../models/app-settings';
 
 /**
  * Hook to get app settings with reactive updates

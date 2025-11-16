@@ -2,11 +2,12 @@ import { Avatar, Box, IconButton } from "../../bfg-ui/index"
 import { DbkAppBarMenu, DbkAppBarMenuItem } from "../app-bar-menu/app-bar-menu"
 import { useState } from "react";
 import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
-import { useHostedGameActions } from "../../../hooks/stores/use-hosted-games-store";
 import { AppSettingsDialog } from "../app-settings/app-settings-dialog";
 import { GameSettingsDialog } from "../app-settings/game-settings-dialog";
 import { TableSettingsDialog } from "../app-settings/table-settings-dialog";
 import { OptionalGameContext, EMPTY_GAME_CONTEXT } from "../../../hooks/p2p/game/use-optional-game-context";
+import { useAppSettings, useAppSettingsActions } from "../../../hooks/stores/use-my-app-settings-store";
+import { useTbStoresManager } from "../../../hooks/games-registry/use-tb-stores-manager-hook";
 
 
 interface UserProfileAccessComponentProps {
@@ -20,7 +21,10 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const { myPlayerProfiles, myDefaultPlayerProfile } = props;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gameContext = props.gameContext ?? EMPTY_GAME_CONTEXT;
-  const { clearAllStores } = useHostedGameActions();
+  // const { clearAllStores } = useHostedGameActions();
+  const { clearAllStores } = useTbStoresManager();
+  const appSettings = useAppSettings();
+  const { updateSettings } = useAppSettingsActions();
   
   // Debug logging
   // console.log('UserProfileAccessComponent rendered with:', {
@@ -90,8 +94,12 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
     handleCloseUserMenu();
   };
 
-  const handleToggleDebugMode = async () => {
-    console.log('Toggle Debug Mode - Not yet implemented');
+  const handleToggleTinybaseInspector = async () => {
+    const newValue = !appSettings.debugSettingShowTinybaseInspector;
+    updateSettings({
+      debugSettingShowTinybaseInspector: newValue,
+    });
+    handleCloseUserMenu();
   };
 
   const userName = myDefaultPlayerProfile?.handle || myPlayerProfiles[0]?.handle || 'User';
@@ -122,13 +130,13 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
       disabled: !hasTableContext,
       disabledReason: 'Table Settings are available when playing at a specific table'
     },
-    { 
-      type: 'sub-menu', 
+    {
+      type: 'sub-menu',
       title: 'Dev Settings',
       subMenuItems: [
         { type: 'sub-menu-action', title: 'Clear All Stores', action: handleClearAllStores },
         { type: 'sub-menu-action', title: 'Dev Tools Page', action: handleOpenDevToolsPage },
-        { type: 'sub-menu-action', title: 'Toggle Debug Mode', action: handleToggleDebugMode },
+        { type: 'sub-menu-action', title: `${appSettings.debugSettingShowTinybaseInspector ? 'Hide' : 'Show'} TinyBase Inspector`, action: handleToggleTinybaseInspector },
       ]
     },
     { type: 'menu-anchor', title: 'BFG Starter on Github', href: 'https://github.com/brute-force-games/bfg-starter' },
@@ -178,11 +186,12 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
           gameTitle={gameContext.gameTitle!}
         />
       )}
-      {hasTableContext && (
+      {hasTableContext && 
+      gameContext.gameTableId && (
         <TableSettingsDialog
           open={isTableSettingsDialogOpen}
           onClose={handleCloseTableSettingsDialog}
-          gameTableId={gameContext.gameTableId!}
+          gameTableId={gameContext.gameTableId}
           gameTitle={gameContext.gameTitle!}
           tableName={gameContext.tableName}
         />

@@ -31,6 +31,7 @@ export const PlayerAgentModeSchema = z.enum([
 ]);
 export type PlayerAgentMode = z.infer<typeof PlayerAgentModeSchema>;
 
+
 /**
  * App settings schema
  */
@@ -38,5 +39,6 @@ export const AppSettingsSchema = z.object({
   gameSpineLocation: GameSpineLocationSchema,
   gameLogPanelLocation: GameLogPanelLocationSchema,
   playerAgentMode: PlayerAgentModeSchema,
+  debugSettingShowTinybaseInspector: z.boolean(),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

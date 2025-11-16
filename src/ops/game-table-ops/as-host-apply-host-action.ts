@@ -1,83 +1,78 @@
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { GameTable } from "../../models/game-table/game-table";
-import { TablePhase } from "../../models/game-table/table-phase";
-import { IGameRegistry } from "../../hooks/games-registry/games-registry";
-import { BfgEncodedString } from "~/models/game-engine/encoders";
-import { HostP2pActionStr } from "~/hooks/p2p/p2p-types";
+import { type GameTableEventWithTransition, type GameTableStepHostP2p } from "../../models/game-table/game-table-event";
+import { type GameRoomP2p } from "../../models/game-table/game-room-p2p";
+import { RoomPhase } from "../../models/game-table/table-phase";
+import type { IGameRegistry } from "../../game-metadata/games-registry";
+import type { BfgGameActionByHost, BfgGameHostActionOutcome } from "../../game-metadata/metadata-types/game-action-types";
+import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
+import type { GameStateTransitionForDb } from "../../models/game-table/game-board-transition-db";
 
 
 export type HostApplyHostActionResult = {
-  resultTablePhase: TablePhase;
-  gameTable: GameTable;
-  gameAction: DbGameTableAction;
+  resultTablePhase: RoomPhase;
+  gameRoom: GameRoomP2p;
+  gameEvent: GameTableEventWithTransition;
+  gameEventOutcome: BfgGameHostActionOutcome;
+  nextGameState: BfgGameStateForHost;
 }
 
 export const asHostApplyHostAction = async (
   gameRegistry: IGameRegistry,
-  gameTable: GameTable,
-  gameActions: DbGameTableAction[], 
-  hostActionStr: HostP2pActionStr
+  gameRoom: GameRoomP2p,
+  latestGameStep: GameTableStepHostP2p,
+  hostAction: BfgGameActionByHost
 ): Promise<HostApplyHostActionResult> => {
   
-  if (!gameTable) {
+  if (!gameRoom) {
     throw new Error("Table not found");
   }
 
-  console.log("INCOMING HOST ACTION", hostActionStr);
+  // console.log("INCOMING HOST ACTION", hostActionStr);
 
-  const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
-  const gameEngine = gameMetadata.engine;
+  const gameMetadata = gameRegistry.getGameMetadata(gameRoom.gameTitle);
+  const gameEngine = gameMetadata.gameProcessor;
   const gameProcessor = gameEngine;
 
-  const latestAction = gameActions[gameActions.length - 1];
-  const currentGameState = gameMetadata.encoders.hostGameStateEncoder.decode(latestAction.nextGameStateStr);
+  const afterActionResult = await gameProcessor.applyHostAction(gameRoom, latestGameStep, hostAction);
+  const afterActionSummary = gameProcessor.summarizeHostActionOutcome(afterActionResult.hostActionOutcome);
 
-  console.log("MAKE MOVE - CURRENT GAME STATE (PARSED)", currentGameState);
+  const { updatedGameState, updatedRoomPhase } = afterActionResult;
 
-  if (!currentGameState) {
-    throw new Error("Host action failed to parse current game state");
-  }
-
-  const hostActionEncoder = gameMetadata.encoders.hostActionEncoder;
-  const p2pToBfgEncoded: BfgEncodedString = hostActionStr as unknown as BfgEncodedString;
-  const hostAction = hostActionEncoder.decode(p2pToBfgEncoded);
-
-  if (!hostAction) {
-    throw new Error("Failed to parse host action: " + hostActionStr);
-  }
-
-  const afterActionResult = await gameProcessor.applyHostAction(gameTable, currentGameState, hostAction);
-
-  const { tablePhase, gameSpecificStateSummary } = afterActionResult;
-
-  console.log("MAKE MOVE - HOST ACTION", hostAction);
-  console.log("MAKE MOVE - AFTER ACTION RESULT", afterActionResult);
-
-  const nextGameStateJsonStr = gameMetadata.encoders.hostGameStateEncoder.encode(afterActionResult.gameSpecificState);
-
-  console.log("MAKE MOVE - hostActionJson", hostActionStr);
+  // console.log("MAKE MOVE - HOST ACTION", hostAction);
+  // console.log("MAKE MOVE - AFTER ACTION RESULT", afterActionResult);
 
   const now = Date.now();
+  const nextStepIndex = gameRoom.latestGameStepIndex + 1;
 
-  const nextGameTable: GameTable = {
-    ...gameTable,
-    tablePhase,
-    currentStatusDescription: gameSpecificStateSummary,
+  const nextGameRoom: GameRoomP2p = {
+    ...gameRoom,
+    latestRoomPhase: updatedRoomPhase,
+    latestRoomStatusDescription: afterActionSummary,
+    latestGameStepIndex: nextStepIndex,
   }
 
-  const playerMoveAction: DbGameTableAction = {
-    gameTableId: gameTable.id,
+  // const updatedWatcherState = gameMetadata.accessLevelAdapters.hostToWatcherAccessLevelAdapter(updatedGameState);
+
+  const transition: GameStateTransitionForDb = {
+    event: hostAction,
+    change: afterActionResult.hostActionOutcome,
+    nextBoardState: updatedGameState,
+  }
+
+  const hostActionStep: GameTableEventWithTransition = {
+    // gameTableId: gameRoom.id,
     createdAt: now,
-    source: "game-table-action-source-host",
-    actionType: "game-table-action-host-action",
-    actionStr: hostActionStr as unknown as BfgEncodedString,
-    nextGameStateStr: nextGameStateJsonStr as unknown as BfgEncodedString,
+    stepIndex: nextStepIndex,
+    source: 'game-table-action-source-host',
+    eventType: 'game-table-action-host-action',
+    transition: transition,
   }
 
   const retVal: HostApplyHostActionResult = {
-    resultTablePhase: tablePhase,
-    gameTable: nextGameTable,
-    gameAction: playerMoveAction,
+    resultTablePhase: updatedRoomPhase,
+    gameRoom: nextGameRoom,
+    gameEvent: hostActionStep,
+    gameEventOutcome: afterActionResult.hostActionOutcome,
+    nextGameState: updatedGameState,
   } satisfies HostApplyHostActionResult;
 
   return retVal;

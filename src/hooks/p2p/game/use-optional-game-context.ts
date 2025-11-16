@@ -1,9 +1,9 @@
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { GameTableId } from '~/models/types/bfg-branded-ids';
+import { BfgSupportedGameTitle } from '../../../models/game-box-definition';
+import { BfgGameTableId } from '../../../models/types/bfg-branded-uuids';
 
 export interface OptionalGameContext {
   gameTitle: BfgSupportedGameTitle | null;
-  gameTableId: GameTableId | null;
+  gameTableId: BfgGameTableId | null;
   tableName: string | null;
 }
 
@@ -30,7 +30,7 @@ export interface OptionalGameContext {
  */
 export const createGameContext = (
   gameTitle: BfgSupportedGameTitle | null,
-  gameTableId: GameTableId | null,
+  gameTableId: BfgGameTableId | null,
   tableName: string | null = null
 ): OptionalGameContext => {
   return { gameTitle, gameTableId, tableName };

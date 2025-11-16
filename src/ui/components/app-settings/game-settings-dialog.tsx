@@ -8,9 +8,9 @@ import {
 } from '../../bfg-ui/index';
 import { useUserGameSettings, useUserGameSettingsActions } from '../../../hooks/stores/use-user-game-settings-store';
 import { useAppSettings } from '../../../hooks/stores/use-my-app-settings-store';
-import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { UserGameSettings } from '~/models/user-game-settings';
+import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '../../../models/app-settings';
+import { BfgSupportedGameTitle } from '../../../models/game-box-definition';
+import { UserGameSettings } from '../../../models/user-game-settings';
 import { SharedSettingsFields } from './shared-settings-fields';
 
 interface GameSettingsDialogProps {

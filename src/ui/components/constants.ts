@@ -9,6 +9,7 @@ export const P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY = 'l-profile'
 export const P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY = 'l-move'
 
 
+export const P2P_GAME_ROOM_ACTION_KEY = 'game-room'
 export const P2P_GAME_TABLE_ACTION_KEY = 'game-table'
 export const P2P_GAME_ACTIONS_ACTION_KEY = 'game-actions'
 export const P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY = 'game-profile'

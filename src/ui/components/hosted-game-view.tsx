@@ -1,9 +1,12 @@
 import { z } from "zod";
-import { useGameRegistry } from "../../hooks/games-registry/games-registry";
 import { Typography, Stack, Box } from "../bfg-ui";
-import { GameHostComponentProps } from "~/models/game-engine/bfg-game-engine-types";
-import { BfgEncodedString, IBfgJsonZodObjectDataEncoder } from "~/models/game-engine/encoders";
-import { IBfgGameRoomForHost } from "~/hooks/p2p/game/p2p-game-types";
+// import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+// import { BfgEncodedString } from "@bfg-engine/game-metadata/encoders";
+// import type { IBfgJsonZodObjectDataEncoder } from "@bfg-engine/game-metadata/encoders";
+import { IBfgGameTableForHost } from "@bfg-engine/hooks/p2p/game/p2p-game-types";
+import { GameHostComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
+import { useGameMetadata } from "../../hooks/games-registry/use-game-metadata";
+// import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../../game-metadata/metadata-types/game-state-types";
 
 
 // export interface HostedGameViewProps {
@@ -21,44 +24,49 @@ import { IBfgGameRoomForHost } from "~/hooks/p2p/game/p2p-game-types";
 // }
 
 // export const HostedGameView = (props: HostedGameViewProps) => {
-export const HostedGameView = (props: IBfgGameRoomForHost) => {
+// export const HostedGameView = (props: IBfgGameRoomForHost<BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher, BfgGameActionByPlayer, BfgGameActionByHost>) => {
+export const HostedGameView = (props: IBfgGameTableForHost) => {
   // const { hostedGame, gameActions, onHostGameAction, ...hostComponentProps } = props;
   const { hostGameDetails, p2pDetails } = props;
-  const { gameTable, gameActions, onHostAction, myHostProfile } = hostGameDetails;
+  const { gameRoom, latestHostGameEvent, hostGameEvents, onHostAction, myHostProfile } = hostGameDetails;
   const { allPlayerProfiles } = p2pDetails;
-  const latestAction = gameActions[gameActions.length - 1];
+  // const latestAction = gameRoom.gameActions[gameRoom.gameActions.length - 1];
+  // const latestEvent = hostGameEvents[hostGameEvents.length - 1];
+  const latestEvent = latestHostGameEvent;
+
+  const gameMetadata = useGameMetadata(gameRoom.gameTitle);
   
-  if (!gameTable) {
+  if (!gameRoom) {
     return <Typography variant="body1">Game table not found...</Typography>;
   }
 
-  if (!latestAction) {
+  if (!latestEvent) {
     return <Typography variant="body1">No game actions yet...</Typography>;
   }
   
-  const gameTitle = gameTable.gameTitle;
+  // const gameTitle = gameRoom.gameTitle;
 
-  const gameRegistry = useGameRegistry();
-  const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
+  // const gameRegistry = useGameRegistry();
+  // const gameMetadata = gameRegistry.getGameMetadata(gameTitle);
 
-  const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
-  if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
-    throw new Error('Game specific state encoder format is not json-zod-object-string');
-  }
+  // const gameSpecificStateEncoder = gameMetadata.encoders.hostGameStateEncoder;
+  // if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
+  //   throw new Error('Game specific state encoder format is not json-zod-object-string');
+  // }
 
-  const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
-  const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
+  // const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  // const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
 
-  const hostActionEncoder = gameMetadata.encoders.hostActionEncoder;
-  if (hostActionEncoder.format !== 'json-zod-object-string') {
-    throw new Error('Host action encoder format is not json-zod-object-string');
-  }
+  // const hostActionEncoder = gameMetadata.encoders.hostActionEncoder;
+  // if (hostActionEncoder.format !== 'json-zod-object-string') {
+  //   throw new Error('Host action encoder format is not json-zod-object-string');
+  // }
 
-  const zodHostActionEncoder = hostActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
-  const zodHostActionSchema = zodHostActionEncoder.schema as z.ZodTypeAny;
+  // const zodHostActionEncoder = hostActionEncoder as IBfgJsonZodObjectDataEncoder<any>;
+  // const zodHostActionSchema = zodHostActionEncoder.schema as z.ZodTypeAny;
 
-  const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
-  const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
+  // const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
+  // const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
 
   // const onHostAction = (hostAction: z.infer<typeof zodHostActionSchema>) => {
   //   const encodedHostAction = zodHostActionEncoder.encode(hostAction);
@@ -66,18 +74,21 @@ export const HostedGameView = (props: IBfgGameRoomForHost) => {
   //   onHostGameAction(encodedHostActionStr);
   //   onHostAction(hostAction);
   // }
+
+  const gameState = latestEvent.nextGameHostState;
+
+  const { hostGameStateSchema } = gameMetadata.schemas;
+  type HostGameState = z.infer<typeof hostGameStateSchema>;
   
-  const hostComponentProps: GameHostComponentProps<
-    z.infer<typeof zodGameSpecificStateSchema>,
-    z.infer<typeof zodHostActionSchema>
-  > = {
-    gameState: gameSpecificState,
-    gameTable,
+  const hostComponentProps: GameHostComponentProps<HostGameState> = {
+    gameState,
+    gameRoom,
     allPlayerProfiles,
     hostPlayerProfileId: myHostProfile.id,
     actingAsPlayerProfileId: null,
     actingAsPlayerSeat: null,
-    latestGameAction: latestAction,
+    latestHostGameEvent,
+    hostGameEvents,
     onHostAction,
   };
 

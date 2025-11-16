@@ -1,13 +1,75 @@
-import { BfgGameTableActionId, GameTableId } from "../../models/types/bfg-branded-ids";
-import { DbGameTableAction } from "../../models/game-table/game-table-action";
-import { GameTable } from "../../models/game-table/game-table";
+import { z } from "zod";
+import { type BfgGameInstanceId, type BfgGameRoomId, type BfgGameTableId } from "../../models/types/bfg-branded-uuids";
+import { ALL_PLAYER_SEATS, GameRoomDb, type UpdatedGameRoom } from "../../models/game-table/game-room-p2p";
 import { GameLobby } from "../../models/p2p-lobby";
-import { addHostedGame } from "../../tb-store/hosted-games-store";
-import { addGameHostAction } from "../../tb-store/hosted-game-actions-store";
-import { IGameRegistry } from "../../hooks/games-registry/games-registry";
+import { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
+// import { createDbGameTableStepSchemaForGame, type DbGameTableStep } from "../../models/game-table/game-table-step";
+import { ROOM_PHASE_GAME_IN_PROGRESS } from "../../models/game-table/table-phase";
+import { addNewHostedGameRoom } from "../../tb-store/games-archives-store";
+// import { createGameTableStepSchemaForGame, type GameTableStateDbStep, type GameTableStep } from "../../models/game-table/game-table-event";
+import { createGameStateTransitionForDbSchema } from "../../models/game-table/game-board-transition-db";
+import { createGameTableEventWithTransitionSchema } from "../../models/game-table/game-table-event";
 
 
-const createNewGameTableFromLobbyState = (lobbyState: GameLobby, newGameTableId: GameTableId): GameTable => {
+// const createNewGameTableFromLobbyState = (
+//   lobbyState: GameLobby,
+//   newGameTableId: BfgGameTableId,
+//   gameMetadata: GenericGameMetadata,
+// ): GameTable => {
+//   const gameTitle = lobbyState.gameTitle;
+//   if (!gameTitle) {
+//     throw new Error("Game title not found");
+//   }
+
+//   // Validate lobby has at least 1 player
+//   const playerPool = lobbyState.playerPool;
+//   if (playerPool.length < 1) {
+//     throw new Error("Lobby must have at least 1 player");
+//   }
+
+//   const now = Date.now();
+//   const latestActionId = BfgGameTableActionIdToolbox.createRandomId();
+
+//   const players = playerPool.map((player, index) => {
+//     const role = ALL_PLAYER_SEATS[index];
+//     const retVal = {
+//       role,
+//       playerName: player.handle,
+//       playerProfileId: player.id,
+//     }
+//     return retVal;
+//   });
+
+//   const GameSpecificGameRoomSchema = createGameRoomSchemaForGame(gameMetadata);
+//   type GameSpecificGameTable = z.infer<typeof GameSpecificGameRoomSchema>;
+
+//   // Fill out p1-p8 from the lobby player pool array
+//   const retVal: GameSpecificGameTable = {
+//     id: newGameTableId,
+//     latestActionId,
+//     createdAt: now,
+//     lastUpdatedAt: now,
+//     players,
+//     gameTitle,
+//     tableName: lobbyState.lobbyName,
+//     gameHostPlayerProfileId: lobbyState.gameHostPlayerProfile.id,
+//     tablePhase: 'table-phase-game-setup',
+//     currentStatusDescription: lobbyState.currentStatusDescription,
+//   }
+
+//   return retVal;
+// }
+
+
+
+const createNewGameRoomFromGameSpecificState = (
+  lobbyState: GameLobby,
+  newGameRoomId: BfgGameRoomId,
+  newGameTableId: BfgGameTableId,
+  // gameMetadata: GenericGameMetadata,
+  // gameStateTransition: GameStateTransition,
+): GameRoomDb => {
+
   const gameTitle = lobbyState.gameTitle;
   if (!gameTitle) {
     throw new Error("Game title not found");
@@ -20,35 +82,69 @@ const createNewGameTableFromLobbyState = (lobbyState: GameLobby, newGameTableId:
   }
 
   const now = Date.now();
-  const latestActionId = BfgGameTableActionId.createId();
+  // const latestActionId = BfgGameTableActionIdToolbox.createRandomId();
+
+  const players = playerPool.map((player, index) => {
+    const role = ALL_PLAYER_SEATS[index];
+    const retVal = {
+      role,
+      playerName: player.handle,
+      playerProfileId: player.id,
+    }
+    return retVal;
+  });
+
+  // const GameSpecificGameRoomDbSchema = createGameRoomDbSchemaForGame(gameMetadata);
+  // type GameSpecificGameRoomDb = z.infer<typeof GameSpecificGameRoomDbSchema>;
+
+  // // Fill out p1-p8 from the lobby player pool array
+  // const retVal: GameSpecificGameTable = {
+  //   id: newGameTableId,
+  //   latestActionId,
+  //   createdAt: now,
+  //   lastUpdatedAt: now,
+  //   players,
+  //   gameTitle,
+  //   tableName: lobbyState.lobbyName,
+  //   gameHostPlayerProfileId: lobbyState.gameHostPlayerProfile.id,
+  //   tablePhase: 'table-phase-game-setup',
+  //   currentStatusDescription: lobbyState.currentStatusDescription,
+  // }
+
+  const playerCount = playerPool.length;
 
   // Fill out p1-p8 from the lobby player pool array
-  const retVal: GameTable = {
-    id: newGameTableId,
-    latestActionId,
+  const retVal: GameRoomDb = {
+    id: newGameRoomId,
+    gameTableId: newGameTableId,
+
+    // latestGameTableId: newGameTableId,
+    latestGameStepIndex: 0,
+    // latestStep: gameSpecificStep,
+    // latestGameStatusDescription: gameSpecificStep.nextGameState.summary,
+    latestRoomStatusDescription: `${playerCount} playing${gameTitle}`,
+    latestGameStatusDescription: `Game setup in progress: ${lobbyState.lobbyName} [${gameTitle}]`,
+    latestRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     createdAt: now,
     lastUpdatedAt: now,
-    
+    players,
     gameTitle,
     tableName: lobbyState.lobbyName,
     gameHostPlayerProfileId: lobbyState.gameHostPlayerProfile.id,
-    tablePhase: 'table-phase-game-setup',
-    currentStatusDescription: lobbyState.currentStatusDescription,
-
-    p1: playerPool[0], // Guaranteed to exist after validation
-    p2: playerPool[1],
-    p3: playerPool[2],
-    p4: playerPool[3],
-    p5: playerPool[4],
-    p6: playerPool[5],
-    p7: playerPool[6],
-    p8: playerPool[7],
+    // tablePhase: 'table-phase-game-setup',
+    // currentStatusDescription: lobbyState.currentStatusDescription,
   }
 
   return retVal;
 }
 
-export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState: GameLobby, newGameTableId: GameTableId): Promise<GameTable> => {
+
+export const asHostStartNewGame = async (
+  gameRegistry: IGameRegistry,
+  lobbyState: GameLobby,
+  newGameInstanceId: BfgGameInstanceId,
+): Promise<UpdatedGameRoom> => {
+
   console.log("DB: asHostStartGame", lobbyState);
 
   const gameTitle = lobbyState.gameTitle;
@@ -56,39 +152,56 @@ export const asHostStartNewGame = async (gameRegistry: IGameRegistry, lobbyState
     throw new Error("Game title not found");
   }
 
-  const newGameTable = createNewGameTableFromLobbyState(lobbyState, newGameTableId);
-  
-  const metadata = gameRegistry.getGameMetadata(gameTitle);
-  const gameProcessor = metadata.engine;
-
-  const initialGameSpecificAction = gameProcessor.createGameSpecificInitialAction(newGameTable, lobbyState);
-  const initialGameSpecificState = gameProcessor.createGameSpecificInitialState(newGameTable, initialGameSpecificAction);
-
-  const actionStr = metadata.encoders.hostActionEncoder.encode(initialGameSpecificAction.gameSpecificAction);
-  const nextGameStateStr = metadata.encoders.hostGameStateEncoder.encode(initialGameSpecificState);
-
-  const addedGameTable = await addHostedGame(newGameTable);
-
-  if (!addedGameTable) {
-    throw new Error("Failed to add game table");
-  }
-
-  const tableId = newGameTable.id;
   const now = Date.now();
+  const newGameRoomId = newGameInstanceId as BfgGameRoomId;
+  const newGameTableId = newGameInstanceId as BfgGameTableId;
 
-  const hostSetsUpGameSetupAction: DbGameTableAction = {
-    gameTableId: tableId,
-    createdAt: now,
+  const metadata = gameRegistry.getGameMetadata(gameTitle);
+  const gameProcessor = metadata.gameProcessor;
 
-    source: "game-table-action-source-host",
-    actionType: "game-table-action-host-starts-setup",
+  const startGameAction = gameProcessor.createHostStartsGameAction(lobbyState);
+  const startGameOutcome = gameProcessor.createHostOpensGameOutcome(startGameAction);
+  const startGameState = gameProcessor.createHostOpensGameState(startGameAction);
 
-    actionStr,
-    nextGameStateStr,
+  // const GameSpecificStepSchema = createGameTableStepSchemaForGame(metadata.schemas);
+
+  // type GameEvent = z.infer<typeof metadata.schemas.gameEventSchema>;
+  // type GameEventOutcome = z.infer<typeof metadata.schemas.gameEventOutcomeSchema>;
+  // type HostGameState = z.infer<typeof metadata.schemas.hostGameStateSchema>;
+
+  const GameStateTransitionSchema = createGameStateTransitionForDbSchema(metadata.schemas);
+  type GameStateTransition = z.infer<typeof GameStateTransitionSchema>;
+
+  const gameStateTransition: GameStateTransition = {
+    event: startGameAction,
+    change: startGameOutcome,
+    nextBoardState: startGameState,
   }
 
-  console.log("ADDING GAME ACTION", hostSetsUpGameSetupAction);
-  await addGameHostAction(tableId, hostSetsUpGameSetupAction);
+  const GameTableEventWithTransitionSchema = createGameTableEventWithTransitionSchema(metadata.schemas);
+  type GameTableEventWithTransition = z.infer<typeof GameTableEventWithTransitionSchema>;
 
-  return newGameTable;
+  const gameTableEventWithTransition: GameTableEventWithTransition = {
+    // gameTableId: newGameTableId,
+    stepIndex: 0,
+    source: "game-table-action-source-host",
+    eventType: "game-table-action-host-starts-setup",
+    transition: gameStateTransition,
+    // eventData: startGameAction,
+    // eventOutcome: startGameOutcome,
+    // nextGameState: startGameState,
+    createdAt: now,
+  }
+
+  const newGameRoom = createNewGameRoomFromGameSpecificState(lobbyState, newGameRoomId, newGameTableId);
+
+  console.log("ADDING GAME ACTION", gameTableEventWithTransition);
+  await addNewHostedGameRoom(newGameInstanceId, newGameRoom, gameTableEventWithTransition);
+
+  const retVal: UpdatedGameRoom = {
+    gameRoom: newGameRoom,
+    gameState: startGameState,
+  } satisfies UpdatedGameRoom;
+
+  return retVal;
 }

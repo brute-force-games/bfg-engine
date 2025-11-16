@@ -1,7 +1,7 @@
 // import { createContext, useContext } from "react";
 // import { IP2pGame, IP2pGameProps, useP2pGame } from "./use-p2p-game";
-// import { GameTableAccessRole } from "~/models/game-roles";
-// import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
+// import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+// import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
 // import { useHostedP2pGameWithStore } from "./use-hosted-p2p-game-with-store";
 
 
@@ -20,7 +20,7 @@
 // const P2pGameRoomContext = createContext<IP2pGameRoomValue | null>(null);
 
 // export const P2pGameRoomContextProvider = ({ 
-//   gameTableId,
+//   BfgGameTableId,
 //   myPlayerProfile,
 //   requestedRole,
 //   children 
@@ -31,7 +31,7 @@
 //   const p2pGame = isValidHost ? 
 //     useHostedP2pGameWithStore(gameTableId, myPlayerProfile) : 
 //     useP2pGame({
-//       gameTableId,
+//       BfgGameTableId,
 //       myPlayerProfile,
 //       requestedRole,
 //     });

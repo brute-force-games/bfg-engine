@@ -1,44 +1,49 @@
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 import { PlayerBox } from '../PlayerBox';
-import { GameTable, GameTableSeat } from '@bfg-engine/models/game-table/game-table';
+import { GameTableSeat, type GameRoomP2p } from '@bfg-engine/models/game-table/game-room-p2p';
 import { PublicPlayerProfile } from '@bfg-engine/models/player-profile/public-player-profile';
-import { PlayerProfileId } from '@bfg-engine/models/types/bfg-branded-ids';
+import { PlayerProfileId } from '@bfg-engine/models/types/bfg-branded-uuids';
 import { useMyDefaultPublicPlayerProfile } from '@bfg-engine/hooks/stores/use-my-player-profiles-store';
 import styles from './PlayersRow.module.css';
-import { isGameOver } from '~/models/game-table/table-phase';
-import { BfgPublicGameImplState } from '~/models/game-engine/bfg-game-engine-types';
+import { isGameOver } from '../../../../models/game-table/table-phase';
+import { BfgGameStateForWatcher } from '@bfg-engine/game-metadata/metadata-types/game-state-types';
+import { useMemo } from 'react';
+import { getActivePlayerSeatsForGameTable } from '../../../../ops/game-table-ops/player-seat-utils';
 
 
-export interface PlayersRowProps<GIS extends BfgPublicGameImplState> {
-  gameTable: GameTable;
+export interface PlayersRowProps<GSW extends BfgGameStateForWatcher> {
+  gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   nextToActPlayers: GameTableSeat[];
-  gameState: GIS;
-  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
+  gameState: GSW;
+  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: GSW, playerSeat: GameTableSeat) => React.ReactNode;
 }
 
-export const PlayersRow = <GIS extends BfgPublicGameImplState>({
-  gameTable,
+export const PlayersRow = <GSW extends BfgGameStateForWatcher>({
+  gameRoom,
   allPlayerProfiles,
   nextToActPlayers,
   gameState,
   playerDetailsLineFn,
-}: PlayersRowProps<GIS>) => {
+}: PlayersRowProps<GSW>) => {
 
   // Get all active players from the game table
-  const activePlayers: GameTableSeat[] = [];
-  if (gameTable.p1) activePlayers.push('p1');
-  if (gameTable.p2) activePlayers.push('p2');
-  if (gameTable.p3) activePlayers.push('p3');
-  if (gameTable.p4) activePlayers.push('p4');
-  if (gameTable.p5) activePlayers.push('p5');
-  if (gameTable.p6) activePlayers.push('p6');
-  if (gameTable.p7) activePlayers.push('p7');
-  if (gameTable.p8) activePlayers.push('p8');
+  // const activePlayers: GameTableSeat[] = [];
+  // if (gameTable.p1) activePlayers.push('p1');
+  // if (gameTable.p2) activePlayers.push('p2');
+  // if (gameTable.p3) activePlayers.push('p3');
+  // if (gameTable.p4) activePlayers.push('p4');
+  // if (gameTable.p5) activePlayers.push('p5');
+  // if (gameTable.p6) activePlayers.push('p6');
+  // if (gameTable.p7) activePlayers.push('p7');
+  // if (gameTable.p8) activePlayers.push('p8');
 
+  const activePlayers = useMemo(() => {
+    return getActivePlayerSeatsForGameTable(gameRoom);
+  }, [gameRoom]);
 
   const myProfile = useMyDefaultPublicPlayerProfile();
-  const gameOver = isGameOver(gameTable.tablePhase);
+  const gameOver = isGameOver(gameRoom.latestRoomPhase);
   const isGameActive = !gameOver;
 
   return (
@@ -46,7 +51,7 @@ export const PlayersRow = <GIS extends BfgPublicGameImplState>({
       <Stack spacing={2} direction="row" className={styles.playersGrid} style={{ width: '100%' }}>
         {activePlayers.map((playerSeat) => {
           const isPlayerNextToAct = isGameActive && nextToActPlayers.includes(playerSeat);
-          const playerProfileId = gameTable[playerSeat];
+          const playerProfileId = gameRoom.players.find(player => player.role === playerSeat)?.playerProfileId ?? null;
 
           const playerProfile = playerProfileId ? allPlayerProfiles.get(playerProfileId) : undefined;
           const playerHandle = playerProfile?.handle || `Player ${playerSeat.toUpperCase()}`;
@@ -62,6 +67,7 @@ export const PlayersRow = <GIS extends BfgPublicGameImplState>({
                 isMyPlayer={isMyPlayer}
                 isGameOver={gameOver}
                 gameState={gameState}
+                gameRoom={gameRoom}
                 playerDetailsLineFn={playerDetailsLineFn}
               />
             </Box>

@@ -1,105 +1,174 @@
-import { z } from "zod";
-import { BfgAllPublicKnowledgeGameEngineMetadata, PrivateKnowledgeGameEncoders, PublicKnowledgeGameEncoders, TBfgGameEngineMetadata } from "~/models/bfg-game-engines";
-import { BfgSupportedGameTitle, GameDefinition } from "~/models/game-box-definition";
-import { IBfgGameProcessor } from "~/models/game-engine/bfg-game-engine-processor";
-import { BfgGameEngineSchemas } from "~/models/game-engine/bfg-game-engine-schemas";
-import { BfgGameEngineComponents, BfgGameImplPlayerAction, BfgGameImplHostAction, BfgPublicGameImplState, BfgHostGameImplState, BfgPrivatePlayerKnowledgeImplState } from "~/models/game-engine/bfg-game-engine-types";
-import { createJsonZodObjectDataEncoder } from "~/models/game-engine/encoders";
 
 
-export const createGameMetadata = <
-  HGS extends BfgHostGameImplState,
-  PGS extends BfgPublicGameImplState,
-  GPA extends BfgGameImplPlayerAction,
-  GHA extends BfgGameImplHostAction,
-  PPK extends BfgPrivatePlayerKnowledgeImplState
->(
-  gameTitle: BfgSupportedGameTitle,
-  definition: GameDefinition,
-  // gameKnowledgeType: BfgGameKnowledgeType,
-  zodSchemas: BfgGameEngineSchemas,
-  // encoders: PrivateKnowledgeGameEncoders<HGS, PGS, GPA, GHA, PPK>,
-  engine: IBfgGameProcessor<HGS, GPA, GHA, PPK>,
-  components: BfgGameEngineComponents<HGS, PGS, GPA, GHA, PPK>,
-): TBfgGameEngineMetadata<'private-player-knowledge', HGS, PGS, GPA, GHA, PPK> => {
+// type InferHostGameState<Schema extends z.ZodTypeAny> = z.infer<Schema> & BfgGameStateForHost;
+// type InferPublicGameState<Schema extends z.ZodTypeAny> = z.infer<Schema> & BfgGameStateForPlayer;
+// type InferWatcherGameState<Schema extends z.ZodTypeAny> = z.infer<Schema> & BfgGameStateForWatcher;
+// type InferPlayerAction<Schema extends z.ZodTypeAny> = z.infer<Schema> & BfgGameActionByPlayer;
+// type InferHostAction<Schema extends z.ZodTypeAny> = z.infer<Schema> & BfgGameActionByHost;
 
-  // Validate that the engine's types match the zodSchemas at runtime
-  type InferredHGS = z.infer<typeof zodSchemas.hostGameStateSchema>;
-  type InferredPGS = z.infer<typeof zodSchemas.publicGameStateSchema>;
-  type InferredGPA = z.infer<typeof zodSchemas.playerActionSchema>;
-  type InferredGHA = z.infer<typeof zodSchemas.hostActionSchema>;
-  type InferredPPK = z.infer<typeof zodSchemas.privatePlayerKnowledgeSchema>;
-  
-  // TypeScript will enforce that the types align with the schemas
-  const _typeCheck: {
-    hgs: HGS extends InferredHGS ? true : never;
-    pgs: PGS extends InferredPGS ? true : never;
-    gpa: GPA extends InferredGPA ? true : never;
-    gha: GHA extends InferredGHA ? true : never;
-    ppk: PPK extends InferredPPK ? true : never;
-  } = {} as any;
+// const createBfgGameDataEncoder = <
+//   Schema extends z.ZodTypeAny,
+//   TValue extends z.infer<Schema>
+// >(
+//   schema: Schema,
+// ): IBfgDataEncoder<BfgDataEncoderFormat, TValue> => {
+//   const encoder = createJsonZodObjectDataEncoder(schema);
 
-  const encoders: PrivateKnowledgeGameEncoders<HGS, PGS, GPA, GHA, PPK> = {
-    hostGameStateEncoder: createJsonZodObjectDataEncoder(zodSchemas.hostGameStateSchema),
-    publicGameStateEncoder: createJsonZodObjectDataEncoder(zodSchemas.publicGameStateSchema),
-    playerActionEncoder: createJsonZodObjectDataEncoder(zodSchemas.playerActionSchema),
-    hostActionEncoder: createJsonZodObjectDataEncoder(zodSchemas.hostActionSchema),
-    privatePlayerKnowledgeEncoder: createJsonZodObjectDataEncoder(zodSchemas.privatePlayerKnowledgeSchema),
-  };
+//   return {
+//     format: encoder.format,
+//     encode: (data: TValue) => encoder.encode(data as z.infer<Schema>),
+//     decode: (encoded) => {
+//       const decoded = encoder.decode(encoded);
+//       if (decoded === null) {
+//         return null;
+//       }
 
-  const retVal: TBfgGameEngineMetadata<'private-player-knowledge', HGS, PGS, GPA, GHA, PPK> = {
-    gameTitle,
-    definition,  
-    gameKnowledgeType: 'private-player-knowledge',
-    zodSchemas,
-    encoders,
-    engine,
-    components,
-  };
+//       return decoded as TValue;
+//     },
+//   };
+// };
 
-  return retVal;
-}
+// const getOccupiedSeats = (gameTable: GameTable): GameTableSeat[] => {
+//   // const seatAssignments = [
+//   //   { seat: ALL_PLAYER_SEATS[0] as GameTableSeat, playerId: gameTable.p1 },
+//   //   { seat: ALL_PLAYER_SEATS[1] as GameTableSeat, playerId: gameTable.p2 },
+//   //   { seat: ALL_PLAYER_SEATS[2] as GameTableSeat, playerId: gameTable.p3 },
+//   //   { seat: ALL_PLAYER_SEATS[3] as GameTableSeat, playerId: gameTable.p4 },
+//   //   { seat: ALL_PLAYER_SEATS[4] as GameTableSeat, playerId: gameTable.p5 },
+//   //   { seat: ALL_PLAYER_SEATS[5] as GameTableSeat, playerId: gameTable.p6 },
+//   //   { seat: ALL_PLAYER_SEATS[6] as GameTableSeat, playerId: gameTable.p7 },
+//   //   { seat: ALL_PLAYER_SEATS[7] as GameTableSeat, playerId: gameTable.p8 },
+//   // ];
 
-export const createPublicKnowledgeGameMetadata = <
-  GPS extends BfgPublicGameImplState,
-  GPA extends BfgGameImplPlayerAction,
-  GHA extends BfgGameImplHostAction
->(
-  gameTitle: BfgSupportedGameTitle,
-  definition: GameDefinition,
-  zodSchemas: BfgGameEngineSchemas,
-  engine: IBfgGameProcessor<GPS, GPA, GHA, never>,
-  components: BfgGameEngineComponents<GPS, GPS, GPA, GHA, never>
-): BfgAllPublicKnowledgeGameEngineMetadata<GPS, GPA, GHA> => {
+//   // return seatAssignments
+//   //   .filter(({ playerId }) => playerId !== undefined)
+//   //   .map(({ seat }) => seat);
 
-  // Validate that the engine's types match the zodSchemas at runtime
-  type InferredGPS = z.infer<typeof zodSchemas.publicGameStateSchema>;
-  type InferredGPA = z.infer<typeof zodSchemas.playerActionSchema>;
-  type InferredGHA = z.infer<typeof zodSchemas.hostActionSchema>;
-  
-  // TypeScript will enforce that the types align with the schemas
-  const _typeCheck: {
-    gps: GPS extends InferredGPS ? true : never;
-    gpa: GPA extends InferredGPA ? true : never;
-    gha: GHA extends InferredGHA ? true : never;
-  } = {} as any;
+//   return gameTable.players.map((player) => player.role);
+// };
 
-  const encoders: PublicKnowledgeGameEncoders<GPS, GPA, GHA> = {
-    hostGameStateEncoder: createJsonZodObjectDataEncoder(zodSchemas.publicGameStateSchema),
-    publicGameStateEncoder: createJsonZodObjectDataEncoder(zodSchemas.publicGameStateSchema),
-    playerActionEncoder: createJsonZodObjectDataEncoder(zodSchemas.playerActionSchema),
-    hostActionEncoder: createJsonZodObjectDataEncoder(zodSchemas.hostActionSchema),
-  };
+// export const createPublicKnowledgeGameMetadata = <
+//   HostGameStateSchema extends z.ZodType<BfgGameStateForHost>,
+//   PublicGameStateSchema extends z.ZodType<BfgGameStateForPlayer>,
+//   PlayerActionSchema extends z.ZodType<BfgGameActionByPlayer>,
+//   HostActionSchema extends z.ZodType<BfgGameActionByHost>,
+//   TProcessor extends IBfgGameProcessor<InferHostAction<HostActionSchema>, HostGameStateSchema>,
+//   TComponents extends IBfgGameEngineComponents<
+//     InferHostGameState<HostGameStateSchema>,
+//     InferPublicGameState<PublicGameStateSchema>,
+//     InferWatcherGameState<PublicGameStateSchema>,
+//     InferPlayerAction<PlayerActionSchema>,
+//     InferHostAction<HostActionSchema>
+//   >,
+// >(
+//   gameTitle: BfgSupportedGameTitle,
+//   definition: GameDefinition,
+//   zodSchemas: BfgGameEngineSchemas<
+//     HostGameStateSchema,
+//     PublicGameStateSchema,
+//     PlayerActionSchema,
+//     HostActionSchema
+//   >,
+//   gameProcessor: TProcessor,
+//   components: TComponents,
+// ): IBfgGameCompleteMetadata<
+//   InferHostGameState<HostGameStateSchema>,
+//   InferPublicGameState<PublicGameStateSchema>,
+//   InferWatcherGameState<PublicGameStateSchema>,
+//   InferPlayerAction<PlayerActionSchema>,
+//   InferHostAction<HostActionSchema>
+// > => {
+//   type HostGameState = InferHostGameState<HostGameStateSchema>;
+//   type PlayerGameState = InferPublicGameState<PublicGameStateSchema>;
+//   type WatcherGameState = InferWatcherGameState<PublicGameStateSchema>;
+//   type PlayerAction = InferPlayerAction<PlayerActionSchema>;
+//   type HostAction = InferHostAction<HostActionSchema>;
 
-  const retVal: BfgAllPublicKnowledgeGameEngineMetadata<GPS, GPA, GHA> = {
-    gameTitle,
-    definition,
-    gameKnowledgeType: 'public-knowledge',
-    zodSchemas,
-    encoders,
-    engine,
-    components,
-  };
+//   const ensurePublicState = (hostState: HostGameState): PlayerGameState => {
+//     const parsed = zodSchemas.publicGameStateSchema.safeParse(hostState);
+//     if (!parsed.success) {
+//       throw new Error(
+//         `Host state is not compatible with public game state schema for ${gameTitle}: ${parsed.error.message}`,
+//       );
+//     }
+//     return parsed.data as PlayerGameState;
+//   };
 
-  return retVal;
-}
+//   const schemas: BfgEngineMetadataSchemas<
+//     HostGameStateSchema,
+//     PublicGameStateSchema,
+//     WatcherGameStateSchema,
+//     GameEventSchema,
+//     GameEventOutcomeSchema,
+//     // HostActionSchema,
+//   > = {
+//     hostGameStateSchema: zodSchemas.hostGameStateSchema,
+//     playerGameStateSchema: zodSchemas.publicGameStateSchema,
+//     watcherGameStateSchema: zodSchemas.publicGameStateSchema,
+//   };
+
+//   const encoders: IBfgEngineMetadataEncoders<
+//     HostGameState,
+//     PlayerGameState,
+//     WatcherGameState,
+//     PlayerAction,
+//     HostAction
+//   > = {
+//     hostGameStateEncoder: createBfgGameDataEncoder<HostGameStateSchema, HostGameState>(
+//       zodSchemas.hostGameStateSchema,
+//     ),
+//     playerGameStateEncoder: createBfgGameDataEncoder<PublicGameStateSchema, PlayerGameState>(
+//       zodSchemas.publicGameStateSchema,
+//     ),
+//     watcherGameStateEncoder: createBfgGameDataEncoder<PublicGameStateSchema, WatcherGameState>(
+//       zodSchemas.publicGameStateSchema,
+//     ),
+//     playerActionEncoder: createBfgGameDataEncoder<PlayerActionSchema, PlayerAction>(
+//       zodSchemas.playerActionSchema,
+//     ),
+//     hostActionEncoder: createBfgGameDataEncoder<HostActionSchema, HostAction>(
+//       zodSchemas.hostActionSchema,
+//     ),
+//   };
+
+//   const accessLevelConverters: IBfgGameEngineAccessLevelConverters<
+//     HostGameState,
+//     PlayerGameState,
+//     WatcherGameState
+//   > = {
+//     hostToPlayerSeatGameStates: (
+//       gameTable: GameTable,
+//       hostState: HostGameState,
+//     ): PlayerSeatGameState<PlayerGameState>[] => {
+//       const playerGameState = ensurePublicState(hostState);
+//       return getOccupiedSeats(gameTable).map((seat) => ({
+//         playerSeat: seat,
+//         playerGameState,
+//       }));
+//     },
+//     hostToWatcherAccessLevel: (hostState: HostGameState): WatcherGameState => {
+//       return ensurePublicState(hostState) as WatcherGameState;
+//     },
+//   };
+
+//   const metadata: IBfgGameCompleteMetadata<
+//     HostGameState,
+//     PlayerGameState,
+//     WatcherGameState,
+//     PlayerAction,
+//     HostAction
+//   > = {
+//     metadataType: "public-knowledge-game",
+//     gameTitle,
+//     definition,
+//     schemas,
+//     encoders,
+//     accessLevelConverters,
+//     gameProcessor,
+//     components,
+//   };
+
+//   return metadata;
+// };
+
+// export type PublicKnowledgeGameMetadata = ReturnType<typeof createPublicKnowledgeGameMetadata>;

@@ -18,10 +18,10 @@ import { useRiskyMyDefaultPlayerProfile } from '../../../hooks/stores/use-my-pla
 import { GameLobby } from '../../../models/p2p-lobby';
 import { convertPrivateToPublicProfile } from '../../../models/player-profile/utils';
 import { useHostedLobbyActions } from '../../../hooks/stores/use-hosted-lobbies-store';
-import { BfgGameLobbyId } from '../../../models/types/bfg-branded-ids';
+import { BfgGameLobbyIdToolbox, type GameLobbyId } from '../../../models/types/bfg-branded-uuids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
-import { useGameRegistry } from '../../../hooks/games-registry/games-registry';
-import { validateLobby } from '~/ops/game-lobby-ops/lobby-utils';
+import { useGameRegistry } from '../../../hooks/games-registry/games-registry-hook';
+import { validateLobby } from '@bfg-engine/ops/game-lobby-ops/lobby-utils';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 
 
@@ -99,7 +99,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
       // Validate form data using Zod schema
       const validationResult = createLobbyFormSchema.safeParse(formData);
       if (!validationResult.success) {
-        const firstError = validationResult.error.errors[0];
+        const firstError = validationResult.error.issues[0];
         setError(firstError.message);
         return;
       }
@@ -122,8 +122,10 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
       const { minNumPlayers, maxNumPlayers } = getMinAndMaxNumPlayers(formData.gameTitle);
 
       const publicHostPlayerProfile = convertPrivateToPublicProfile(defaultPlayerProfile);
-      const newLobbyId = BfgGameLobbyId.createId();
+      const newLobbyId = BfgGameLobbyIdToolbox.createRandomId() as GameLobbyId;
       const now = Date.now();
+
+      const playerPool = formData.joinLobbyAsPlayer ? [defaultPlayerProfile] : [];
 
       const newLobby: GameLobby = {
         id: newLobbyId,
@@ -132,7 +134,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
         lobbyName: formData.lobbyName,
         gameHostPlayerProfile: publicHostPlayerProfile,
         gameTitle: formData.gameTitle,
-        playerPool: formData.joinLobbyAsPlayer ? [defaultPlayerProfile.id] : [],
+        playerPool,
         maxNumPlayers,
         minNumPlayers,
         isLobbyValid: false,
@@ -220,13 +222,13 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
               validators={{
                 onChange: ({ value }) => {
                   const result = createLobbyFormSchema.shape.lobbyName.safeParse(value);
-                  return result.success ? undefined : result.error.errors[0]?.message;
+                  return result.success ? undefined : result.error.issues[0]?.message;
                 },
                 onBlur: ({ value }) => {
                   // Additional validation on blur for better UX
                   if (value && value.length > 0) {
                     const result = createLobbyFormSchema.shape.lobbyName.safeParse(value);
-                    return result.success ? undefined : result.error.errors[0]?.message;
+                    return result.success ? undefined : result.error.issues[0]?.message;
                   }
                   return undefined;
                 },
@@ -250,7 +252,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
               validators={{
                 onChange: ({ value }) => {
                   const result = createLobbyFormSchema.shape.gameTitle.safeParse(value);
-                  return result.success ? undefined : result.error.errors[0]?.message;
+                  return result.success ? undefined : result.error.issues[0]?.message;
                 },
               }}
               children={(field: any) => (
@@ -287,7 +289,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
               validators={{
                 onChange: ({ value }) => {
                   const result = createLobbyFormSchema.shape.joinLobbyAsPlayer.safeParse(value);
-                  return result.success ? undefined : result.error.errors[0]?.message;
+                  return result.success ? undefined : result.error.issues[0]?.message;
                 },
               }}
               children={(field: any) => (

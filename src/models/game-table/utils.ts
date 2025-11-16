@@ -1,8 +1,8 @@
-import { PeerId } from "~/hooks/p2p/p2p-types";
+import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
 import { PublicPlayerProfile } from "../player-profile/public-player-profile";
-import { PlayerProfileId } from "../types/bfg-branded-ids";
-import { GameTable } from "./game-table";
-import { GameTableActionSource, HostActionSources, PlayerActionSources } from "./game-table-action";
+import { PlayerProfileId } from "../types/bfg-branded-uuids";
+import { GameRoomDb } from "./game-room-p2p";
+import { GameTableActionSource, HostActionSources, PlayerActionSources } from "./game-table-event";
 
 
 export const isHostActionSource = (source: GameTableActionSource | undefined): source is typeof HostActionSources[number] => { 
@@ -13,24 +13,26 @@ export const isPlayerActionSource = (source: GameTableActionSource | undefined):
   return PlayerActionSources.includes(source as any);
 }
 
-export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, gameTable: GameTable): boolean => {
+export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, gameTable: GameRoomDb): boolean => {
   if (!playerId) {
     return false;
   }
 
-  return (
-    playerId === gameTable.p1 ||
-    playerId === gameTable.p2 ||
-    playerId === gameTable.p3 ||
-    playerId === gameTable.p4 ||
-    playerId === gameTable.p5 ||
-    playerId === gameTable.p6 ||
-    playerId === gameTable.p7 ||
-    playerId === gameTable.p8
-  );
+  return gameTable.players.some(player => player.playerProfileId === playerId);
+
+  // return (
+  //   playerId === gameTable.p1 ||
+  //   playerId === gameTable.p2 ||
+  //   playerId === gameTable.p3 ||
+  //   playerId === gameTable.p4 ||
+  //   playerId === gameTable.p5 ||
+  //   playerId === gameTable.p6 ||
+  //   playerId === gameTable.p7 ||
+  //   playerId === gameTable.p8
+  // );
 }
 
-export const isProfileOkForHostAccess = (playerProfile: PublicPlayerProfile, gameTable: GameTable): boolean => {
+export const isProfileOkForHostAccess = (playerProfile: PublicPlayerProfile, gameTable: GameRoomDb): boolean => {
   return playerProfile.id === gameTable.gameHostPlayerProfileId;
 }
 

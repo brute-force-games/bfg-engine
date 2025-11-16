@@ -8,20 +8,26 @@ import {
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
 import { PeerId } from "../../hooks/p2p/p2p-types"
 import { PeerProfileCard } from "./peer-profile-card-component";
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
-
+import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
 
 
 interface IPeerProfilesComponentProps {
   myPeerId: PeerId;
-  myPeerPlayer?: PublicPlayerProfile;
+  myPeerProfile: PublicPlayerProfile | null;
   peerIds: PeerId[];
-  peerPlayerIds: Map<PeerId, PlayerProfileId>;
+  peerIdsToPlayerIds: Map<PeerId, PlayerProfileId>;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 }
 
-export const PeerProfilesComponent = ({ myPeerId, myPeerPlayer, peerIds, peerPlayerIds, allPlayerProfiles }: IPeerProfilesComponentProps) => {
-  const peerProfileEntries = Array.from(peerPlayerIds.entries());
+export const PeerProfilesComponent = ({
+  myPeerId,
+  myPeerProfile,
+  peerIds,
+  peerIdsToPlayerIds,
+  allPlayerProfiles,
+}: IPeerProfilesComponentProps) => {
+
+  const peerProfileEntries = Array.from(peerIdsToPlayerIds.entries());
   // const hasPeers = peerProfileEntries.length > 0;
 
   // if (!hasPeers) {
@@ -68,13 +74,13 @@ export const PeerProfilesComponent = ({ myPeerId, myPeerPlayer, peerIds, peerPla
         {myPeerId && (
           <PeerProfileCard
             key={myPeerId}
-            peerPlayer={myPeerPlayer}
+            peerPlayer={myPeerProfile ?? undefined}
             isMe={true}
           />
         )}
         {
           peerIds.map((peerId: PeerId) => {
-            const peerPlayerId = peerPlayerIds.get(peerId);
+            const peerPlayerId = peerIdsToPlayerIds.get(peerId);
             if (!peerPlayerId) {
               return null;
             }

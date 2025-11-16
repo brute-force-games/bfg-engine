@@ -9,6 +9,7 @@
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
+  table-layout: fixed;
 }
 
 .headerRow {
@@ -22,6 +23,8 @@
   font-weight: 500;
   position: relative;
   cursor: default;
+  height: 48px;
+  vertical-align: middle;
 }
 
 .headerCell.sortable {

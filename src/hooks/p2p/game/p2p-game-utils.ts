@@ -1,4 +1,4 @@
-import { GameTableAccessRole } from "~/models/game-roles";
+import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
 
 
 export const getAllowedRolesForAccessRole = (accessRole: GameTableAccessRole): GameTableAccessRole[] => {

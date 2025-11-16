@@ -1,6 +1,6 @@
-import { GameTableId } from '~/models/types/bfg-branded-ids';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
-import { UserGameSettings } from '~/models/user-game-settings';
+import { BfgGameTableId } from '../models/types/bfg-branded-uuids';
+import { BfgSupportedGameTitle } from '../models/game-box-definition';
+import { UserGameSettings } from '../models/user-game-settings';
 import { getUserGameSettings } from './user-game-settings-store';
 import { getUserGameTableSettings } from './user-game-table-settings-store';
 
@@ -11,12 +11,12 @@ import { getUserGameTableSettings } from './user-game-table-settings-store';
  * 2. Falls back to user-game-settings (game type defaults)
  * 3. Falls back to DEFAULT_USER_GAME_SETTINGS (system defaults)
  * 
- * @param gameTableId - The specific game table ID
+ * @param BfgGameTableId - The specific game table ID
  * @param gameTitle - The game type title
  * @returns The effective settings with hierarchy applied
  */
 export const getEffectiveUserGameSettings = (
-  gameTableId: GameTableId,
+  gameTableId: BfgGameTableId,
   gameTitle: BfgSupportedGameTitle
 ): UserGameSettings => {
   // Get game type defaults
@@ -49,12 +49,12 @@ export const getEffectiveUserGameSettings = (
 
 /**
  * Check if a game table has specific settings that override the game defaults
- * @param gameTableId - The game table ID to check
+ * @param BfgGameTableId - The game table ID to check
  * @param gameTitle - The game type title
  * @returns true if table has custom settings
  */
 export const hasTableSpecificSettings = (
-  gameTableId: GameTableId,
+  gameTableId: BfgGameTableId,
   gameTitle: BfgSupportedGameTitle
 ): boolean => {
   const gameDefaults = getUserGameSettings(gameTitle);

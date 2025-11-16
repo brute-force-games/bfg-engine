@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";  
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { PublicPlayerProfile, type SharedPublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { PrivatePlayerProfile, privateToPublicProfile } from "../../../models/player-profile/private-player-profile";
-import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-ids"
+import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-uuids"
 import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../../ui/components/constants";
 import { useGameHosting } from "../../games-registry/game-hosting";
 import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
-import { useRoom } from "~/hooks/use-trystero-room";
-import { useSupabaseRoom } from "~/hooks/use-trystero-supabase-room";
-import { useMqttRoom } from "~/hooks/use-trystero-mqtt-room";
-import { useTorrentRoom } from "~/hooks/use-trystero-torrent-room";
+// import { useRoom } from "@bfg-engine/hooks/use-trystero-room";
+// import { useSupabaseRoom } from "@bfg-engine/hooks/use-trystero-supabase-room";
+// import { useMqttRoom } from "@bfg-engine/hooks/use-trystero-mqtt-room";
+// import { useTorrentRoom } from "@bfg-engine/hooks/use-trystero-torrent-room";
 
 
 export interface IP2pLobbyRoomEventHandlers {
@@ -23,11 +23,11 @@ export interface IP2pLobby {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peers: PeerId[]
+  peerIds: PeerId[]
   peerPlayers: Map<PeerId, PublicPlayerProfile>
 
   myPlayerProfile: PublicPlayerProfile
-  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
+  allPlayerProfiles: Map<PlayerProfileId, SharedPublicPlayerProfile>
 
   lobbyDetails: HostP2pLobbyDetails | null
 
@@ -51,7 +51,7 @@ export const useP2pLobby = (
 ): IP2pLobby => {
   
   const [lobbyDetails, setLobbyDetails] = useState<HostP2pLobbyDetails | null>(null)
-  const [peers, setPeers] = useState<PeerId[]>([])
+  const [peerIds, setPeerIds] = useState<PeerId[]>([])
   const [peerPlayers, setPeerPlayers] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
@@ -92,7 +92,7 @@ export const useP2pLobby = (
 
   const [txLobbyDetails, rxLobbyDetails] = room.makeAction<HostP2pLobbyDetails>(P2P_LOBBY_DETAILS_ACTION_KEY);
 
-  const connectionStatus = `Connected to ${peers.length} peers. Connected to ${peerPlayers.size} players.`;
+  const connectionStatus = `Connected to ${peerIds.length} peers. Connected to ${peerPlayers.size} players.`;
 
   // Initialize connection event on mount
   useEffect(() => {
@@ -109,10 +109,10 @@ export const useP2pLobby = (
   room.onPeerJoin(peer => {
     const peerId = PeerIdSchema.parse(peer);
     console.log('Peer joined:', peerId);
-    addConnectionEvent('peer-joined', `Peer joined (total: ${peers.length + 1})`, peers.length + 1);
+    addConnectionEvent('peer-joined', `Peer joined (total: ${peerIds.length + 1})`, peerIds.length + 1);
 
-    if (!peers.includes(peerId)) {
-      setPeers(prev => [...prev, peerId]);
+    if (!peerIds.includes(peerId)) {
+      setPeerIds(prev => [...prev, peerId]);
     }
 
     txPlayerProfile(myPlayerProfile, peerId);
@@ -132,8 +132,8 @@ export const useP2pLobby = (
     //   addConnectionEvent('peer-left', `Peer left (total: ${newCount})`, newCount);
     //   return updated;
     // })
-    addConnectionEvent('peer-left', `Peer left (total: ${peers.length})`, peers.length);
-    setPeers(prev => prev.filter(p => p !== peerId));
+    addConnectionEvent('peer-left', `Peer left (total: ${peerIds.length})`, peerIds.length);
+    setPeerIds(prev => prev.filter(p => p !== peerId));
     setPeerPlayers(prev => {
       const updated = new Map(prev);
       updated.delete(peerId);
@@ -185,7 +185,7 @@ export const useP2pLobby = (
     connectionEvents,
 
     myPlayerProfile: myPublicPlayerProfile,
-    peers,
+    peerIds,
     peerPlayers,
     allPlayerProfiles,
     

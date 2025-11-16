@@ -1,16 +1,16 @@
-import { PublicPlayerProfile, PlayerProfileId, Stack, BfgGameSpine } from "@bfg-engine";
-import { useAppSettings } from "~/hooks/stores/use-my-app-settings-store";
-import { useUserGameSettings } from "~/hooks/stores/use-user-game-settings-store";
-import { useUserGameTableSettings } from "~/hooks/stores/use-user-game-table-settings-store";
+import { PublicPlayerProfile, PlayerProfileId, Stack, BfgGameSpine, Container, Typography } from "@bfg-engine";
+import { useAppSettings } from "@bfg-engine/hooks/stores/use-my-app-settings-store";
+import { useUserGameSettings } from "@bfg-engine/hooks/stores/use-user-game-settings-store";
+import { useUserGameTableSettings } from "@bfg-engine/hooks/stores/use-user-game-table-settings-store";
 import { BfgStarterNavBar } from "../bfg-nav-bar/bfg-starter-nav-bar";
 import { BfgGameSpineNavBar } from "../bfg-nav-bar/bfg-game-spine-nav-bar";
-import { BfgGameEngineMetadata } from "~/models/bfg-game-engines";
-import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
-import { GameTable } from "~/models/game-table/game-table";
+import { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
+import { type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
 import { GameLogPanel } from "../game-log-panel";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
+import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { AppBarTabsConfig } from "../bfg-app-bar/tabs-config";
-import { createGameContext } from "~/hooks/p2p/game/use-optional-game-context";
+import { createGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
+import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
 
 // Fixed width for side panels (log panel and game spine)
 const SIDE_PANEL_WIDTH = 150;
@@ -38,22 +38,51 @@ const FixedWidthPanel = ({ children }: FixedWidthPanelProps) => {
 interface BfgGameScreenFrameProps<TTabId extends string = string> {
   tabsConfig: AppBarTabsConfig<TTabId> | null;
   gameMetadata: BfgGameEngineMetadata;
-  gameTable: GameTable;
+  gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  gameState: BfgPublicGameImplState;
-  gameActions: DbGameTableAction[];
+  gameState: BfgGameStateForWatcher | null;
+  boardEvents: GameTableEventWithTransition[];
 
   children: React.ReactNode;
 }
 
 export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGameScreenFrameProps<TTabId>) => {
 
-  const { tabsConfig, gameMetadata, gameTable, allPlayerProfiles, gameState, gameActions, children } = props;
+  const { tabsConfig, gameMetadata, gameRoom, allPlayerProfiles, gameState, boardEvents, children } = props;
+
+  // Defensive check for null gameTable
+  if (!gameRoom || !gameState) {
+    // console.error('BfgGameScreenFrame received null gameTable:', props);
+    // return (
+    //   <div style={{ padding: '20px', color: 'red', fontWeight: 'bold' }}>
+    //     Error: Game table is null or undefined. Props: {JSON.stringify(props, null, 2)}
+    //   </div>
+    // );
+    return (
+      <Container style={{ padding: '24px' }}> <Stack spacing={3}>
+        <Typography variant="h3">Loading Game Screen Frame...</Typography>
+        <Typography variant="body1" color="secondary">
+          { !gameRoom && <Typography variant="body1" color="secondary">Waiting for game table...</Typography> }
+          { !gameState && <Typography variant="body1" color="secondary">Waiting for game state...</Typography> }
+        </Typography>
+      </Stack> </Container>
+    )
+  }
+
+  // // Defensive check for null gameState
+  // if (!gameState) {
+  //   console.error('BfgGameScreenFrame received null gameState:', props);
+  //   return (
+  //     <div style={{ padding: '20px', color: 'orange', fontWeight: 'bold' }}>
+  //       Loading game state...
+  //     </div>
+  //   );
+  // }
 
   // Get settings from all three levels for proper inheritance
   const appSettings = useAppSettings();
-  const gameSettings = useUserGameSettings(gameTable.gameTitle);
-  const tableSettings = useUserGameTableSettings(gameTable.id);
+  const gameSettings = useUserGameSettings(gameRoom.gameTitle);
+  const tableSettings = useUserGameTableSettings(gameRoom.id);
 
   // Apply inheritance chain: Table > Game > App
   const gameSpineLocation = tableSettings.gameSpineLocation ?? gameSettings.gameSpineLocation ?? appSettings.gameSpineLocation;
@@ -61,15 +90,15 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
 
   // Create game context for the app bar
   const gameContext = createGameContext(
-    gameTable.gameTitle, 
-    gameTable.id,
-    gameTable.tableName
+    gameRoom.gameTitle, 
+    gameRoom.id,
+    gameRoom.tableName
   );
 
   const { GameSpineComponent } = gameMetadata.components;
 
-  const nextToActPlayers = gameMetadata.engine.getNextToActPlayers(gameTable, gameState);
-  const playerDetailsLineFn = gameMetadata.engine.getPlayerDetailsLine;
+  const nextToActPlayers = gameMetadata.gameProcessor.getNextToActPlayers(gameRoom, gameState);
+  const playerDetailsLineFn = gameMetadata.gameProcessor.getPlayerDetailsLine;
 
   const gameSpineOrientation = gameSpineLocation === 'left' || gameSpineLocation === 'right' ? 
     'vertical' :
@@ -77,7 +106,7 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
 
   const bfgGameSpine = GameSpineComponent ?
     <GameSpineComponent
-      gameTable={gameTable}
+      gameRoom={gameRoom}
       allPlayerProfiles={allPlayerProfiles}
       gameState={gameState}
       orientation={gameSpineOrientation}
@@ -85,7 +114,7 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
     <BfgGameSpine
       gameTitle={gameMetadata.gameTitle}
       orientation={gameSpineOrientation}
-      gameTable={gameTable}
+      gameRoom={gameRoom}
       allPlayerProfiles={allPlayerProfiles}
       nextToActPlayers={nextToActPlayers}
       gameState={gameState}
@@ -94,14 +123,14 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
     
   const bfgGameLogPanel = (
     <GameLogPanel
-      gameActions={gameActions}
+      boardEvents={boardEvents}
     />
   );
 
   const bfgAppBar = gameSpineLocation === 'nav-bar' ?
     <BfgGameSpineNavBar
       gameMetadata={gameMetadata}
-      gameTable={gameTable}
+      gameRoom={gameRoom}
       allPlayerProfiles={allPlayerProfiles}
       gameState={gameState}
       gameContext={gameContext}

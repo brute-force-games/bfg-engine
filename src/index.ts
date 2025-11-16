@@ -1,8 +1,9 @@
-export { registerGame, useGameRegistry, } from './hooks/games-registry/games-registry';
+export { useGameRegistry, } from './hooks/games-registry/games-registry-hook';
+export { registerGame } from './game-metadata/games-registry';
 export type { BfgSupportedGameTitle, GameDefinition } from './models/game-box-definition';
 export type { GameHostingContextType } from './hooks/games-registry/game-hosting';
 export { GameHostingProvider, useGameHosting } from './hooks/games-registry/game-hosting';
-export type { GameTableId, GameFriendId, GameLobbyId, PlayerProfileId } from './models/types/bfg-branded-ids';
+export type { BfgGameTableId, GameFriendId, GameLobbyId, PlayerProfileId } from './models/types/bfg-branded-uuids';
 export type { TrysteroConfig } from './p2p/trystero-config';
 export { ProfileGuard } from './ui/components/profile-guard';
 export { P2pConnectionComponent } from './ui/components/p2p-connection-component';
@@ -11,14 +12,14 @@ export { LobbyPlayerJoinGameComponent } from './ui/components/lobby/lobby-player
 export { LobbyPlayerStateComponent } from './ui/components/lobby/lobby-player-state-component';
 export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
 export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-component';
-export { ObserverP2pGameDetailsComponent } from './ui/components/observer-p2p-game-details-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
-export type { BfgGameEngineProcessor, GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
-export { GameTableSeatSchema } from './models/game-table/game-table';
-export type { GameTableActionResult } from './models/game-table/table-phase';
-export type { BfgGameSpecificTableAction } from './models/game-table/game-table-action';
-export type { BfgGameSpecificGameState } from './models/game-table/game-table-action';
-export type { BfgGameSpecificAction } from './models/game-table/game-table-action';
+// export type { GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
+export { GameTableSeatSchema } from './models/game-table/game-room-p2p';
+// export type { GameTableEventResult as GameTableActionResult } from './models/game-table/table-phase';
+// export type { BfgGameSpecificTableAction } from './models/game-table/game-table-event';
+// export type { BfgGameSpecificGameState } from './models/game-table/game-table-action';
+// export type { BfgGameSpecificAction } from './models/game-table/game-table-action';
+// export { useGameMetadata } from './hooks/games-registry/use-game-metadata';
 export { useGameMetadata } from './hooks/games-registry/use-game-metadata';
 
 // Crypto exports

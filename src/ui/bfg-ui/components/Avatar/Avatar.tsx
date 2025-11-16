@@ -14,7 +14,7 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     const avatarClassName = classNames(
       styles.avatar,
       size !== 'medium' && styles[size],
-      !src && children && styles.colorful,
+      !src && !!children && styles.colorful,
       className
     );
 

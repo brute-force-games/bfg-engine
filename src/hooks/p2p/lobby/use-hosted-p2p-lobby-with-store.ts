@@ -1,4 +1,4 @@
-import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
+import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-uuids";
 import { IP2pLobbyRoomEventHandlers, useP2pLobby } from "./use-p2p-lobby";
 import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";
@@ -8,12 +8,13 @@ import { PrivatePlayerProfile } from "../../../models/player-profile/private-pla
 import { BfgSupportedGameTitle } from "../../../models/game-box-definition";
 import { IHostedLobbyActions, useHostedLobby, useHostedLobbyActions } from "../../stores/use-hosted-lobbies-store";
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby";
-import { useGameRegistry } from "../../games-registry/games-registry";
+import { useGameRegistry } from "../../games-registry/games-registry-hook";
 import { useCallback, useEffect, useState } from "react";
-import { playerSetGameChoice } from "~/ops/game-lobby-ops/player-set-game-choice";
-import { playerTakeSeat } from "~/ops/game-lobby-ops/player-take-seat";
-import { updateHostedLobbyPlayerPool } from "~/tb-store/hosted-lobbies-store";
-import { playerLeaveSeat } from "~/ops/game-lobby-ops/player-leave-seat";
+import { playerSetGameChoice } from "@bfg-engine/ops/game-lobby-ops/player-set-game-choice";
+import { playerTakeSeat } from "@bfg-engine/ops/game-lobby-ops/player-take-seat";
+import { updateHostedLobbyPlayerPool } from "@bfg-engine/tb-store/hosted-lobbies-store";
+import { playerLeaveSeat } from "@bfg-engine/ops/game-lobby-ops/player-leave-seat";
+import { hasItemUpdated } from "../../../utils/item-updates";
 
 
 export interface IHostedP2pLobbyWithStoreData {
@@ -23,7 +24,7 @@ export interface IHostedP2pLobbyWithStoreData {
   connectionStatus: string
   connectionEvents: ConnectionEvent[]
 
-  peers: PeerId[]
+  peerIds: PeerId[]
   peerPlayers: Map<PeerId, PublicPlayerProfile>
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>
   myHostPlayerProfile: PublicPlayerProfile
@@ -70,14 +71,14 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
   const {
     // room,
     txLobbyDetails,
-    peers,
+    peerIds,
     peerPlayers,
     allPlayerProfiles,
     txPlayerProfile,
     rxPlayerProfile,
     rxPlayerMove,
     connectionEvents,
-    refreshConnection
+    // refreshConnection
   } = p2pLobby;
   const { updateLobby } = lobbyActions;
 
@@ -100,19 +101,33 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
         break;
 
       case 'take-seat':
-        const updatedLobbyForSeat = await playerTakeSeat(gameRegistry, lobbyState, playerId);
+        const joiningPlayerProfile = allPlayerProfiles.get(playerId);
+        if (!joiningPlayerProfile) {
+          console.error('Player profile not found for player:', playerId);
+          return;
+        }
+        const updatedLobbyForSeat = await playerTakeSeat(gameRegistry, lobbyState, joiningPlayerProfile);
         console.log('updatedLobbyForSeat', updatedLobbyForSeat);
-        if (updatedLobbyForSeat) {
-          updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForSeat.playerPool as PlayerProfileId[]);
+
+        // if (updatedLobbyForSeat) {
+        if (hasItemUpdated(lobbyState, updatedLobbyForSeat)) {
+          updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForSeat.playerPool);
           updateLobby(lobbyId, updatedLobbyForSeat);
         }
         break;
 
       case 'leave-seat':
-        const updatedLobbyForLeaveSeat = await playerLeaveSeat(gameRegistry, lobbyState, playerId);
+        const leavingPlayerProfile = allPlayerProfiles.get(playerId);
+        if (!leavingPlayerProfile) {
+          console.error('Player profile not found for player:', playerId);
+          return;
+        }
+        const updatedLobbyForLeaveSeat = await playerLeaveSeat(gameRegistry, lobbyState, leavingPlayerProfile);
         console.log('updatedLobbyForLeaveSeat', updatedLobbyForLeaveSeat);
-        if (updatedLobbyForLeaveSeat) {
-          updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForLeaveSeat.playerPool as PlayerProfileId[]);
+
+        // if (updatedLobbyForLeaveSeat) {
+        if (hasItemUpdated(lobbyState, updatedLobbyForLeaveSeat)) {
+          updateHostedLobbyPlayerPool(lobbyId, updatedLobbyForLeaveSeat.playerPool);
           updateLobby(lobbyId, updatedLobbyForLeaveSeat);
         }
         break;
@@ -206,7 +221,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
     lobbyDetails: p2pLobby.lobbyDetails,
     connectionStatus: p2pLobby.connectionStatus,
     connectionEvents,
-    peers,
+    peerIds,
     peerPlayers,
     allPlayerProfiles,
     myHostPlayerProfile: hostPlayerProfile,
@@ -214,7 +229,7 @@ export const useHostedP2pLobbyWithStore = (lobbyId: GameLobbyId, hostPlayerProfi
     txLobbyDetails,
     txPlayerProfile,
     rxPlayerProfile,
-    refreshConnection,
+    // refreshConnection,
 
     lobbyState,
     lobbyOptions,

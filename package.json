@@ -9,9 +9,11 @@
     "dist"
   ],
   "scripts": {
+    "prebuild": "npm run test",
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
     "clean": "rimraf dist",
     "routes:generate": "tsr generate",
     "routes:watch": "tsr watch"
@@ -30,7 +32,6 @@
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vite-plugin-dts": "^3.7.0",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "peerDependencies": {

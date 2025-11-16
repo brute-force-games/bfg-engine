@@ -1,5 +1,5 @@
 import { Select, Option, Stack } from '../../bfg-ui/index';
-import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '~/models/app-settings';
+import { GameSpineLocation, GameLogPanelLocation, PlayerAgentMode } from '../../../models/app-settings';
 
 interface SharedSettingsFieldsProps {
   gameSpineLocation: GameSpineLocation;

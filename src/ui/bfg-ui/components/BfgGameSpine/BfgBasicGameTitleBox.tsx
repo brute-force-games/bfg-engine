@@ -1,36 +1,22 @@
-import { BfgSupportedGameTitle, Box, Typography } from "~/index";
-import { HrefLink } from "../HrefLink";
+import { BfgBasicGameTitleBoxProps } from "./types";
+import { BfgBasicGameTitleBoxVertical } from "./BfgBasicGameTitleBoxVertical";
+import { BfgBasicGameTitleBoxHorizontal } from "./BfgBasicGameTitleBoxHorizontal";
 
-
-export interface BfgBasicGameTitleBoxProps {
-  gameTitle: BfgSupportedGameTitle;
-  gameSourceUrl?: string;
-}
 
 export const BfgBasicGameTitleBox = (props: BfgBasicGameTitleBoxProps) => {
-  const { gameTitle, gameSourceUrl } = props;
+  const { orientation } = props;
 
-  const boxStyle = {
-    width: '100%',
-    overflowWrap: 'break-word' as const,
-    wordBreak: 'break-word' as const,
-  };
-
-  if (!gameSourceUrl) {
+  if (orientation === 'horizontal') {
     return (
-      <Box style={boxStyle}>
-        <Typography variant="h5">
-          You are playing {gameTitle}
-        </Typography>
-      </Box>
+      <BfgBasicGameTitleBoxHorizontal
+        {...props}
+      />
     );
   }
 
   return (
-    <Box style={boxStyle}>
-      <Typography variant="h5">
-        You are playing <HrefLink href={gameSourceUrl}>{gameTitle}</HrefLink>
-      </Typography>
-    </Box>
+    <BfgBasicGameTitleBoxVertical
+      {...props}
+    />
   );
 };

@@ -1,4 +1,4 @@
-// import { GameTableId } from "../../../models/types/bfg-branded-ids";
+// import { BfgGameTableId } from "../../../models/types/bfg-branded-ids";
 // import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
 // import { IP2pGameRoomEventHandlers, useP2pGame } from "./use-p2p-game-old";
 // import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
@@ -6,17 +6,17 @@
 // import { HostP2pActionStr, HostP2pActionStrSchema, PeerId, PeerIdSchema, PlayerP2pActionStr, PlayerP2pActionStrSchema, PrivatePlayerKnowledgeStr } from "../p2p-types";
 // import { useGameRegistry } from "../../games-registry/games-registry";
 // import { useCallback, useEffect, useState } from "react";
-// import { asHostApplyMoveFromPlayer } from "~/ops/game-table-ops/as-host-apply-move-from-player";
-// import { getPeerIdForPlayerSeat, getPlayerIdForPlayerSeat, matchPlayerToSeat } from "~/ops/game-table-ops/player-seat-utils";
-// import { updateHostedGame } from "~/tb-store/hosted-games-store";
+// import { asHostApplyMoveFromPlayer } from "@bfg-engine/ops/game-table-ops/as-host-apply-move-from-player";
+// import { getPeerIdForPlayerSeat, getPlayerIdForPlayerSeat, matchPlayerToSeat } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
+// import { updateHostedGame } from "@bfg-engine/tb-store/hosted-games-store";
 // import { useGameActions } from "../../stores/use-game-actions-store";
 // import { useHostedGame } from "../../stores/use-hosted-games-store";
-// import { addGameHostAction, addGamePlayerAction } from "~/tb-store/hosted-game-actions-store";
-// import { BfgEncodedString } from "~/models/game-engine/encoders";
-// import { asHostApplyHostAction } from "~/ops/game-table-ops/as-host-apply-host-action";
-// import { GameTableAccessRole } from "~/models/game-roles";
+// import { addGameHostAction, addGamePlayerAction } from "@bfg-engine/tb-store/hosted-game-actions-store";
+// import { BfgEncodedString } from "@bfg-engine/models/game-engine/encoders";
+// import { asHostApplyHostAction } from "@bfg-engine/ops/game-table-ops/as-host-apply-host-action";
+// import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
 // // import { IP2pGame } from "./use-p2p-game-old";
-// import { PrivatePlayerProfile } from "~/models/player-profile/private-player-profile";
+// import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
 // // import { IP2pGameForHost } from "./p2p-game-types";
 // // import { useP2pGameRoomContext } from "./p2p-game-room-context";
 
@@ -52,7 +52,7 @@
 
 
 // export const useHostedP2pGameWithStore = (
-//   gameTableId: GameTableId,
+//   gameTableId: BfgGameTableId,
 //   hostPlayerProfile: PrivatePlayerProfile | null,
 // // ): IHostedP2pGameWithStoreData => {
 // ): IP2pGameForHost => {
@@ -66,7 +66,7 @@
 
 //   const hostedGame = useHostedGame(gameTableId);
 //   const p2pGame = useP2pGame({ 
-//     gameTableId, 
+//     BfgGameTableId, 
 //     myPlayerProfile: hostPlayerProfile, 
 //     requestedRole: 'host',
 //   });
@@ -75,15 +75,15 @@
 //   const [myPrivatePlayerKnowledgeStr, setMyPrivatePlayerKnowledgeStr] = useState<PrivatePlayerKnowledgeStr | null>(null)
 
 //   if (hostedGame === null) {
-//     throw new Error('Host game table could not be found: ' + gameTableId);
+//     throw new Error('Host game table could not be found: ' + BfgGameTableId);
 //   }
 
 //   if (gameTableId !== hostedGame.id) {
-//     throw new Error('Route game table ID does not match the hosted game table ID: ' + gameTableId + ' !== ' + hostedGame.id);
+//     throw new Error('Route game table ID does not match the hosted game table ID: ' + BfgGameTableId + ' !== ' + hostedGame.id);
 //   }
 
-//   // if (gameTable?.id !== undefined && p2pGame.gameTable?.id !== gameTableId) {
-//   //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGame.gameTable?.id + ' !== ' + gameTableId);
+//   // if (gameTable?.id !== undefined && p2pGame.gameTable?.id !== BfgGameTableId) {
+//   //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGame.gameTable?.id + ' !== ' + BfgGameTableId);
 //   // }
 
 //   const gameTableHostPlayerProfileId = hostedGame?.gameHostPlayerProfileId;

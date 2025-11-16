@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { GameLobbyId } from '../../../models/types/bfg-branded-ids';
-import { Container, Paper, Typography } from '~/ui/bfg-ui';
-import { LobbyOptions } from '~/models/p2p-lobby';
+import { GameLobbyId } from '../../../models/types/bfg-branded-uuids';
+import { Container, Paper, Typography } from '../../../ui/bfg-ui';
+import { LobbyOptions } from '../../../models/p2p-lobby';
 import { useHostedP2pLobbyWithStore, IHostedP2pLobbyWithStoreData } from './use-hosted-p2p-lobby-with-store';
-import { useRiskyMyDefaultPlayerProfile } from '~/hooks/stores/use-my-player-profiles-store';
+import { useRiskyMyDefaultPlayerProfile } from '../../../hooks/stores/use-my-player-profiles-store';
 
 
 // interface IHostedP2pLobbyContext extends IHostedP2pLobbyWithStoreData {
@@ -87,7 +87,7 @@ export const P2pHostedLobbyContextProvider = ({
     connectionStatus: hostedLobby.connectionStatus,
     connectionEvents: hostedLobby.connectionEvents,
 
-    peers: hostedLobby.peers,
+    peerIds: hostedLobby.peerIds,
     peerPlayers: hostedLobby.peerPlayers,
     myHostPlayerProfile: hostedLobby.myHostPlayerProfile,
     allPlayerProfiles: hostedLobby.allPlayerProfiles,
@@ -96,10 +96,10 @@ export const P2pHostedLobbyContextProvider = ({
       setLobbyOptions(lobbyOptions);
     },
     
-    txLobbyData: hostedLobby.txLobbyData,
+    txLobbyDetails: hostedLobby.txLobbyDetails,
     txPlayerProfile: hostedLobby.txPlayerProfile,
     rxPlayerProfile: hostedLobby.rxPlayerProfile,
-    refreshConnection: hostedLobby.refreshConnection,
+    // refreshConnection: hostedLobby.refreshConnection,
 
     onSelectGameChoice,
     onTakeSeat,

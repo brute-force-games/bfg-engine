@@ -1,55 +1,117 @@
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
+import { useState } from 'react';
 import { Table, TableColumn } from '../bfg-ui/components/Table';
 import { Card } from '../bfg-ui/components/Card';
 import { Typography } from '../bfg-ui/components/Typography';
-import { ActionTypeChip, SourceChip, TimestampDisplay } from './game-action-formatters';
+import { Checkbox } from '../bfg-ui/components/Checkbox';
+import { ActionTypeChip, SourceChip } from './game-action-formatters';
+import { BfgGameEngineMetadata } from '@bfg-engine/game-metadata/metadata-types';
+import type { GameTableEventWithTransition } from '../../models/game-table/game-table-event';
 
 
 interface IGameActionHistoryComponentProps {
-  gameActions: DbGameTableAction[];
+  gameMetadata: BfgGameEngineMetadata;
+  gameActions: GameTableEventWithTransition[];
 }
 
-export const GameActionHistoryComponent = ({ gameActions }: IGameActionHistoryComponentProps) => {
-  const columns: TableColumn<DbGameTableAction>[] = [
+export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameActionHistoryComponentProps) => {
+  const [showActionDetailsColumn, setShowActionDetailsColumn] = useState(false);
+
+  const gameProcessor = gameMetadata.gameProcessor;
+  const summarizeGameEvent = gameProcessor.summarizeGameEvent;
+
+  const coreColumns: TableColumn<GameTableEventWithTransition>[] = [
     {
       key: 'createdAt',
       label: 'Timestamp',
       sortable: true,
-      width: '180px',
-      render: (timestamp) => <TimestampDisplay timestamp={timestamp} />
+      width: '120px',
+      render: (timestamp) => {
+        const date = new Date(timestamp);
+        const dateStr = date.toLocaleDateString();
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="caption" color="secondary" style={{ fontWeight: 'bold' }}>
+              {dateStr}
+            </Typography>
+            <Typography variant="caption" color="secondary">
+              {timeStr}
+            </Typography>
+          </div>
+        );
+      }
     },
     {
       key: 'source',
       label: 'Source',
       sortable: true,
-      width: '120px',
+      width: '100px',
       render: (source) => <SourceChip source={source} />
     },
     {
       key: 'actionType',
       label: 'Action Type',
       sortable: true,
-      width: '200px',
+      width: '150px',
       render: (actionType) => <ActionTypeChip actionType={actionType} />
-    },
-    {
-      key: 'actionStr',
-      label: 'Action Details',
-      sortable: false,
-      render: (actionStr) => (
-        <Typography 
-          variant="body2" 
-          style={{ 
-            wordBreak: 'break-word', 
+    }
+  ];
+
+  const actionSummaryColumn: TableColumn<GameTableEventWithTransition> = {
+    key: 'actionStr',
+    label: 'Action Summary',
+    sortable: false,
+    width: '250px',
+    render: (actionStr, row) => {
+      console.log("ACTION STR", actionStr);
+      if (!actionStr) {
+        return null;
+      }
+
+      const summary = summarizeGameEvent(row);
+
+      return (
+        <Typography
+          variant="body2"
+          style={{
+            wordBreak: 'break-word',
             whiteSpace: 'pre-wrap',
-            maxWidth: '400px'
+            maxWidth: '250px'
+          }}
+        >
+          {summary}
+        </Typography>
+      )
+    }
+  };
+
+  const actionDetailsColumn: TableColumn<GameTableEventWithTransition> = {
+    key: 'actionStr',
+    label: 'Action Details',
+    sortable: false,
+    width: '250px',
+    render: (actionStr) => {
+      console.log("ACTION STR", actionStr);
+      
+      return (
+        <Typography
+          variant="body2"
+          style={{
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
+            maxWidth: '250px'
           }}
         >
           {actionStr}
         </Typography>
-      )
+      );
     }
-  ];
+  };
+
+  const columns = showActionDetailsColumn
+    ? [...coreColumns, actionDetailsColumn]
+    : [...coreColumns, actionSummaryColumn];
 
   return (
     <Card>
@@ -57,9 +119,16 @@ export const GameActionHistoryComponent = ({ gameActions }: IGameActionHistoryCo
         {/* <Typography variant="h6" gutterBottom>
           Game Action History
         </Typography> */}
-        <Typography variant="body2" color="secondary" style={{ marginBottom: '16px' }}>
-          {gameActions.length} action{gameActions.length !== 1 ? 's' : ''} recorded
-        </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+          <Typography variant="body2" color="secondary">
+            {gameActions.length} action{gameActions.length !== 1 ? 's' : ''} recorded
+          </Typography>
+          <Checkbox
+            label="Show action details"
+            checked={showActionDetailsColumn}
+            onChange={(e) => setShowActionDetailsColumn(e.target.checked)}
+          />
+        </div>
         <Table
           columns={columns}
           data={gameActions}

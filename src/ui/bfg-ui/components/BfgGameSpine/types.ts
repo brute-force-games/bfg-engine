@@ -1,17 +1,23 @@
-import { BfgSupportedGameTitle } from "~/models/game-box-definition";
-import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
-import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
+import { BfgSupportedGameTitle } from "@bfg-engine/models/game-box-definition";
+import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
+import { GameTableSeat, type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
 
 
-export interface BfgGameSpineProps<GIS extends BfgPublicGameImplState> {
+export interface BfgGameSpineProps<GSW extends BfgGameStateForWatcher> {
   gameTitle: BfgSupportedGameTitle;
   gameSourceUrl?: string;
   orientation: 'horizontal' | 'vertical';
-  gameTable: GameTable;
+  gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   nextToActPlayers: GameTableSeat[];
-  gameState: GIS;
-  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
+  gameState: GSW;
+  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: GSW, playerSeat: GameTableSeat) => React.ReactNode;
+}
+
+export interface BfgBasicGameTitleBoxProps {
+  gameTitle: BfgSupportedGameTitle;
+  gameSourceUrl?: string;
+  orientation: 'horizontal' | 'vertical';
 }

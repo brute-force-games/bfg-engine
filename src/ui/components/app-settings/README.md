@@ -55,7 +55,7 @@ import { TableSettingsDialog } from 'bfg-engine';
 <TableSettingsDialog 
   open={isOpen} 
   onClose={() => setIsOpen(false)}
-  gameTableId={tableId}
+  BfgGameTableId={tableId}
   gameTitle="Tic-Tac-Toe" 
 />
 ```
@@ -69,7 +69,7 @@ import { TableSettingsDialog } from 'bfg-engine';
 In the global app bar user menu:
 - **App Settings** - Always enabled, opens immediately
 - **Game Settings** - Disabled by default, enabled when gameContext contains a gameTitle
-- **Table Settings** - Disabled by default, enabled when gameContext contains both gameTitle and gameTableId
+- **Table Settings** - Disabled by default, enabled when gameContext contains both gameTitle and BfgGameTableId
 
 ## Providing Game Context
 
@@ -157,7 +157,7 @@ function GameLobby() {
 ```typescript
 interface OptionalGameContext {
   gameTitle: BfgSupportedGameTitle | null;
-  gameTableId: GameTableId | null;
+  gameTableId: BfgGameTableId | null;
   tableName: string | null;
 }
 ```
@@ -165,7 +165,7 @@ interface OptionalGameContext {
 - **`gameTitle`**: null when not in a game context
 - **`gameTableId`**: null when in a game lobby but not at a specific table
 - **`tableName`**: The name of the game table (null when not at a table, otherwise the lobby name or custom table name)
-- Both gameTitle and gameTableId null: Only App Settings enabled
+- Both gameTitle and BfgGameTableId null: Only App Settings enabled
 - gameTitle only: App Settings + Game Settings enabled
 - Both present: All three settings dialogs enabled
 

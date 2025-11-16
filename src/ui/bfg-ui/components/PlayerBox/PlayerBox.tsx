@@ -1,14 +1,16 @@
 import { Card, Stack, Typography, Avatar } from '@bfg-engine/ui/bfg-ui';
-import { GameTableSeat } from '@bfg-engine/models/game-table/game-table';
+import { GameTableSeat, type GameRoomP2p } from '@bfg-engine/models/game-table/game-room-p2p';
 import styles from './PlayerBox.module.css';
 import { ArrowLeft } from '../../icons';
-import { BfgPublicGameImplState } from '~/models/game-engine/bfg-game-engine-types';
+import type { BfgGameStateForWatcher } from '../../../../game-metadata/metadata-types/game-state-types';
+// import { BfgPublicGameImplState } from '../../../../models/game-engine/bfg-game-engine-types';
 
 
-export interface PlayerBoxProps<GIS extends BfgPublicGameImplState> {
+export interface PlayerBoxProps<GSW extends BfgGameStateForWatcher> {
   playerSeat: GameTableSeat;
-  gameState: GIS;
-  playerDetailsLineFn: (gameState: GIS, playerSeat: GameTableSeat) => React.ReactNode;
+  gameRoom: GameRoomP2p;
+  gameState: GSW;
+  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: GSW, playerSeat: GameTableSeat) => React.ReactNode;
   // playerSymbol: string;
   // gameState: TGameState;
   playerName: string;
@@ -18,8 +20,9 @@ export interface PlayerBoxProps<GIS extends BfgPublicGameImplState> {
   isGameOver: boolean;
 }
 
-export const PlayerBox = <GIS extends BfgPublicGameImplState>({
+export const PlayerBox = <GSW extends BfgGameStateForWatcher>({
   playerSeat,
+  gameRoom,
   gameState,
   playerDetailsLineFn,
   // gameState,
@@ -28,12 +31,12 @@ export const PlayerBox = <GIS extends BfgPublicGameImplState>({
   playerAvatar,
   isMyPlayer,
   isGameOver,
-}: PlayerBoxProps<GIS>) => {
+}: PlayerBoxProps<GSW>) => {
 
-  const playerDetailsLine = playerDetailsLineFn(gameState, playerSeat);
+  const playerDetailsLine = playerDetailsLineFn(gameRoom, gameState, playerSeat);
 
   return (
-    <Card className={styles.playerBox}>
+    <Card className={[styles.playerBox, isPlayerNextToAct ? styles.currentPlayer : ''].filter(Boolean).join(' ')}>
       <Stack direction="row" alignItems="center">
         {/* Player Avatar */}
         <div className={styles.avatarContainer}>

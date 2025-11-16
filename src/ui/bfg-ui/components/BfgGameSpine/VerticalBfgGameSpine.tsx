@@ -1,22 +1,21 @@
 import { Box, PlayersRow, Stack } from "@bfg-engine/ui/bfg-ui";
-import { BfgBasicGameTitleBox } from "./BfgBasicGameTitleBox";
-import { BfgPublicGameImplState } from "~/models/game-engine/bfg-game-engine-types";
+import { BfgBasicGameTitleBoxVertical } from "./BfgBasicGameTitleBoxVertical";
 import { BfgGameSpineProps } from "./types";
+import type { BfgGameStateForWatcher } from "../../../../game-metadata/metadata-types/game-state-types";
 
 
-export const VerticalBfgGameSpine = <GIS extends BfgPublicGameImplState>(props: BfgGameSpineProps<GIS>) => {
-  const { gameTitle, gameSourceUrl, gameTable, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
+export const VerticalBfgGameSpine = <GSW extends BfgGameStateForWatcher>(props: BfgGameSpineProps<GSW>) => {
+  const { gameRoom, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
 
   return (
     <Box>
       <Stack spacing={3} direction="column" style={{ width: '200', height: 68, backgroundColor: 'lightgray' }}>
-        <BfgBasicGameTitleBox
-          gameTitle={gameTitle}
-          gameSourceUrl={gameSourceUrl}
+        <BfgBasicGameTitleBoxVertical
+          {...props}
         />
         <Box style={{ flex: 1, minWidth: 0 }}>
           <PlayersRow
-            gameTable={gameTable}
+            gameRoom={gameRoom}
             allPlayerProfiles={allPlayerProfiles}
             nextToActPlayers={nextToActPlayers}
             gameState={gameState}

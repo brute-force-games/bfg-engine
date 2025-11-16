@@ -1,9 +1,11 @@
 import { Typography } from '../bfg-ui/components/Typography';
 import { Chip } from '../bfg-ui/components/Chip';
-import { DbGameTableAction } from '~/models/game-table/game-table-action';
+import type { GameTableActionSource } from '../../models/game-table/game-table-event';
+// import { DbGameTableAction } from '../../models/game-table/game-table-event';
+
 
 interface ActionTypeChipProps {
-  actionType: DbGameTableAction['actionType'];
+  actionType: GameTableActionSource;
 }
 
 export const ActionTypeChip = ({ actionType }: ActionTypeChipProps) => {
@@ -30,8 +32,9 @@ export const ActionTypeChip = ({ actionType }: ActionTypeChipProps) => {
   );
 };
 
+
 interface SourceChipProps {
-  source: DbGameTableAction['source'];
+  source: GameTableActionSource;
 }
 
 export const SourceChip = ({ source }: SourceChipProps) => {

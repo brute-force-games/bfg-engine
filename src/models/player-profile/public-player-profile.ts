@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { BfgPlayerProfileId } from '../../models/types/bfg-branded-ids';
-// import { createBrandedJsonSchema } from "@bfg-engine/types/core/branded-values/branded-json";
+import { BfgPlayerProfileIdToolbox } from '../types/bfg-branded-uuids';
 
 // Temporary stub until branded-json module is implemented
-const createBrandedJsonSchema = <T extends z.ZodBranded<z.ZodTypeAny, string>>(schema: T) => schema;
+// const createBrandedJsonSchema = <T extends z.ZodBranded<z.ZodTypeAny, string>>(schema: T) => schema;
 
 // Base JWK fields common to all key types
 const BaseJWKSchema = z.object({
@@ -74,7 +73,7 @@ const JsonWebKeySchema = PublicJWKSchema;
  * This can be shared with other players and includes the public keys for verification
  */
 export const PublicPlayerProfileSchema = z.object({
-  id: BfgPlayerProfileId.idSchema,
+  id: BfgPlayerProfileIdToolbox.idSchema,
   handle: z.string().min(4, "Handle must be at least 4 characters long"),
   avatarImageUrl: z.string().optional(),
   
@@ -99,7 +98,14 @@ export type PublicPlayerProfile = z.infer<typeof PublicPlayerProfileSchema>;
 
 
 // First create a branded schema from the object schema
-const PublicPlayerProfileBrandedSchema = z.string().brand('PublicPlayerProfile');
+// const PublicPlayerProfileBrandedSchema = z.string().brand('PublicPlayerProfile');
 // Then create the JSON schema from the branded schema
-export const PublicPlayerProfileJsonStrSchema = createBrandedJsonSchema(PublicPlayerProfileBrandedSchema);
-export type PublicPlayerProfileJsonStr = z.infer<typeof PublicPlayerProfileJsonStrSchema>;
+// export const PublicPlayerProfileJsonStrSchema = createBrandedJsonSchema(PublicPlayerProfileBrandedSchema);
+// export type PublicPlayerProfileJsonStr = z.infer<typeof PublicPlayerProfileJsonStrSchema>;
+
+
+export const SharedPublicPlayerProfileSchema = PublicPlayerProfileSchema.extend({
+  // isShared: z.boolean().default(false),
+});
+
+export type SharedPublicPlayerProfile = z.infer<typeof SharedPublicPlayerProfileSchema>;

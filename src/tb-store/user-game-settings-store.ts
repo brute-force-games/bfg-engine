@@ -4,8 +4,8 @@ import {
   UserGameSettings, 
   UserGameSettingsSchema, 
   DEFAULT_USER_GAME_SETTINGS 
-} from '~/models/user-game-settings';
-import { BfgSupportedGameTitle } from '~/models/game-box-definition';
+} from '../models/user-game-settings';
+import { BfgSupportedGameTitle } from '../models/game-box-definition';
 
 /**
  * TinyBase store for user game settings

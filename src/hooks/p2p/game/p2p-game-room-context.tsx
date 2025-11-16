@@ -1,13 +1,14 @@
 import { createContext, useContext, useRef, useState } from "react";
 import { joinRoom, Room } from "trystero";
-import { useGameHosting } from "~/hooks/games-registry/game-hosting";
-import { GameTable } from "~/models/game-table/game-table";
-import { DbGameTableAction } from "~/models/game-table/game-table-action";
-import { PublicPlayerProfile } from "~/models/player-profile/public-player-profile";
-import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_TABLE_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY, P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY } from "~/ui/components/constants";
+import { useGameHosting } from "@bfg-engine/hooks/games-registry/game-hosting";
+import { type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
+import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY, P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY, P2P_GAME_ROOM_ACTION_KEY } from "@bfg-engine/ui/components/constants";
 import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
-import { GameTableId } from "~/models/types/bfg-branded-ids";
-import { GameTableAccessRole } from "~/models/game-roles";
+import { BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import { GameTableEventForWatcherP2pSchemaToolbox, type GameTableEventForWatcherP2pString } from "../../../models/types/bfg-branded-strings";
 
 
 // Subscription manager for handling multiple handlers per event type
@@ -43,32 +44,9 @@ class SubscriptionManager<T> {
 }
 
 
-/**
- * P2P Game Room Context Value
- * 
- * Provides access to peer-to-peer communication for game rooms.
- * 
- * @example
- * ```tsx
- * const MyComponent = () => {
- *   const { rxPlayerProfile, txPlayerProfile } = useP2pGameRoomContext();
- *   
- *   useEffect(() => {
- *     // Subscribe to player profile updates
- *     const unsubscribe = rxPlayerProfile((profile, peerId) => {
- *       console.log('Received profile from', peerId, profile);
- *     });
- *     
- *     // Clean up subscription on unmount
- *     return unsubscribe;
- *   }, [rxPlayerProfile]);
- *   
- *   return <div>...</div>;
- * };
- * ```
- */
+
 export interface IP2pGameRoomValue {
-  gameTableId: GameTableId;
+  gameTableId: BfgGameTableId;
   requestedRole: GameTableAccessRole;
 
   room: Room;
@@ -78,8 +56,10 @@ export interface IP2pGameRoomValue {
   // Transmit functions
   txPlayerProfile: (playerProfile: PublicPlayerProfile, peer?: PeerId) => void;
   txPlayerActionStr: (playerActionStr: PlayerP2pActionStr) => void;
-  txPublicGameTableData: (gameTable: GameTable) => void;
-  txPublicGameActionsData: (gameActions: DbGameTableAction[]) => void;
+
+  txGameRoom: (gameRoomP2p: GameRoomP2p) => void;
+  // txPublicGameTableData: (gameTable: GameRoomDb) => void;
+  txPublicGameEventsDataStr: (gameEventStrs: GameTableEventForWatcherP2pString[]) => void;
   txPrivatePlayerKnowledgeStr: (privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: PeerId) => void;
 
   // observer, host, player
@@ -88,11 +68,12 @@ export interface IP2pGameRoomValue {
   rxPlayerProfile: (handler: (data: PublicPlayerProfile, peer: PeerId) => void) => (() => void);
 
   // observer, player
-  rxPublicGameTableData: (handler: (data: GameTable, peer: PeerId) => void) => (() => void);
-  rxPublicGameActionsData: (handler: (data: DbGameTableAction[], peer: PeerId) => void) => (() => void);
+  // rxPublicGameTableData: (handler: (data: GameRoomDb, peer: PeerId) => void) => (() => void);
+  rxPublicGameRoomData: (handler: (data: GameRoomP2p, peer: PeerId) => void) => (() => void);
+  rxPublicGameEventsData: (handler: (data: GameTableEventWithTransitionForWatcherP2p[], peer: PeerId) => void) => (() => void);
 
   // player-only
-  rxPrivatePlayerKnowledgeStr: (handler: (data: PrivatePlayerKnowledgeStr, peer: PeerId) => void) => (() => void);
+  // rxPrivatePlayerKnowledgeStr: (handler: (data: PrivatePlayerKnowledgeStr, peer: PeerId) => void) => (() => void);
 
   // host-only
   rxPlayerActionStr: (handler: (data: PlayerP2pActionStr, peer: PeerId) => void) => (() => void);
@@ -100,7 +81,7 @@ export interface IP2pGameRoomValue {
 
 
 export interface IP2pGameRoomContextProviderProps {
-  gameTableId: GameTableId;
+  gameTableId: BfgGameTableId;
   requestedRole: GameTableAccessRole;
   children: React.ReactNode;
 }
@@ -113,22 +94,6 @@ export const P2pGameRoomContextProvider = ({
   children 
 }: IP2pGameRoomContextProviderProps) => {
 
-  // const isValidHost = requestedRole === 'host' && myPlayerProfile;
-
-  // const p2pGame = isValidHost ? 
-  //   useHostedP2pGameWithStore(gameTableId, myPlayerProfile) : 
-  //   useP2pGame({
-  //     gameTableId,
-  //     myPlayerProfile,
-  //     requestedRole,
-  //   });
-
-  // const retVal: IP2pGameValue = {
-  //   ...p2pGame,
-  //   myPlayerProfile,
-  // };
-
-
   // Create room - gets recreated on every render
   const gameHosting = useGameHosting();
   const trysteroConfig = gameHosting.getTrysteroConfig();
@@ -140,12 +105,11 @@ export const P2pGameRoomContextProvider = ({
   const onRoomPeerLeaveManager = useRef(new SubscriptionManager<PeerId>());
   const playerProfileManager = useRef(new SubscriptionManager<PublicPlayerProfile>());
   const playerActionStrManager = useRef(new SubscriptionManager<PlayerP2pActionStr>());
-  const gameTableDataManager = useRef(new SubscriptionManager<GameTable>());
-  const gameActionsDataManager = useRef(new SubscriptionManager<DbGameTableAction[]>());
+  // const gameTableDataManager = useRef(new SubscriptionManager<GameRoomDb>());
+  const gameRoomDataManager = useRef(new SubscriptionManager<GameRoomP2p>());
+  const gameEventsDataManager = useRef(new SubscriptionManager<GameTableEventWithTransitionForWatcherP2p[]>());
   const privatePlayerKnowledgeManager = useRef(new SubscriptionManager<PrivatePlayerKnowledgeStr>());
 
-  console.log('P2pGameRoomContextProvider - gameTableId', gameTableId)
-  
   const room = joinRoom(trysteroConfig, gameTableId, (error: {
     error: string;
     appId: string;
@@ -172,8 +136,9 @@ export const P2pGameRoomContextProvider = ({
   const [txPlayerProfile, rxPlayerProfileRaw] = room.makeAction<PublicPlayerProfile>(P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY)
   const [txPlayerActionStr, rxPlayerActionStrRaw] = room.makeAction<PlayerP2pActionStr>(P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY)
 
-  const [txPublicGameTableData, rxPublicGameTableDataRaw] = room.makeAction<GameTable>(P2P_GAME_TABLE_ACTION_KEY);
-  const [txPublicGameActionsData, rxPublicGameActionsDataRaw] = room.makeAction<DbGameTableAction[]>(P2P_GAME_ACTIONS_ACTION_KEY);
+  // const [txPublicGameTableData, rxPublicGameTableDataRaw] = room.makeAction<GameRoomDb>(P2P_GAME_TABLE_ACTION_KEY);
+  const [txGameRoom, rxGameRoomRaw] = room.makeAction<GameRoomP2p>(P2P_GAME_ROOM_ACTION_KEY);
+  const [txPublicGameEventsDataStr, rxPublicGameEventsDataRawStr] = room.makeAction<GameTableEventForWatcherP2pString[]>(P2P_GAME_ACTIONS_ACTION_KEY);
   const [txPrivatePlayerKnowledgeStr, rxPrivatePlayerKnowledgeStrRaw] = room.makeAction<PrivatePlayerKnowledgeStr>(P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY)
 
   room.onPeerJoin((peer: string) => {
@@ -201,16 +166,23 @@ export const P2pGameRoomContextProvider = ({
     playerActionStrManager.current.notifyData(playerActionStr, peerId);
   });
 
-  rxPublicGameTableDataRaw((gameTable: GameTable, peer: string) => {
+  // rxPublicGameTableDataRaw((gameTable: GameRoomDb, peer: string) => {
+  //   const peerId = PeerIdSchema.parse(peer);
+  //   console.log('🎮 Received game table data from peer:', peerId, gameTable);
+  //   gameTableDataManager.current.notifyData(gameTable, peerId);
+  // });
+
+  rxGameRoomRaw((gameRoomP2p: GameRoomP2p, peer: string) => {
     const peerId = PeerIdSchema.parse(peer);
-    console.log('🎮 Received game table data from peer:', peerId, gameTable);
-    gameTableDataManager.current.notifyData(gameTable, peerId);
+    console.log('🎮 Received game room data from peer:', peerId, gameRoomP2p);
+    gameRoomDataManager.current.notifyData(gameRoomP2p, peerId);
   });
 
-  rxPublicGameActionsDataRaw((gameActions: DbGameTableAction[], peer: string) => {
+  rxPublicGameEventsDataRawStr((gameEventStrs: GameTableEventForWatcherP2pString[], peer: string) => {
     const peerId = PeerIdSchema.parse(peer);
-    console.log('🎮 Received game actions data from peer:', peerId, gameActions);
-    gameActionsDataManager.current.notifyData(gameActions, peerId);
+    console.log('🎮 Received game events data from peer:', peerId, gameEventStrs);
+    const gameEvents = gameEventStrs.map(GameTableEventForWatcherP2pSchemaToolbox.hydrateFromString);
+    gameEventsDataManager.current.notifyData(gameEvents, peerId);
   });
 
   rxPrivatePlayerKnowledgeStrRaw((privatePlayerKnowledge: PrivatePlayerKnowledgeStr, peer: string) => {
@@ -228,17 +200,21 @@ export const P2pGameRoomContextProvider = ({
     return playerActionStrManager.current.subscribeData(handler);
   };
 
-  const rxPublicGameTableData = (handler: (data: GameTable, peer: PeerId) => void): (() => void) => {
-    return gameTableDataManager.current.subscribeData(handler);
+  const rxPublicGameRoomData = (handler: (data: GameRoomP2p, peer: PeerId) => void): (() => void) => {
+    return gameRoomDataManager.current.subscribeData(handler);
   };
 
-  const rxPublicGameActionsData = (handler: (data: DbGameTableAction[], peer: PeerId) => void): (() => void) => {
-    return gameActionsDataManager.current.subscribeData(handler);
+  // const rxGameRoom = (handler: (data: GameRoomP2p, peer: PeerId) => void): (() => void) => {
+  //   return gameRoomDataManager.current.subscribeData(handler);
+  // };
+
+  const rxPublicGameEventsData = (handler: (data: GameTableEventWithTransitionForWatcherP2p[], peer: PeerId) => void): (() => void) => {
+    return gameEventsDataManager.current.subscribeData(handler);
   };
 
-  const rxPrivatePlayerKnowledgeStr = (handler: (data: PrivatePlayerKnowledgeStr, peer: PeerId) => void): (() => void) => {
-    return privatePlayerKnowledgeManager.current.subscribeData(handler);
-  };
+  // const rxPrivatePlayerKnowledgeStr = (handler: (data: PrivatePlayerKnowledgeStr, peer: PeerId) => void): (() => void) => {
+  //   return privatePlayerKnowledgeManager.current.subscribeData(handler);
+  // };
 
   const onRoomPeerJoin = (handler: (peer: PeerId) => void): (() => void) => {
     return onRoomPeerJoinManager.current.subscribe(handler);
@@ -261,8 +237,9 @@ export const P2pGameRoomContextProvider = ({
 
     txPlayerProfile,
     txPlayerActionStr,
-    txPublicGameTableData,
-    txPublicGameActionsData,
+    // txPublicGameTableData,
+    txGameRoom,
+    txPublicGameEventsDataStr,
     txPrivatePlayerKnowledgeStr,
 
     onRoomPeerJoin,
@@ -270,9 +247,10 @@ export const P2pGameRoomContextProvider = ({
 
     rxPlayerProfile,
     rxPlayerActionStr,
-    rxPublicGameTableData,
-    rxPublicGameActionsData,
-    rxPrivatePlayerKnowledgeStr,
+    // rxPublicGameTableData,
+    rxPublicGameRoomData,
+    rxPublicGameEventsData,
+    // rxPrivatePlayerKnowledgeStr,
   };
 
   return (

@@ -1,4 +1,4 @@
-import { PlayerProfileId } from "~/models/types/bfg-branded-ids";
+import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
 import { Chip } from "../bfg-ui/components/Chip/Chip";
 

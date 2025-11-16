@@ -1,5 +1,5 @@
 // import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
-// import { GameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
+// import { BfgGameTableId, PlayerProfileId } from "../../../models/types/bfg-branded-ids";
 // import { DbGameTableAction } from "../../../models/game-table/game-table-action";
 // import { GameTable, GameTableSeat } from "../../../models/game-table/game-table";
 // import { matchPlayerToSeat } from "../../../ops/game-table-ops/player-seat-utils";
@@ -32,7 +32,7 @@
 
 
 // export const usePlayerP2pGame = (
-//   gameTableId: GameTableId,
+//   gameTableId: BfgGameTableId,
 //   myPlayerProfile: PrivatePlayerProfile,
 // ): IPlayerP2pGame | null => {
 
@@ -49,8 +49,8 @@
 
 //   // const p2pGameTable = p2pGame.gameTable;
 
-//   // if (p2pGameTable?.id !== gameTableId) {
-//   //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGameTable?.id + ' !== ' + gameTableId);
+//   // if (p2pGameTable?.id !== BfgGameTableId) {
+//   //   throw new Error('P2P game table ID does not match the game table ID: ' + p2pGameTable?.id + ' !== ' + BfgGameTableId);
 //   // }
 
 //   const myPlayerSeat = gameTable === null ? undefined : matchPlayerToSeat(myPlayerProfile.id, gameTable);
