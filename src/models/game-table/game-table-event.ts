@@ -3,7 +3,7 @@ import { BfgGameTableIdToolbox } from "../types/bfg-branded-uuids";
 import { BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
 import { BfgGameActionOutcomeSchema, BfgGameActionSchema } from "../../game-metadata/metadata-types/game-action-types";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
-import { createGameStateTransitionForDbSchema } from "./game-board-transition-db";
+import { createGameStateTransitionForDbSchema } from "./game-table-event-db";
 
 
 export const HostActionSources = [
@@ -58,7 +58,7 @@ export const GameTableEventTypeSchema = z.enum([
 
 export const GameTableEventDataSchema = z.object({
   stepIndex: z.number(),
-  // gameTableEventId: BfgGameTableEventIdToolbox.idSchema,
+  
   source: GameTableActionSourceSchema,
   eventType: GameTableEventTypeSchema,
   createdAt: z.number(),

@@ -14,10 +14,14 @@ export type BfgGameActionSource = typeof BfgGameActionSource[number];
 
 export const BfgGameEventSchema = z.object({
   source: z.enum(BfgGameActionSource),
-});
+})
+.catchall(z.unknown())
+.describe("BfgGameEventSchema");
 export type BfgGameEvent = z.infer<typeof BfgGameEventSchema>;
 
-export const BfgGameEventOutcomeSchema = z.object({});
+export const BfgGameEventOutcomeSchema = z.object({
+  description: z.string(),
+}).describe("BfgGameEventOutcomeSchema");
 export type BfgGameEventOutcome = z.infer<typeof BfgGameEventOutcomeSchema>;
 
 

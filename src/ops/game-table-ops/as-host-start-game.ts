@@ -7,7 +7,7 @@ import { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
 import { ROOM_PHASE_GAME_IN_PROGRESS } from "../../models/game-table/table-phase";
 import { addNewHostedGameRoom } from "../../tb-store/games-archives-store";
 // import { createGameTableStepSchemaForGame, type GameTableStateDbStep, type GameTableStep } from "../../models/game-table/game-table-event";
-import { createGameStateTransitionForDbSchema } from "../../models/game-table/game-board-transition-db";
+import { createGameStateTransitionForDbSchema } from "../../models/game-table/game-table-event-db";
 import { createGameTableEventWithTransitionSchema } from "../../models/game-table/game-table-event";
 
 
@@ -168,7 +168,10 @@ export const asHostStartNewGame = async (
 
   const gameStateTransition: GameStateTransition = {
     event: startGameAction,
-    change: startGameOutcome,
+    change: {
+      ...startGameOutcome,
+      description: startGameOutcome.description,
+    },
     nextBoardState: startGameState,
   }
 

@@ -1,6 +1,6 @@
 import { BfgGameRoomIdToolbox } from "../types/bfg-branded-uuids";
 import { GameRoomDbSchema } from "./game-room-p2p";
-import { createGameBoardEventForDbSchema } from "./game-board-transition-db";
+import { createGameBoardEventForDbSchema } from "./game-table-event-db";
 import { z } from "zod";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
 

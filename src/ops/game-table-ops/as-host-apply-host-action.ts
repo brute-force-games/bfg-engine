@@ -4,7 +4,7 @@ import { RoomPhase } from "../../models/game-table/table-phase";
 import type { IGameRegistry } from "../../game-metadata/games-registry";
 import type { BfgGameActionByHost, BfgGameHostActionOutcome } from "../../game-metadata/metadata-types/game-action-types";
 import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
-import type { GameStateTransitionForDb } from "../../models/game-table/game-board-transition-db";
+import type { GameStateTransitionForDb } from "../../models/game-table/game-table-event-db";
 
 
 export type HostApplyHostActionResult = {
@@ -54,7 +54,10 @@ export const asHostApplyHostAction = async (
 
   const transition: GameStateTransitionForDb = {
     event: hostAction,
-    change: afterActionResult.hostActionOutcome,
+    change: {
+      ...afterActionResult.hostActionOutcome,
+      description: afterActionSummary,
+    },
     nextBoardState: updatedGameState,
   }
 

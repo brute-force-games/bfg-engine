@@ -409,11 +409,6 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   const playerGameRoom = hostedGameRoom;
   const watcherGameRoom = hostedGameRoom;
 
-  const watcherGameEvents = dbBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
-    .hostEventTransitionToWatcherAccessLevelAdapter(boardEvent));
-
-  const latestWatcherGameEvent = watcherGameEvents[watcherGameEvents.length - 1];
-
   const myPlayerGameEvents = myPlayerSeat ? 
     dbBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
       .hostEventTransitionToPlayerAccessLevelAdapter(myPlayerSeat, boardEvent)) :
@@ -423,7 +418,12 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     myPlayerGameEvents[myPlayerGameEvents.length - 1] : 
     null;
 
-  // const latestGameEventForPlayer = gameMetadata.accessLevelAdapters
+  const watcherGameEvents = dbBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
+    .hostEventTransitionToWatcherAccessLevelAdapter(boardEvent));
+
+  const latestWatcherGameEvent = watcherGameEvents[watcherGameEvents.length - 1];
+
+    // const latestGameEventForPlayer = gameMetadata.accessLevelAdapters
   //   .hostEventTransitionToPlayerAccessLevelAdapter(hostedGameSnapshot);
 
   // const latestGameEventForHost = gameMetadata.accessLevelAdapters

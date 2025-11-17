@@ -6,7 +6,7 @@ import type { GameRoomDb } from '../models/game-table/game-room-p2p';
 import { GameRoomDbSchema } from '../models/game-table/game-room-p2p';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
 import { useRow } from 'tinybase/ui-react';
-import { createGameBoardEventForDbSchema, type GameBoardEventForDb } from '../models/game-table/game-board-transition-db';
+import { createGameBoardEventForDbSchema, type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
 import { createGameRoomSnapshotForDbSchema, type GameRoomSnapshotForDb } from '../models/game-table/game-room-snapshot-db';
 import { getGameMetadata } from '../game-metadata/games-registry';
 import type { GameTableEventWithTransition } from '../models/game-table/game-table-event';

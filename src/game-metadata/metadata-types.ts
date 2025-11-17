@@ -4,8 +4,9 @@ import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher
 import type { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-definition";
 // import type { CompleteGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameMetadataType } from "./metadata-defs";
-import type { BfgGameEngineAccessLevelAdapters, IBfgGameEngineAccessLevelAdapters, IBfgGameProcessor } from "./factories/complete-game-processor-factory";
+import type { BfgGameEngineAccessLevelAdapters, IBfgGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameEngineComponents } from "./ui/bfg-game-components";
+import type { BfgGameEvent, BfgGameEventOutcome } from "./metadata-types/game-action-types";
 // import type { IBfgGameEngineAccessLevelConverters } from "./ui/bfg-game-components";
 
 
@@ -170,24 +171,24 @@ export const createBfgEngineMetadataSchemas = <
   GSH extends z.ZodType<BfgGameStateForHost>,
   GSP extends z.ZodType<BfgGameStateForPlayer>,
   GSW extends z.ZodType<BfgGameStateForWatcher>,
-  // GEV extends z.ZodType<BfgGameEvent>,
-  // GEVO extends z.ZodType<BfgGameEventOutcome>,
+  GEv extends z.ZodType<BfgGameEvent>,
+  GEvO extends z.ZodType<BfgGameEventOutcome>,
   // HGA extends z.ZodType<BfgGameActionByHost>,
   // PGA extends z.ZodType<BfgGameActionByPlayer>,
 >({
   hostGameStateSchema,
   playerGameStateSchema,
   watcherGameStateSchema,
-  // gameEventSchema,
-  // gameEventOutcomeSchema,
+  gameEventSchema,
+  gameEventOutcomeSchema,
   // hostActionSchema,
   // playerActionSchema,
 }: {
   hostGameStateSchema: GSH;
   playerGameStateSchema: GSP;
   watcherGameStateSchema: GSW;
-  // gameEventSchema: GEV;
-  // gameEventOutcomeSchema: GEVO;
+  gameEventSchema: GEv;
+  gameEventOutcomeSchema: GEvO;
   // hostActionSchema: HGA;
   // playerActionSchema: PGA;
 }) => {
@@ -195,8 +196,9 @@ export const createBfgEngineMetadataSchemas = <
     hostGameStateSchema,
     playerGameStateSchema,
     watcherGameStateSchema,
-    // gameEventSchema,
-    // gameEventOutcomeSchema,
+
+    gameEventSchema,
+    gameEventOutcomeSchema,
     // hostActionSchema,
     // playerActionSchema,
   };

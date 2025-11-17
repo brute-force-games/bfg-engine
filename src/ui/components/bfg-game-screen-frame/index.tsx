@@ -10,7 +10,10 @@ import { GameLogPanel } from "../game-log-panel";
 import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { AppBarTabsConfig } from "../bfg-app-bar/tabs-config";
 import { createGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
+import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
 import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
+import { convertWatcherEventToBoardEvent } from "../../../models/game-table/game-table-event-converter";
+
 
 // Fixed width for side panels (log panel and game spine)
 const SIDE_PANEL_WIDTH = 150;
@@ -41,7 +44,7 @@ interface BfgGameScreenFrameProps<TTabId extends string = string> {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   gameState: BfgGameStateForWatcher | null;
-  boardEvents: GameTableEventWithTransition[];
+  boardEvents: GameTableEventWithTransitionForWatcherP2p[];
 
   children: React.ReactNode;
 }
@@ -121,9 +124,13 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
       playerDetailsLineFn={playerDetailsLineFn}
     />;
     
+  const convertedBoardEvents: GameTableEventWithTransition[] = boardEvents.map(event => 
+    convertWatcherEventToBoardEvent(event, gameMetadata)
+  );
+
   const bfgGameLogPanel = (
     <GameLogPanel
-      boardEvents={boardEvents}
+      boardEvents={convertedBoardEvents}
     />
   );
 
