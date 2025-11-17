@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { BfgIdTypeKeyMethodBrandSchema, BfgIdTypePrefixBrandSchema } from "./prefix-key-methods";
+import { createBfgBrandedPrefixKeyStringToolbox } from "./branded-prefix-key-str";
+import { createBfgBrandedStringToolbox } from "./bfg-branded-string-utils";
 
 
 export const BfgNumberIndexMethodBrandKey = "bfg-number-index-methodology" as const;
@@ -14,6 +16,12 @@ export type BfgNumberIndexMethodType = z.infer<typeof BfgNumberIndexMethodTypeSc
 
 export const BfgNumberIndexPrefixTypeSchema = BfgIdTypePrefixBrandSchema.brand(BfgNumberIndexMethodBrandKey);
 export type BfgNumberIndexPrefixType = z.infer<typeof BfgNumberIndexPrefixTypeSchema>;
+
+// export const BfgNumberIndexPrefixTypeToolbox = createBfgBrandedStringToolbox(BfgNumberIndexMethodBrandKey);
+// export type BfgNumberIndexPrefixType = ReturnType<typeof BfgNumberIndexPrefixTypeToolbox.createBrandedString>;
+
+
+
 
 export const PlayerSeatPrefix = "p" as BfgNumberIndexPrefixType;
 

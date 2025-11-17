@@ -127,13 +127,22 @@ export type PlayerSeatGameState<
   playerGameState: GSP,
 };
 
-export interface IBfgGameEngineAccessLevelConverters<
-  GSH extends BfgGameStateForHost,
-  GSP extends BfgGameStateForPlayer,
-  GSW extends BfgGameStateForWatcher,
-> {
-  hostToPlayerSeatGameStates: (gameTable: GameRoomDb, hostState: GSH) => ReadonlyArray<PlayerSeatGameState<GSP>>;
-  hostToWatcherAccessLevel: (hostState: GSH) => GSW;
+export interface IBfgGameEngineAccessLevelConverters
+// <
+//   GSH extends BfgGameStateForHost,
+//   GSP extends BfgGameStateForPlayer,
+//   GSW extends BfgGameStateForWatcher,
+// >
+{
+  hostToPlayerSeatGameStates: <
+    GSH extends BfgGameStateForHost,
+    GSP extends BfgGameStateForPlayer,
+  >(gameRoom: GameRoomDb, hostState: GSH) => ReadonlyArray<PlayerSeatGameState<GSP>>;
+
+  hostToWatcherAccessLevel: <
+    GSH extends BfgGameStateForHost,
+    GSW extends BfgGameStateForWatcher,
+  >(hostState: GSH) => GSW;
 }
 
 

@@ -9,14 +9,22 @@ import type { BfgIdTypeKeyMethodBrand, BfgIdTypePrefixBrand } from "./prefix-key
 // export const KeyMethodologyBrandSchema = z.string().brand("bfg-key-methodology");
 // export type KeyMethodologyBrand = z.infer<typeof KeyMethodologyBrandSchema>;
 
+export const RegexableStringSchema = z.string().brand("regexable-string");
+export type RegexableString = z.infer<typeof RegexableStringSchema>;
+
+
 
 export interface IKeyMethodology<
   P extends BfgIdTypePrefixBrand,
   KM extends BfgIdTypeKeyMethodBrand,
 > {
   idPrefix: P;
+  createIdPrefixRegexStr: (idPrefix: P) => RegexableString;
+
+  separatorStr: RegexableString;
+
+  keyRegexStr: RegexableString;
   generateRandomKey: () => KM;
-  keyRegexStr: string;
 }
 
 
@@ -26,6 +34,7 @@ export interface IBfgBrandedPrefixKeyStringToolbox<
 > {
   idSchema: BrandedPrefixKeyStringSchema<P, KM>;
   idPrefix: P;
+  // idPrefixRegexStr: P;
 
   keyMethodology: IKeyMethodology<P, KM>;
 
@@ -38,7 +47,7 @@ export interface IBfgBrandedPrefixKeyStringToolbox<
 
 const createPrefixKeyStringRegex = <P extends BfgIdTypePrefixBrand>(prefixStr: P, keyRegexStr: string) => {
   return new RegExp(
-    `^${prefixStr}_${keyRegexStr}$`
+    `^${prefixStr}${keyRegexStr}$`
   );
 };
 
@@ -58,16 +67,20 @@ export const createRawBrandedPrefixKeyStringSchema = <
   KM extends BfgIdTypeKeyMethodBrand
 >(keyMethodology: IKeyMethodology<P, KM>) => {
 
-  const { idPrefix, keyRegexStr } = keyMethodology;
+  const { keyRegexStr } = keyMethodology;
+
+  const { idPrefix, separatorStr } = keyMethodology;
+  const idPrefixRegexStr = keyMethodology.createIdPrefixRegexStr(idPrefix);
 
   const keyRegex = new RegExp(
-    `^${idPrefix}_${keyRegexStr}$`
+    `^${idPrefixRegexStr}${separatorStr}${keyRegexStr}$`
   );
 
   const retVal = z.string()
     .regex(keyRegex)
-    .brand(idPrefix)
-    .brand(keyMethodology.keyRegexStr);
+    .brand(idPrefixRegexStr)
+    .brand(keyMethodology.keyRegexStr)
+    .describe(`Branded prefix key string for '${idPrefixRegexStr}' [${separatorStr}] with key regex '${keyRegexStr}'`);
 
   return retVal;
 };
@@ -87,12 +100,14 @@ export const createBfgBrandedPrefixKeyStringToolbox = <P extends BfgIdTypePrefix
   keyMethodology: IKeyMethodology<P, KM>
 ): IBfgBrandedPrefixKeyStringToolbox<P, KM> => {
 
-  const { idPrefix, } = keyMethodology;
+  const { idPrefix, separatorStr } = keyMethodology;
   const bfgBrandedSchema = createRawBrandedPrefixKeyStringSchema(keyMethodology);
 
+  const randomKeyValue = keyMethodology.generateRandomKey();
+
   const createValidatedId = (idValue: string) => createValidatedBrandedPrefixKeyStringValue(bfgBrandedSchema, idValue);
-  const createId = () => createBrandedPrefixKeyStringValue(idPrefix, keyMethodology.generateRandomKey());
-  const createdIdForKey = (key: KM) => createBrandedPrefixKeyStringValue(idPrefix, key);
+  const createId = () => createBrandedPrefixKeyStringValue(idPrefix, separatorStr, randomKeyValue);
+  const createdIdForKey = (key: KM) => createBrandedPrefixKeyStringValue(idPrefix, separatorStr, key);
   const parseId = (id: string) => parseBrandedPrefixKeyStringValueFromSchema(bfgBrandedSchema, id as P);
 
   const toolbox: IBfgBrandedPrefixKeyStringToolbox<P, KM> = {
@@ -117,13 +132,13 @@ export const createBrandedPrefixKeyStringValue = <
   KM extends BfgIdTypeKeyMethodBrand
 >(
   idPrefix: P, 
-  key: KM
+  separatorStr: RegexableString,
+  keyValue: KM
 ): BrandedPrefixKeyString<P, KM> => {
-  
-  const retVal = `${idPrefix}_${key}`;
+
+  const retVal = `${idPrefix}${separatorStr}${keyValue}`;
   return retVal as BrandedPrefixKeyString<P, KM>;
 }
-
 
 
 export const createValidatedBrandedPrefixKeyStringValue = <
@@ -134,8 +149,12 @@ export const createValidatedBrandedPrefixKeyStringValue = <
   idValue: string
 ): BrandedPrefixKeyString<P, KM> => {
   
-  const retVal = schema.parse(idValue);
-  return retVal as BrandedPrefixKeyString<P, KM>;
+  // const retVal = schema.parse(idValue);
+  const retVal = schema.safeParse(idValue);
+  if (!retVal.success) {
+    throw new Error(`Unable to create valid prefix key string value: ${idValue} against schema: ${schema.description}`);
+  }
+  return retVal.data as BrandedPrefixKeyString<P, KM>;
 }
 
 

@@ -4,9 +4,7 @@ import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher
 import type { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-definition";
 // import type { CompleteGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameMetadataType } from "./metadata-defs";
-import type { StringifiedZod } from "../models/stringified-zod";
-import type { IBfgGameEngineAccessLevelAdapters, IBfgGameProcessor } from "./factories/complete-game-processor-factory";
-import type { BfgGameActionByHost, BfgGameActionByPlayer, BfgGameEvent, BfgGameEventOutcome } from "./metadata-types/game-action-types";
+import type { BfgGameEngineAccessLevelAdapters, IBfgGameEngineAccessLevelAdapters, IBfgGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameEngineComponents } from "./ui/bfg-game-components";
 // import type { IBfgGameEngineAccessLevelConverters } from "./ui/bfg-game-components";
 
@@ -129,35 +127,128 @@ export interface ICompleteTypesForGameMetadata <
 // };
 
 
+// export const createBfgEngineMetadataSchemas = <
+//   GSH extends z.ZodType<BfgGameStateForHost>,
+//   GSP extends z.ZodType<BfgGameStateForPlayer>,
+//   GSW extends z.ZodType<BfgGameStateForWatcher>,
+//   // GEV extends z.ZodType<BfgGameEvent>,
+//   // GEVO extends z.ZodType<BfgGameEventOutcome>,
+//   // HGA extends z.ZodType<BfgGameActionByHost>,
+//   // PGA extends z.ZodType<BfgGameActionByPlayer>,
+// >({
+//   hostGameStateSchema,
+//   playerGameStateSchema,
+//   watcherGameStateSchema,
+//   // gameEventSchema,
+//   // gameEventOutcomeSchema,
+//   // hostActionSchema,
+//   // playerActionSchema,
+// }: {
+//   hostGameStateSchema: GSH;
+//   playerGameStateSchema: GSP;
+//   watcherGameStateSchema: GSW;
+//   // gameEventSchema: GEV;
+//   // gameEventOutcomeSchema: GEVO;
+//   // hostActionSchema: HGA;
+//   // playerActionSchema: PGA;
+// }) => {
+//   return {
+//     hostGameStateSchema,
+//     playerGameStateSchema,
+//     watcherGameStateSchema,
+//     // gameEventSchema,
+//     // gameEventOutcomeSchema,
+//     // hostActionSchema,
+//     // playerActionSchema,
+//   };
+// };
+
+// export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createBfgEngineMetadataSchemas>;
+
+
 export const createBfgEngineMetadataSchemas = <
   GSH extends z.ZodType<BfgGameStateForHost>,
   GSP extends z.ZodType<BfgGameStateForPlayer>,
   GSW extends z.ZodType<BfgGameStateForWatcher>,
-  GEV extends z.ZodType<BfgGameEvent>,
-  GEVO extends z.ZodType<BfgGameEventOutcome>,
-  HGA extends z.ZodType<BfgGameActionByHost>,
-  PGA extends z.ZodType<BfgGameActionByPlayer>,
->(
-  hostGameStateSchema: GSH,
-  playerGameStateSchema: GSP,
-  watcherGameStateSchema: GSW,
-  gameEventSchema: GEV,
-  gameEventOutcomeSchema: GEVO,
-  hostActionSchema: HGA,
-  playerActionSchema: PGA,
-) => {
+  // GEV extends z.ZodType<BfgGameEvent>,
+  // GEVO extends z.ZodType<BfgGameEventOutcome>,
+  // HGA extends z.ZodType<BfgGameActionByHost>,
+  // PGA extends z.ZodType<BfgGameActionByPlayer>,
+>({
+  hostGameStateSchema,
+  playerGameStateSchema,
+  watcherGameStateSchema,
+  // gameEventSchema,
+  // gameEventOutcomeSchema,
+  // hostActionSchema,
+  // playerActionSchema,
+}: {
+  hostGameStateSchema: GSH;
+  playerGameStateSchema: GSP;
+  watcherGameStateSchema: GSW;
+  // gameEventSchema: GEV;
+  // gameEventOutcomeSchema: GEVO;
+  // hostActionSchema: HGA;
+  // playerActionSchema: PGA;
+}) => {
   return {
     hostGameStateSchema,
     playerGameStateSchema,
     watcherGameStateSchema,
-    gameEventSchema,
-    gameEventOutcomeSchema,
-    hostActionSchema,
-    playerActionSchema,
+    // gameEventSchema,
+    // gameEventOutcomeSchema,
+    // hostActionSchema,
+    // playerActionSchema,
   };
 };
-
 export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createBfgEngineMetadataSchemas>;
+
+
+
+
+export interface IBfgGenericEngineMetadataSchemas <
+  GSH extends z.ZodType<BfgGameStateForHost>,
+  GSP extends z.ZodType<BfgGameStateForPlayer>,
+  GSW extends z.ZodType<BfgGameStateForWatcher>
+> {
+  hostGameStateSchema: GSH;
+  playerGameStateSchema: GSP;
+  watcherGameStateSchema: GSW;
+}
+
+
+// export type BfgGenericEngineMetadataSchemas <
+//   GSH extends z.ZodType<BfgGameStateForHost>,
+//   GSP extends BfgGameStateForPlayer,
+//   GSW extends BfgGameStateForWatcher
+// > = {
+//   // schemas: {
+//     hostGameStateSchema: GSH
+//     playerGameStateSchema: GSP;
+//     watcherGameStateSchema: GSW;
+//     // watcherGameStateSchema: GSW;
+//   // };
+// };
+
+
+// export type BfgGenericEngineMetadataSchemas <
+//   GSH extends z.ZodType<BfgGameStateForHost>,
+//   GSP extends z.ZodType<BfgGameStateForPlayer>,
+//   GSW extends z.ZodType<BfgGameStateForWatcher>,
+//   GEV extends z.ZodType<BfgGameEvent>,
+//   GEVO extends z.ZodType<BfgGameEventOutcome>,
+//   HGA extends z.ZodType<BfgGameActionByHost>,
+//   PGA extends z.ZodType<BfgGameActionByPlayer>,
+// >
+// = {
+//   hostGameStateSchema: GSH,
+//   playerGameStateSchema: GSP,
+//   watcherGameStateSchema: GSW,
+//   gameEventSchema: GEV,
+//   gameEventOutcomeSchema: GEVO,
+//   hostActionSchema: HGA,
+//   playerActionSchema: PGA,
+// }
 
 
 // export type BfgGenericEngineMetadataSchemas = {
@@ -168,32 +259,32 @@ export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createBfgEngineM
 //   gameEventOutcomeSchema: z.ZodType<BfgGameEventOutcome>;
 // };
 
-export interface IBfgEngineMetadataStringifiers<
-  GSH extends BfgGameStateForHost,
-  GSP extends BfgGameStateForPlayer,
-  GSW extends BfgGameStateForWatcher,
-  GSE extends BfgGameEvent,
-  GSEO extends BfgGameEventOutcome,
-  // PGA extends BfgGameActionByPlayer,
-  // HGA extends BfgGameActionByHost,
-> {
-  gameEventStringifier: StringifiedZod<z.ZodSchema<GSE>, 'gameEvent'>;
-  gameEventOutcomeStringifier: StringifiedZod<z.ZodSchema<GSEO>, 'gameEventOutcome'>;
-  // gameStateStringifier: StringifiedZod<z.ZodSchema<GSS>, 'gameState'>;
+// export interface IBfgEngineMetadataStringifiers<
+//   GSH extends BfgGameStateForHost,
+//   GSP extends BfgGameStateForPlayer,
+//   GSW extends BfgGameStateForWatcher,
+//   GSE extends BfgGameEvent,
+//   GSEO extends BfgGameEventOutcome,
+//   // PGA extends BfgGameActionByPlayer,
+//   // HGA extends BfgGameActionByHost,
+// > {
+//   gameEventStringifier: StringifiedZod<z.ZodSchema<GSE>, 'gameEvent'>;
+//   gameEventOutcomeStringifier: StringifiedZod<z.ZodSchema<GSEO>, 'gameEventOutcome'>;
+//   // gameStateStringifier: StringifiedZod<z.ZodSchema<GSS>, 'gameState'>;
   
-  hostGameStateStringifier: StringifiedZod<z.ZodSchema<GSH>, 'hostGameState'>;
-  playerGameStateStringifier: StringifiedZod<z.ZodSchema<GSP>, 'playerGameState'>;
-  watcherGameStateStringifier: StringifiedZod<z.ZodSchema<GSW>, 'watcherGameState'>;
-  // hostActionStringifier: StringifiedZod<z.ZodSchema<HGA>, 'hostAction'>;
-  // playerActionStringifier: StringifiedZod<z.ZodSchema<PGA>, 'playerAction'>;
-  // hostActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GHAO>, 'hostActionOutcome'>;
-  // playerActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GAPO>, 'playerActionOutcome'>;
-  // watcherGameStateStringifier: StringifiedZod<GSW, 'watcherGameState'>;
-  // hostActionStringifier: StringifiedZod<HGA, 'hostAction'>;
-  // playerActionStringifier: StringifiedZod<PGA, 'playerAction'>;
-  // hostActionOutcomeStringifier: StringifiedZod<GHAO, 'hostActionOutcome'>;
-  // playerActionOutcomeStringifier: StringifiedZod<GAPO, 'playerActionOutcome'>;
-}
+//   hostGameStateStringifier: StringifiedZod<z.ZodSchema<GSH>, 'hostGameState'>;
+//   playerGameStateStringifier: StringifiedZod<z.ZodSchema<GSP>, 'playerGameState'>;
+//   watcherGameStateStringifier: StringifiedZod<z.ZodSchema<GSW>, 'watcherGameState'>;
+//   // hostActionStringifier: StringifiedZod<z.ZodSchema<HGA>, 'hostAction'>;
+//   // playerActionStringifier: StringifiedZod<z.ZodSchema<PGA>, 'playerAction'>;
+//   // hostActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GHAO>, 'hostActionOutcome'>;
+//   // playerActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GAPO>, 'playerActionOutcome'>;
+//   // watcherGameStateStringifier: StringifiedZod<GSW, 'watcherGameState'>;
+//   // hostActionStringifier: StringifiedZod<HGA, 'hostAction'>;
+//   // playerActionStringifier: StringifiedZod<PGA, 'playerAction'>;
+//   // hostActionOutcomeStringifier: StringifiedZod<GHAO, 'hostActionOutcome'>;
+//   // playerActionOutcomeStringifier: StringifiedZod<GAPO, 'playerActionOutcome'>;
+// }
 
 
 // export interface IBfgEngineMetadataEncoders<
@@ -221,31 +312,31 @@ export interface IBfgEngineMetadataStringifiers<
 // }
 
 
-export interface IBfgGameCompleteMetadata 
-// <
-//   GSHSchema extends z.ZodType<BfgGameStateForHost>,
-//   GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
-//   GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
-//   GEVSchema extends z.ZodType<BfgGameEvent>,
-//   GEOVSchema extends z.ZodType<BfgGameEventOutcome>,
-//   // PGA extends BfgGameActionByPlayer,
-//   // HGA extends BfgGameActionByHost
-//   // AllPGA extends AllPGAExt,
-// > 
-{
-  metadataType: BfgGameMetadataType;
-  gameTitle: BfgSupportedGameTitle;
-  definition: GameDefinition;
-  // gameStateAccessTypes: ICompleteTypesForGameMetadata<GSH, GSP, GSW>;
+// export interface IBfgGameCompleteMetadata 
+// // <
+// //   GSHSchema extends z.ZodType<BfgGameStateForHost>,
+// //   GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
+// //   GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
+// //   GEVSchema extends z.ZodType<BfgGameEvent>,
+// //   GEOVSchema extends z.ZodType<BfgGameEventOutcome>,
+// //   // PGA extends BfgGameActionByPlayer,
+// //   // HGA extends BfgGameActionByHost
+// //   // AllPGA extends AllPGAExt,
+// // > 
+// {
+//   metadataType: BfgGameMetadataType;
+//   gameTitle: BfgSupportedGameTitle;
+//   definition: GameDefinition;
+//   // gameStateAccessTypes: ICompleteTypesForGameMetadata<GSH, GSP, GSW>;
 
-  schemas: BfgGenericEngineMetadataSchemas;
-  // encoders: IBfgEngineMetadataEncoders<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
-  // stringifiers: IBfgEngineMetadataStringifiers<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
-  // accessLevelConverters: IBfgGameEngineAccessLevelConverters<GSH, GSP, GSW>;
+//   schemas: BfgGenericEngineMetadataSchemas;
+//   // encoders: IBfgEngineMetadataEncoders<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
+//   // stringifiers: IBfgEngineMetadataStringifiers<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
+//   // accessLevelConverters: IBfgGameEngineAccessLevelConverters<GSH, GSP, GSW>;
 
-  gameProcessor: IBfgGameProcessor;
-  // components: IBfgGameEngineComponents<GSH, GSP, GSW, PGA, HGA>;
-}
+//   gameProcessor: IBfgGameProcessor;
+//   // components: IBfgGameEngineComponents<GSH, GSP, GSW, PGA, HGA>;
+// }
 
 // export type BfgGameEngineMetadata <
 //   GSH extends BfgGameStateForHost,
@@ -266,6 +357,6 @@ export type BfgGameEngineMetadata = {
   components: BfgGameEngineComponents;
 
   gameProcessor: IBfgGameProcessor;
-  accessLevelAdapters: IBfgGameEngineAccessLevelAdapters;
+  accessLevelAdapters: BfgGameEngineAccessLevelAdapters;
 
 }

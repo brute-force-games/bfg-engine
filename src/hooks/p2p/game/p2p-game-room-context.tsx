@@ -8,7 +8,7 @@ import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr, PrivatePlaye
 import { BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
 import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
-import { GameTableEventForWatcherP2pSchemaToolbox, type GameTableEventForWatcherP2pString } from "../../../models/types/bfg-branded-strings";
+import { GameTableEventForWatcherP2pSchemaToolbox, type GameTableEventForWatcherP2pString } from "../../../models/types/bfg-branded-string-types";
 
 
 // Subscription manager for handling multiple handlers per event type

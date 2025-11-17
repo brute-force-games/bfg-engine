@@ -62,11 +62,15 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
   // Calculate default lobby name (safe even if profile is null)
   const defaultLobbyName = defaultPlayerProfile ? `${defaultPlayerProfile.handle}'s Table` : '';
 
+  const availableGameTitles = registry.getAvailableGameTitles();
+  const inititalGameTitle = defaultGameTitle || (availableGameTitles.length === 1 ? availableGameTitles[0] : undefined);
+
+
   // TanStack Form with Zod validation - MUST be called before any early returns
   const form = useForm({
     defaultValues: {
       lobbyName: defaultLobbyName,
-      gameTitle: defaultGameTitle,
+      gameTitle: inititalGameTitle,
       joinLobbyAsPlayer: true,
     } as CreateLobbyFormData,
     onSubmit: async ({ value }: { value: CreateLobbyFormData }) => {
@@ -188,7 +192,6 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
     )
   }
 
-  const availableGameTitles = registry.getAvailableGameTitles();
 
   return (
     <Container maxWidth="md" style={{ paddingTop: 32, paddingBottom: 32 }}>

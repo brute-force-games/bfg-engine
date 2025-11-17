@@ -8,9 +8,7 @@ export type BfgGameStateBase = z.infer<typeof BfgGameStateBaseSchema>;
 export const BfgGameStateForHostSchema = BfgGameStateBaseSchema.extend({});
 export type BfgGameStateForHost = z.infer<typeof BfgGameStateForHostSchema>;
 
-export const BfgGameStateForPlayerSchema = BfgGameStateBaseSchema.extend({
-  // playerSeat: GameTableSeatSchema,
-});
+export const BfgGameStateForPlayerSchema = BfgGameStateBaseSchema.extend({});
 export type BfgGameStateForPlayer = z.infer<typeof BfgGameStateForPlayerSchema>;
 
 export const AssignedBfgGameStateForPlayerSchema = BfgGameStateForPlayerSchema.extend({

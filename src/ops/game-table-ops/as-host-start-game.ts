@@ -163,12 +163,6 @@ export const asHostStartNewGame = async (
   const startGameOutcome = gameProcessor.createHostOpensGameOutcome(startGameAction);
   const startGameState = gameProcessor.createHostOpensGameState(startGameAction);
 
-  // const GameSpecificStepSchema = createGameTableStepSchemaForGame(metadata.schemas);
-
-  // type GameEvent = z.infer<typeof metadata.schemas.gameEventSchema>;
-  // type GameEventOutcome = z.infer<typeof metadata.schemas.gameEventOutcomeSchema>;
-  // type HostGameState = z.infer<typeof metadata.schemas.hostGameStateSchema>;
-
   const GameStateTransitionSchema = createGameStateTransitionForDbSchema(metadata.schemas);
   type GameStateTransition = z.infer<typeof GameStateTransitionSchema>;
 

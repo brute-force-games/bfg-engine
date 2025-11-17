@@ -1,11 +1,10 @@
-import { z } from "zod";
 import { BfgIdBrand, type BfgNumberIndexMethodType, type BfgNumberIndexPrefixType } from "./bfg-id-prefixes";
-import { createBfgBrandedPrefixKeyStringToolbox, createRawBrandedPrefixKeyStringSchema, type IBfgBrandedPrefixKeyStringToolbox, type IKeyMethodology } from "./branded-prefix-key-str";
+import { createBfgBrandedPrefixKeyStringToolbox, type IBfgBrandedPrefixKeyStringToolbox, type IKeyMethodology, type RegexableString } from "./branded-prefix-key-str";
 // import type { BfgNumberIndexMethodType } from "./prefix-key-methods";
 // import { BfgNumberIndexMethodTypeSchema } from "./branded-uuids";
 
 
-const NumberIndexRegexString = "^[0-9]+$" as const;
+const NumberIndexRegexString = "[0-9]+" as RegexableString;
 const generateNumberIndexKey = () => {
   const key = Math.floor(Math.random() * 10000000);
   return key.toString() as BfgNumberIndexMethodType;
@@ -18,23 +17,28 @@ const generateNumberIndexKey = () => {
 // };
 
 
-export const createRawBrandedNumberIndexIdSchema = <T extends BfgIdBrand>(idPrefix: T) => {
-   
-  const keyMethodology: IKeyMethodology<BfgNumberIndexPrefixType, BfgNumberIndexMethodType> = {
-    idPrefix,
-    generateRandomKey: generateNumberIndexKey,
-    keyRegexStr: NumberIndexRegexString,
-  };
+// export const createRawBrandedNumberIndexIdSchema = <T extends BfgIdBrand>(idPrefix: T) => {
   
-  const retVal = createRawBrandedPrefixKeyStringSchema(keyMethodology);
-  return retVal;
-};
+//   // const idPrefixRegexStr = `^${idPrefix}` as RegexString;
+//   const createIdPrefixRegexStr = (idPrefix: BfgNumberIndexPrefixType) => `^${idPrefix}` as RegexableString;
 
-export type BrandedNumberIndexSchema<T extends BfgIdBrand> = ReturnType<typeof createRawBrandedNumberIndexIdSchema<T>>;
+//   const keyMethodology: IKeyMethodology<BfgNumberIndexPrefixType, BfgNumberIndexMethodType> = {
+//     idPrefix: idPrefix as BfgNumberIndexPrefixType,
+//     createIdPrefixRegexStr,
+//     separatorStr: "_" as RegexableString,
+//     keyRegexStr: NumberIndexRegexString,
+//     generateRandomKey: generateNumberIndexKey,
+//   };
+  
+//   const retVal = createRawBrandedPrefixKeyStringSchema(keyMethodology);
+//   return retVal;
+// };
 
-export type BrandedNumberIndex<T extends BfgIdBrand> = z.infer<BrandedNumberIndexSchema<T>>;
+// export type BrandedNumberIndexSchema<T extends BfgIdBrand> = ReturnType<typeof createRawBrandedNumberIndexIdSchema<T>>;
 
-export type RawBrandedNumberIndexSchema = ReturnType<typeof createRawBrandedNumberIndexIdSchema<BfgIdBrand>>;
+// export type BrandedNumberIndex<T extends BfgIdBrand> = z.infer<BrandedNumberIndexSchema<T>>;
+
+// export type RawBrandedNumberIndexSchema = ReturnType<typeof createRawBrandedNumberIndexIdSchema<BfgIdBrand>>;
 
 
 // export interface IBfgBrandedNumberIndex<T extends BfgIdBrand> {
@@ -51,14 +55,15 @@ export const createBfgBrandedNumberIndexToolbox = <
 T extends BfgIdBrand,
 > (idPrefix: T): IBfgBrandedPrefixKeyStringToolbox<BfgNumberIndexPrefixType, BfgNumberIndexMethodType> => {
 
-  // const bfgBrandedSchema = createRawBrandedNumberIndexIdSchema(prefix);
-
-  // const parseId = (id: string) => parseBrandedNumberIndexValueFromSchema(bfgBrandedSchema, id as T);
+  // const idPrefixRegexStr = `^${idPrefix}` as RegexString;
+  const createIdPrefixRegexStr = (idPrefix: BfgNumberIndexPrefixType) => `^${idPrefix}` as RegexableString;
 
   const numberKeyMethodology: IKeyMethodology<BfgNumberIndexPrefixType, BfgNumberIndexMethodType> = {
     idPrefix,
-    generateRandomKey: generateNumberIndexKey,
+    createIdPrefixRegexStr,
+    separatorStr: "" as RegexableString,
     keyRegexStr: NumberIndexRegexString,
+    generateRandomKey: generateNumberIndexKey,
   };
 
   const toolbox = createBfgBrandedPrefixKeyStringToolbox(numberKeyMethodology);

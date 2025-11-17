@@ -4,11 +4,8 @@ import type { GameRoomP2p, GameTableSeat } from "../../models/game-table/game-ro
 import type { GameTableEventWithTransition } from "../../models/game-table/game-table-event";
 import type { GameLobby } from "../../models/p2p-lobby";
 import type { BfgGameActionByHost, BfgGameActionByPlayer, BfgGameHostActionOutcome, BfgGamePlayerActionOutcome } from "../metadata-types/game-action-types";
-import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
+import type { BfgGameStateForHost, BfgGameStateForPlayer } from "../metadata-types/game-state-types";
 import type { RoomPhase } from "../../models/game-table/table-phase";
-import type { GameBoardEventForDb } from "../../models/game-table/game-board-transition-db";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/game-table/game-table-event-p2p";
-// import type { GameTableEventResult } from "../../models/game-table/table-phase";
 
 
 export const PlayerActionOutcomeSummarySchema = z.string().brand('PlayerActionOutcomeSummary');
@@ -151,23 +148,52 @@ export interface IBfgGameEngineAccessLevelAdapters {
     GSP extends BfgGameStateForPlayer,
   >(hostState: GSH) => GSP;
   
-  hostGameStateToWatcherAccessLevelAdapter: <
+  // hostGameStateToWatcherAccessLevelAdapter: <
+  //   GSH extends BfgGameStateForHost,
+  //   GSW extends BfgGameStateForWatcher,
+  // >(hostState: GSH) => GSW;
+
+  // hostEventTransitionFromHostEventTransitionDb: <
+  //   GTDb extends GameBoardEventForDb,
+  //   GTH extends GameTableEventForHostP2p,
+  // >(hostEventTransitionDb: GTDb) => GTH;
+
+  // hostEventTransitionToPlayerAccessLevelAdapter: <
+  //   GTH extends GameBoardEventForDb,
+  //   GTP extends GameTableEventForPlayerP2p,
+  // >(playerSeat: GameTableSeat, hostEventTransitionDb: GTH) => GTP;
+
+  // hostEventTransitionToWatcherAccessLevelAdapter: <
+  //   GTH extends GameBoardEventForDb,
+  //   GTW extends GameTableEventForWatcherP2p
+  // >(hostEventTransition: GTH) => GTW;
+}
+
+
+
+export type BfgGameEngineAccessLevelAdapters = {
+  hostGameStateToPlayerAccessLevelAdapter: <
     GSH extends BfgGameStateForHost,
-    GSW extends BfgGameStateForWatcher,
-  >(hostState: GSH) => GSW;
+    GSP extends BfgGameStateForPlayer,
+  >(hostState: GSH) => GSP;
+  
+  // hostGameStateToWatcherAccessLevelAdapter: <
+  //   GSH extends BfgGameStateForHost,
+  //   GSW extends BfgGameStateForWatcher,
+  // >(hostState: GSH) => GSW;
 
-  hostEventTransitionFromHostEventTransitionDb: <
-    GTDb extends GameBoardEventForDb,
-    GTH extends GameTableEventForHostP2p,
-  >(hostEventTransitionDb: GTDb) => GTH;
+  // hostEventTransitionFromHostEventTransitionDb: <
+  //   GTDb extends GameBoardEventForDb,
+  //   GTH extends GameTableEventForHostP2p,
+  // >(hostEventTransitionDb: GTDb) => GTH;
 
-  hostEventTransitionToPlayerAccessLevelAdapter: <
-    GTH extends GameBoardEventForDb,
-    GTP extends GameTableEventForPlayerP2p,
-  >(playerSeat: GameTableSeat, hostEventTransitionDb: GTH) => GTP;
+  // hostEventTransitionToPlayerAccessLevelAdapter: <
+  //   GTH extends GameBoardEventForDb,
+  //   GTP extends GameTableEventForPlayerP2p,
+  // >(playerSeat: GameTableSeat, hostEventTransitionDb: GTH) => GTP;
 
-  hostEventTransitionToWatcherAccessLevelAdapter: <
-    GTH extends GameBoardEventForDb,
-    GTW extends GameTableEventForWatcherP2p
-  >(hostEventTransition: GTH) => GTW;
+  // hostEventTransitionToWatcherAccessLevelAdapter: <
+  //   GTH extends GameBoardEventForDb,
+  //   GTW extends GameTableEventForWatcherP2p
+  // >(hostEventTransition: GTH) => GTW;
 }
