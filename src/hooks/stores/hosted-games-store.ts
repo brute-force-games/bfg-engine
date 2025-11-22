@@ -13,9 +13,12 @@
 // import { GameTable } from '../../models/game-table/game-table';
 
 import { useRowIds, useTable } from "tinybase/ui-react";
-import { gameArchivesStore, GameRoomSnapshotTbTableRowForZodSchema, TB_GAME_ROOMS_TABLE_NAME } from "../../tb-store/games-archives-store";
-import { GameRoomDbSchema } from "../../models/game-table/game-room-p2p";
-import type { GameRoomDb } from "../../models/game-table/game-room-p2p";
+import { gameArchivesStore, BoardTransitionTbTableRowForZodSchema } from "../../tb-store/games-archives-store";
+import { TB_GAME_EVENTS_TABLE_NAME, TB_GAME_INSTANCES_TABLE_NAME, TB_GAME_ROOMS_TABLE_NAME } from "../../tb-store/tb-constants";
+import { GameRoomSnapshotTbTableRowForZodSchema } from "../../models/tinybase/game-snapshot";
+import { getGameInstanceMapping } from "../../tb-store/game-instance-store";
+import type { BfgGameInstanceId } from "../../models/types/bfg-branded-uuids";
+import { createHydratedLatestGameSnapshotFromTbData, type HydratedLatestGameSnapshot } from "../../models/internal/game-room-snapshot-from-tb";
 
 // /**
 //  * React hooks for hosted game management with TinyBase
@@ -211,36 +214,62 @@ import type { GameRoomDb } from "../../models/game-table/game-room-p2p";
  * Hook to get all hosted games with reactive updates
  * Returns an array of GameTable objects parsed from the game archives store
  */
-export const useHostedGames = (): GameRoomDb[] => {
+export const useHostedGames = (): HydratedLatestGameSnapshot[] => {
   // Explicitly get all row IDs first
-  const rowIds = useRowIds(TB_GAME_ROOMS_TABLE_NAME, gameArchivesStore);
+  // const rowIds = useRowIds(TB_GAME_ROOMS_TABLE_NAME, gameArchivesStore);
   // Get the table to access row data
-  const rawGames = useTable(TB_GAME_ROOMS_TABLE_NAME, gameArchivesStore);
+  // const rawGames = useTable(TB_GAME_ROOMS_TABLE_NAME, gameArchivesStore);
+
+  const rowIds = useRowIds(TB_GAME_INSTANCES_TABLE_NAME, gameArchivesStore);
+  const rawGameRooms = useTable(TB_GAME_ROOMS_TABLE_NAME, gameArchivesStore);
+  const rawGameEvents = useTable(TB_GAME_EVENTS_TABLE_NAME, gameArchivesStore);
+
+  const gameInstanceMappings = rowIds.map((gameInstanceId) =>
+    getGameInstanceMapping(gameInstanceId as BfgGameInstanceId));
   
-  // Iterate over each row ID explicitly
-  return rowIds
-    .map((gameTableId) => {
-      const rawGameData = rawGames[gameTableId];
+  const mappedGameSnapshots = gameInstanceMappings
+    .map((gameInstanceMapping) => {
+      const { gameRoomId, gameTableId } = gameInstanceMapping;
+
+      const rawGameRoom = rawGameRooms[gameRoomId];
       
-      
-      const gameSnapshotParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(rawGameData);
-      if (!gameSnapshotParseResult.success) {
-        console.error(`Error validating game archive for ${gameTableId}:`, gameSnapshotParseResult.error);
+      const gameRoomParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(rawGameRoom);
+      if (!gameRoomParseResult.success) {
+        console.error(`Error validating game archive for ${gameTableId}:`, gameRoomParseResult.error);
         return null;
       }
       
-      const gameSnapshot = gameSnapshotParseResult.data;
+      const gameRoom = gameRoomParseResult.data;
+
+      const rawGameEvent = rawGameEvents[gameTableId];
+
+      const gameEventParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(rawGameEvent);
+      if (!gameEventParseResult.success) {
+        console.error(`Error validating game archive for ${gameTableId}:`, gameEventParseResult.error);
+        return null;
+      }
+
+      const gameEvent = gameEventParseResult.data;
+
+      const hydratedGameSnapshot = createHydratedLatestGameSnapshotFromTbData(
+        gameRoom.stringifiedRoomState,
+        gameEvent.stringifiedBoardTransitions,
+      );
+
+      return hydratedGameSnapshot;
       
       // Parse the stringified game table state with GameRoomSchema
-      try {
-        const parsedTableState = JSON.parse(gameSnapshot.stringifiedLatestBoardTransition);
-        const gameTable = GameRoomDbSchema.parse(parsedTableState);
-        return gameTable;
-      } catch (error) {
-        console.error(`Error parsing game table state for ${gameTableId}:`, error);
-        return null;
-      }
+      // try {
+      //   const parsedTableState = JSON.parse(gameSnapshot.stringifiedLatestBoardTransition);
+      //   const gameTable = GameRoomDbSchema.parse(parsedTableState);
+      //   return gameTable;
+      // } catch (error) {
+      //   console.error(`Error parsing game table state for ${gameTableId}:`, error);
+      //   return null;
+      // }
     })
-    .filter((game) => game !== null);
+    .filter((snapshot) => snapshot !== null);
     // .filter((game): game is GameTable => game !== null);
+
+    return mappedGameSnapshots;
 };

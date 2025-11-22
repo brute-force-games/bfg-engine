@@ -1,7 +1,7 @@
 import { Avatar, Box, IconButton } from "../../bfg-ui/index"
 import { DbkAppBarMenu, DbkAppBarMenuItem } from "../app-bar-menu/app-bar-menu"
 import { useState } from "react";
-import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { PrivatePlayerProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { AppSettingsDialog } from "../app-settings/app-settings-dialog";
 import { GameSettingsDialog } from "../app-settings/game-settings-dialog";
 import { TableSettingsDialog } from "../app-settings/table-settings-dialog";

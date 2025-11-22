@@ -1,10 +1,10 @@
 import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-uuids";
 import { IP2pLobbyRoomEventHandlers, useP2pLobby } from "./use-p2p-lobby";
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { PublicPlayerProfile } from "../../../models/internal/player-profile/public-player-profile";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";
 import { IP2pLobby } from "./use-p2p-lobby";
 import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
-import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { PrivatePlayerProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { BfgSupportedGameTitle } from "../../../models/game-box-definition";
 import { IHostedLobbyActions, useHostedLobby, useHostedLobbyActions } from "../../stores/use-hosted-lobbies-store";
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby";

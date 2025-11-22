@@ -1,11 +1,11 @@
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby"
 import { PlayerProfileId } from "../../../models/types/bfg-branded-uuids"
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
+import { PublicPlayerProfile } from "../../../models/internal/player-profile/public-player-profile"
 import { BfgShareableLinkComponent } from "../bfg-shareable-link-component"
 import { BfgSupportedGameTitle } from "../../../models/game-box-definition"
 import { LobbyPlayerJoinGameComponent } from "./lobby-player-join-game-component"
 import { Box, Stack, Typography, Chip, Button, Gamepad, Container, Paper, Alert } from "../../bfg-ui"
-import { useGameHosting } from "../../../hooks/games-registry/game-hosting"
+import { useSiteHosting } from "../../../hooks/site-hosting"
 import { PlayerProfileChip } from "../player-profile-chip"
 
 
@@ -54,8 +54,8 @@ export const LobbyPlayerStateComponent = ({
     `${lobbyState.minNumPlayers} players` :
     `${lobbyState.minNumPlayers} - ${lobbyState.maxNumPlayers} players`;
 
-  const gameHosting = useGameHosting();
-  const baseUrl = gameHosting.getBaseUrl();
+  const siteHosting = useSiteHosting();
+  const baseUrl = siteHosting.getBaseUrl();
   
   const joinLobbyLink = `${baseUrl}/join-lobby/${lobbyState.id}?autoJoin=true`;
 

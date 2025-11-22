@@ -4,7 +4,7 @@ import {
   useRiskyMyDefaultPlayerProfile, 
   usePlayerProfileActions 
 } from '../../hooks/stores/use-my-player-profiles-store';
-import { PrivatePlayerProfile } from '../../models/player-profile/private-player-profile';
+import { PrivatePlayerProfile } from '../../models/internal/player-profile/private-player-profile';
 import { PlayerProfileId } from '../../models/types/bfg-branded-uuids';
 // import { CryptoTestDialog } from '../../ui/components/dialogs/crypto-test-dialog';
 import { NoActivityAppBar } from '../components/app-bars/no-activity-app-bar';

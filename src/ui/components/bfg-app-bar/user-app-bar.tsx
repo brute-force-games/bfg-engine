@@ -1,4 +1,4 @@
-import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { PrivatePlayerProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { BruteForceGamesAppBar } from "./app-bar";
 import { NavSpine } from "./nav-spine";
 import { AppBarTabItem } from "./tab-item-hook";

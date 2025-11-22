@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BfgPlayerProfileIdToolbox } from '../types/bfg-branded-uuids';
+import { BfgPlayerProfileIdToolbox } from '../../types/bfg-branded-uuids';
 
 // Temporary stub until branded-json module is implemented
 // const createBrandedJsonSchema = <T extends z.ZodBranded<z.ZodTypeAny, string>>(schema: T) => schema;

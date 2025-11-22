@@ -5,7 +5,7 @@ import {
   Stack,
   People
 } from "../bfg-ui";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile"
+import { PublicPlayerProfile } from "../../models/internal/player-profile/public-player-profile"
 import { PeerId } from "../../hooks/p2p/p2p-types"
 import { PeerProfileCard } from "./peer-profile-card-component";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";

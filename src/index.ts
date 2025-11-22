@@ -1,8 +1,8 @@
 export { useGameRegistry, } from './hooks/games-registry/games-registry-hook';
 export { registerGame } from './game-metadata/games-registry';
 export type { BfgSupportedGameTitle, GameDefinition } from './models/game-box-definition';
-export type { GameHostingContextType } from './hooks/games-registry/game-hosting';
-export { GameHostingProvider, useGameHosting } from './hooks/games-registry/game-hosting';
+export type { SiteHostingContextType as GameHostingContextType, Environment, EnvSettings } from './hooks/site-hosting';
+export { SiteHostingProvider as GameHostingProvider, useSiteHosting } from './hooks/site-hosting';
 export type { BfgGameTableId, GameFriendId, GameLobbyId, PlayerProfileId } from './models/types/bfg-branded-uuids';
 export type { TrysteroConfig } from './p2p/trystero-config';
 export { ProfileGuard } from './ui/components/profile-guard';
@@ -13,8 +13,7 @@ export { LobbyPlayerStateComponent } from './ui/components/lobby/lobby-player-st
 export { PlayerP2pGameComponent } from './ui/components/player-p2p-game-component';
 export { ObserverP2pGameComponent } from './ui/components/observer-p2p-game-component';
 export { useMyPlayerProfiles, useMyDefaultPlayerProfile, useRiskyMyDefaultPlayerProfile } from './hooks/stores/use-my-player-profiles-store';
-// export type { GameStateJson as GameStateJson, GameActionJson } from './models/game-engine/bfg-game-engines';
-export { GameTableSeatSchema } from './models/game-table/game-room-p2p';
+export { GameTableSeatSchema } from './models/internal/game-room-base';
 // export type { GameTableEventResult as GameTableActionResult } from './models/game-table/table-phase';
 // export type { BfgGameSpecificTableAction } from './models/game-table/game-table-event';
 // export type { BfgGameSpecificGameState } from './models/game-table/game-table-action';
@@ -30,11 +29,11 @@ export { createWalletSignedMove, verifySignedMove, initializeNewWallet, initiali
 export type { SignedMove } from './crypto/crypto-utils';
 
 // Player profile exports
-export type { PublicPlayerProfile } from './models/player-profile/public-player-profile';
-export type { PrivatePlayerProfile } from './models/player-profile/private-player-profile';
-export { getWalletFromProfile, createPrivatePlayerProfile, createPlayerProfileFromExportedWallet, rotateWalletKeys } from './models/player-profile/private-player-profile';
-export type { ExportedWallet as ProfileExportedWallet } from './models/player-profile/private-player-profile';
-export { PublicJWKSchema, PrivateJWKSchema } from './models/player-profile/public-player-profile';
+export type { PublicPlayerProfile } from './models/internal/player-profile/public-player-profile';
+export type { PrivatePlayerProfile } from './models/internal/player-profile/private-player-profile';
+export { getWalletFromProfile, createPrivatePlayerProfile, createPlayerProfileFromExportedWallet, rotateWalletKeys } from './models/internal/player-profile/private-player-profile';
+export type { ExportedWallet as ProfileExportedWallet } from './models/internal/player-profile/private-player-profile';
+export { PublicJWKSchema, PrivateJWKSchema } from './models/internal/player-profile/public-player-profile';
 
 // UI Component exports
 export * from './ui/bfg-ui';

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
-import { BfgGameRoomIdToolbox, BfgGameStateIdToolbox } from "../types/bfg-branded-uuids";
 
 // Consolidated transition schema - structure is identical for DB and P2P
 // though they have different security profiles and serialization paths
@@ -29,8 +28,8 @@ export const createGameBoardEventSchema = (schemas: BfgGenericEngineMetadataSche
   const transitionSchema = createGameStateTransitionSchema(schemas);
   
   const GameBoardEventSchema = z.object({
-    gameStateId: BfgGameStateIdToolbox.idSchema,
-    gameRoomId: BfgGameRoomIdToolbox.idSchema,
+    // gameStateId: BfgGameStateIdToolbox.idSchema,
+    // gameRoomId: BfgGameRoomIdToolbox.idSchema,
     createdAt: z.number(),
     stepIndex: z.number(),
   
@@ -45,4 +44,9 @@ export type GameBoardEvent = z.infer<ReturnType<typeof createGameBoardEventSchem
 // Type aliases for context clarity (DB vs P2P) - same structure, different usage contexts
 export type GameBoardEventForDb = GameBoardEvent;
 // export type GameBoardTransitionForP2p = GameBoardEvent; // Unused - P2P code uses DB functions directly
+
+export const createBoardTransitionsArraySchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+  return z.array(createGameBoardEventSchema(schemas));
+}
+export type BoardTransitionsArray = z.infer<ReturnType<typeof createBoardTransitionsArraySchema>>;
 

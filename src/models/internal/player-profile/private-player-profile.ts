@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { PublicPlayerProfileSchema, PublicPlayerProfile, PrivateJWKSchema, PublicJWKSchema } from './public-player-profile';
-import { initializeNewWallet, initializeWalletFromExport } from '../../crypto/crypto-utils';
-import { WebCryptoWallet } from '../../crypto/web-crypto-wallet';
-import { IWebCryptoWallet } from '../../crypto/types';
+import { initializeNewWallet, initializeWalletFromExport } from '../../../crypto/crypto-utils';
+import { WebCryptoWallet } from '../../../crypto/web-crypto-wallet';
+import { IWebCryptoWallet } from '../../../crypto/types';
 
 
 // Type aliases for JWK types

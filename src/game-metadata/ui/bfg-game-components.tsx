@@ -1,10 +1,12 @@
+import { z } from "zod";
 import type { PlayerProfileId, PublicPlayerProfile } from "../..";
 import type { BfgGameImplPublicHistoryAction } from "../../models/game-engine/bfg-game-engine-types";
-import type { GameRoomDb, GameRoomP2p, GameTableSeat } from "../../models/game-table/game-room-p2p";
-import { z } from "zod";
+import type { GameRoomDb } from "../../models/tinybase/game-room-db";
+import type { GameRoomP2p } from "../../models/p2p/game-room-p2p";
+import type { GameTableSeat } from "../../models/internal/game-room-base";
 import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../metadata-types/game-action-types";
 import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/game-table/game-table-event-p2p";
+import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
 
 
 

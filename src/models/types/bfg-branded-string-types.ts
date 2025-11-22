@@ -1,6 +1,6 @@
 import z from "zod";
 import { createBfgBrandedStringToolbox, createBfgBrandedStringToolboxForSchema } from "./bfg-branded-string-utils";
-import { GameTableEventForWatcherP2pSchema, GameTableEventForPlayerP2pSchema, GameTableEventForHostP2pSchema } from "../game-table/game-table-event-p2p";
+import { GameTableEventForWatcherP2pSchema, GameTableEventForPlayerP2pSchema, GameTableEventForHostP2pSchema } from "../p2p/game-table-event-p2p";
 
 // export const OrphanedBfgBrandedStringType = 'OrphanedBfgBrandedString' as const;
 // import { GameTableEventForHostP2pSchema, GameTableEventForPlayerP2pSchema, GameTableEventForWatcherP2pSchema } from "../game-table/game-table-event-p2p";
@@ -64,6 +64,11 @@ export type BfgGameActionPlayerOutcomeStr = z.infer<typeof BfgGameActionPlayerOu
 export const BfgGameActionWatcherOutcomeStrToolbox = createBfgBrandedStringToolbox("BfgGameActionWatcherOutcomeStr");
 export type BfgGameActionWatcherOutcomeStr = z.infer<typeof BfgGameActionWatcherOutcomeStrToolbox.schema>;
 
+export const BfgStringifiedRoomStateStrToolbox = createBfgBrandedStringToolbox("BfgStringifiedRoomStateStr");
+export type BfgStringifiedRoomStateStr = z.infer<typeof BfgStringifiedRoomStateStrToolbox.schema>;
+
+export const BfgStringifiedBoardTransitionsStrToolbox = createBfgBrandedStringToolbox("BfgStringifiedLatestBoardTransitionStr");
+export type BfgStringifiedBoardTransitionsStr = z.infer<typeof BfgStringifiedBoardTransitionsStrToolbox.schema>;
 
 // export const GameTableEventForWatcherP2pStringSchema = BfgBrandedStringSchema
 //   .brand(GameTableEventForWatcherP2pSchema.description ?? OrphanedBfgBrandedStringType);

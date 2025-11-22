@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { LobbyOptionsSchema, GameLobbySchema } from "./p2p-lobby"
-import { PublicPlayerProfileSchema } from "./player-profile/public-player-profile"
+import { PublicPlayerProfileSchema } from "./internal/player-profile/public-player-profile"
 import { BfgSupportedGameTitleSchema } from "./game-box-definition"
 
 

@@ -1,77 +1,104 @@
 import { z } from 'zod';
 import { createStore } from 'tinybase';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { BfgGameRoomIdToolbox, BfgGameTableId, BfgGameTableIdToolbox, type BfgGameInstanceId, type BfgGameRoomId } from '../models/types/bfg-branded-uuids';
-import type { GameRoomDb } from '../models/game-table/game-room-p2p';
-import { GameRoomDbSchema } from '../models/game-table/game-room-p2p';
+import { BfgGameTableId, BfgGameTableIdToolbox, type BfgGameInstanceId, type BfgGameRoomId } from '../models/types/bfg-branded-uuids';
+import type { GameRoomDb } from '../models/tinybase/game-room-db';
+import { GameRoomDbSchema } from '../models/tinybase/game-room-db';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
 import { useRow } from 'tinybase/ui-react';
-import { createGameBoardEventForDbSchema, type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
-import { createGameRoomSnapshotForDbSchema, type GameRoomSnapshotForDb } from '../models/game-table/game-room-snapshot-db';
+import { type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
+import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot-from-tb';
 import { getGameMetadata } from '../game-metadata/games-registry';
 import type { GameTableEventWithTransition } from '../models/game-table/game-table-event';
+import { TB_GAME_INSTANCES_TABLE_NAME, TB_GAME_ROOMS_TABLE_NAME, TB_GAME_EVENTS_TABLE_NAME } from './tb-constants';
+import { GameInstanceMappingsTinybaseTableColumnsSchema, getGameInstanceMapping, useLatestHostedGameIdentifiers, type GameInstanceMappingsTinybaseTableColumns } from './game-instance-store';
+import { createBoardTransitionsArraySchema } from '../models/tinybase/game-board-event';
+import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
+import { GameRoomSnapshotTbTableRowForZodSchema, GameSnapshotTinybaseTableColumnsSchema, type GameRoomSnapshotTbTableRow } from '../models/tinybase/game-snapshot';
+import { BfgStringifiedBoardTransitionsStrToolbox, } from '../models/types/bfg-branded-string-types';
+// import { createGameRoomSnapshotForP2pSchema } from '../models/p2p/game-room-snapshot-p2p';
 
 
-export const GameRoomSnapshotTinybaseTableColumnsSchema = {
-  gameRoomId: { type: 'string' as const },
-  gameTableId: { type: 'string' as const },
+// export const GameRoomSnapshotTinybaseTableColumnsSchema = {
+//   gameInstanceId: { type: 'string' as const },
+//   gameRoomId: { type: 'string' as const },
+//   gameTableId: { type: 'string' as const },
 
-  stringifiedRoomState: { type: 'string' as const },
-  stringifiedLatestBoardTransition: { type: 'string' as const },
+//   stringifiedRoomState: { type: 'string' as const },
+//   stringifiedLatestBoardTransition: { type: 'string' as const },
   
-  latestStepIndex: { type: 'number' as const },
-  createdAt: { type: 'number' as const },
-  lastUpdatedAt: { type: 'number' as const },
-} as const satisfies TinybaseTableSchema;
+//   latestStepIndex: { type: 'number' as const },
+//   createdAt: { type: 'number' as const },
+//   lastUpdatedAt: { type: 'number' as const },
+// } as const satisfies TinybaseTableSchema;
 
-export type GameRoomSnapshotTinybaseTableColumns = InferTypeFromSchema<typeof GameRoomSnapshotTinybaseTableColumnsSchema>;
+// export type GameRoomSnapshotTinybaseTableColumns = InferTypeFromSchema<typeof GameRoomSnapshotTinybaseTableColumnsSchema>;
 
-export const GameRoomSnapshotTbTableRowForZodSchema = createZodSchemaFromTinyBaseSchema(GameRoomSnapshotTinybaseTableColumnsSchema, {
-  gameRoomId: BfgGameRoomIdToolbox.idSchema, // Use branded type schema
-});
+// export const GameRoomSnapshotTbTableRowForZodSchema = createZodSchemaFromTinyBaseSchema(GameSnapshotTinybaseTableColumnsSchema, {
+//   gameRoomId: BfgGameRoomIdToolbox.idSchema, // Use branded type schema
+// });
 
-export type GameRoomSnapshotTbTableRow = z.infer<typeof GameRoomSnapshotTbTableRowForZodSchema>;
+// export type GameRoomSnapshotTbTableRow = z.infer<typeof GameRoomSnapshotTbTableRowForZodSchema>;
+
+
+// export const createHydratedGameRoomSnapshot = (gameRoomSnapshotTbTableRow: GameRoomSnapshotTbTableRow): GameRoomSnapshotForDb => {
+//   const parsedRoomState = JSON.parse(gameRoomSnapshotTbTableRow.stringifiedRoomState);
+//   const hydratedRoomState = GameRoomDbSchema.parse(parsedRoomState);
+//   return {
+//     ...gameRoomSnapshotTbTableRow,
+//     gameRoom: hydratedRoomState,
+//   };
+// }
+
+// export const HydrateGameRoomSnapshot = (gameRoomSnapshotTbTableRow: GameRoomSnapshotTbTableRow): GameRoomSnapshotForDb => {
+//   const parsedRoomState = JSON.parse(gameRoomSnapshotTbTableRow.stringifiedRoomState);
+//   const hydratedRoomState = GameRoomDbSchema.parse(parsedRoomState);
+//   return {
+//     ...gameRoomSnapshotTbTableRow,
+//     gameRoom: hydratedRoomState,
+//   };
+// }
 
 
 const BoardTransitionTinybaseTableColumnsSchema = {
   gameTableId: { type: 'string' as const },
-  transitionIndex: { type: 'number' as const },
-
-  stringifiedBoardTransition: { type: 'string' as const },
+  gameTitle: { type: 'string' as const },
+  stepCount: { type: 'number' as const },
+  stringifiedBoardTransitions: { type: 'string' as const },
 } as const satisfies TinybaseTableSchema;
 
 export type BoardTransitionTinybaseTableColumns = InferTypeFromSchema<typeof BoardTransitionTinybaseTableColumnsSchema>;
 
-const BoardTransitionTbTableRowForZodSchema = createZodSchemaFromTinyBaseSchema(BoardTransitionTinybaseTableColumnsSchema, {
+export const BoardTransitionTbTableRowForZodSchema = createZodSchemaFromTinyBaseSchema(BoardTransitionTinybaseTableColumnsSchema, {
+  gameTitle: BfgSupportedGameTitleSchema,
   gameTableId: BfgGameTableIdToolbox.idSchema,
+  stringifiedBoardTransitions: BfgStringifiedBoardTransitionsStrToolbox.schema,
 });
 
 export type BoardTransitionTbTableRow = z.infer<typeof BoardTransitionTbTableRowForZodSchema>;
 
 
-
-
-export const TB_GAME_ROOMS_TABLE_NAME = 'tb-game-rooms';
-export const TB_GAME_STEPS_TABLE_NAME = 'tb-game-steps';
-
-
-// Create the store
 export const gameArchivesStore = createStore();
 const gameRoomsPersister = createLocalPersister(gameArchivesStore, TB_GAME_ROOMS_TABLE_NAME);
-const gameStepsPersister = createLocalPersister(gameArchivesStore, TB_GAME_STEPS_TABLE_NAME);
+const gameEventsPersister = createLocalPersister(gameArchivesStore, TB_GAME_EVENTS_TABLE_NAME);
+const gameInstancesPersister = createLocalPersister(gameArchivesStore, TB_GAME_INSTANCES_TABLE_NAME);
 
 
 
 gameArchivesStore.setTablesSchema({
-  [TB_GAME_ROOMS_TABLE_NAME]: GameRoomSnapshotTinybaseTableColumnsSchema,
-  [TB_GAME_STEPS_TABLE_NAME]: BoardTransitionTinybaseTableColumnsSchema,
+  [TB_GAME_INSTANCES_TABLE_NAME]: GameInstanceMappingsTinybaseTableColumnsSchema,
+  [TB_GAME_ROOMS_TABLE_NAME]: GameSnapshotTinybaseTableColumnsSchema,
+  [TB_GAME_EVENTS_TABLE_NAME]: BoardTransitionTinybaseTableColumnsSchema,
 });
 
 gameRoomsPersister.startAutoLoad();
 gameRoomsPersister.startAutoSave();
 
-gameStepsPersister.startAutoLoad();
-gameStepsPersister.startAutoSave();
+gameEventsPersister.startAutoLoad();
+gameEventsPersister.startAutoSave();
+
+gameInstancesPersister.startAutoLoad();
+gameInstancesPersister.startAutoSave();
 
 
 export const getAllHostedGames = (): GameRoomDb[] => {
@@ -112,46 +139,40 @@ export const getAllHostedGames = (): GameRoomDb[] => {
 };
 
 
-
-// export const useHostedGameStep = (gameTableId: BfgGameTableId, stepIndex: number): GameRoomSnapshotTbTableRow | null => {
-//   // const hostedGameArchive = useHostedGameArchive(gameTableId);
-//   // if (!hostedGameArchive) {
-//   //   return null;
-//   // }
-
-//   const hostedGameArchive = gameArchivesStore.getRow(TB_GAME_STEPS_TABLE_NAME, gameTableId);
-
-
-
-//   return hostedGameArchive.stringifiedLatestTableState;
-// };
-
-
-// export const useLatestHostedGameSnapshot = (gameTableId: BfgGameTableId): GameRoomSnapshot | null => {
-//   const hostedGameRoomSnapshot = useHostedGameRoomSnapshot(gameTableId);
-//   if (!hostedGameRoomSnapshot) {
-//     return null;
+// export const useGameInstanceIdsFromGameRoomId = (gameInstanceId: BfgGameInstanceId): GameInstanceMapping => {
+//   const rawTable = useTable(TB_GAME_INSTANCES_TABLE_NAME, gameArchivesStore);
+  
+//   // Find the first row where gameRoomId matches
+//   const matchingEntry = Object.entries(rawTable).find(([_gameInstanceId, rowData]) => {
+//     const tbModel = rowData as GameInstanceMappingsTinybaseTableColumns;
+//     return tbModel.gameInstanceId === gameInstanceId;
+//   });
+  
+//   if (!matchingEntry) {
+//     throw new Error(`No game instance mapping found for game room ID: ${gameInstanceId}`);
 //   }
-
-//   const latestGameStepIndex = hostedGameRoomSnapshot.latestStepIndex;
-//   const latestGameStep = useHostedGameStep(gameTableId, latestGameStepIndex);
-
-//   const retVal: GameRoomSnapshot = {
-//     ...hostedGameRoomSnapshot,
-//     latestGameStepIndex,
-//     latestGameStep,
-//   };
-
-//   return retVal;
+  
+//   const [_gameInstanceId, rowData] = matchingEntry;
+//   const tbModel = rowData as GameInstanceMappingsTinybaseTableColumns;
+//   const gameInstanceMapping = convertTbModelToGameInstanceMapping(tbModel);
+  
+//   return gameInstanceMapping;
 // };
 
 
-export const useLatestHostedGameRoomSnapshot = (gameTableId: BfgGameTableId): GameRoomSnapshotForDb | null => {
-  const hostedGameRoomSnapshot = useRow(TB_GAME_ROOMS_TABLE_NAME, gameTableId, gameArchivesStore);
+export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): HydratedLatestGameSnapshot | null => {
 
-  if (!hostedGameRoomSnapshot) {
-    return null;
-  }
+  const gameIdentifiers = useLatestHostedGameIdentifiers(gameInstanceId);
+
+  const gameRoomId = gameIdentifiers.gameRoomId;
+  const gameTableId = gameIdentifiers.gameTableId;
+
+  const hostedGameRoomSnapshot = useRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, gameArchivesStore);
+  const hostedGameEvents = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
+
+  // if (!hostedGameRoomSnapshot) {
+  //   return null;
+  // }
 
   const gameRoomSnapshotParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(hostedGameRoomSnapshot);
   if (!gameRoomSnapshotParseResult.success) {
@@ -167,56 +188,136 @@ export const useLatestHostedGameRoomSnapshot = (gameTableId: BfgGameTableId): Ga
   if (!gameTitle) {
     throw new Error("Game title not found");
   }
-  
-  const parsedLatestBoardTransition = JSON.parse(gameRoomSnapshotTbTableRow.stringifiedLatestBoardTransition);
 
   const gameMetadata = getGameMetadata(gameTitle);
-  const GameBoardTransitionSchema = createGameBoardEventForDbSchema(gameMetadata.schemas);
-  const hydratedLatestBoardEvent = GameBoardTransitionSchema.parse(parsedLatestBoardTransition);
+
+  const gameEventsParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(hostedGameEvents);
+  if (!gameEventsParseResult.success) {
+    console.error('Error validating existing game events:', gameEventsParseResult.error);
+    return null;
+  }
+  const gameEvents = gameEventsParseResult.data;
+
+  const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+
+  const unstringifiedBoardTransitions = JSON.parse(gameEvents.stringifiedBoardTransitions);
+  const parsedAllBoardTransitions = BoardTransitionsArraySchema.safeParse(unstringifiedBoardTransitions);
+  if (!parsedAllBoardTransitions.success) {
+    console.error('Error parsing all board transitions:', parsedAllBoardTransitions.error);
+    return null;
+  }
+
+  const allBoardEvents = parsedAllBoardTransitions.data;
+
+  // const GameBoardTransitionSchema = createGameBoardEventForDbSchema(gameMetadata.schemas);
+  // const hydratedLatestBoardEventParseResult = GameBoardTransitionSchema.safeParse(parsedLatestBoardTransition);
+
+  // if (!hydratedLatestBoardEventParseResult.success) {
+  //   console.error('Error validating latest board transition:', hydratedLatestBoardEventParseResult.error);
+  //   return null;
+  // }
+  // const hydratedLatestBoardEvent = hydratedLatestBoardEventParseResult.data;
   
-  const GameRoomSnapshotSchema = createGameRoomSnapshotForDbSchema(gameMetadata.schemas);
-  type GameRoomSnapshot = z.infer<typeof GameRoomSnapshotSchema>;
+  // const GameRoomSnapshotSchema = createGameRoomSnapshotForP2pSchema(gameMetadata.schemas);
+  // type GameRoomSnapshot = z.infer<typeof GameRoomSnapshotSchema>;
 
-  const boardEvents: GameBoardEventForDb[] = [];
+  // TODO: this needs to be populated (from the game steps table?)
+  // const boardEvents: GameBoardEventForDb[] = [];
 
-  console.warn("empty boardEvents for now", boardEvents);
+  // console.warn("empty boardEvents for now", boardEvents);
   
-  const gameRoomSnapshot: GameRoomSnapshot = {
-    gameRoomId: gameRoomSnapshotTbTableRow.gameRoomId as BfgGameRoomId,
-    latestStepIndex: gameRoomSnapshotTbTableRow.latestStepIndex,
-    createdAt: gameRoomSnapshotTbTableRow.createdAt,
-    lastUpdatedAt: gameRoomSnapshotTbTableRow.lastUpdatedAt,
-
+  const gameRoomSnapshot: HydratedLatestGameSnapshot = {
+    // gameRoomId,
+    // latestStepIndex: gameRoomSnapshotTbTableRow.latestStepIndex,
     gameRoom: hydratedRoomState,
-    boardEvents,
-    latestBoardEvent: hydratedLatestBoardEvent,
+    // createdAt: gameRoomSnapshotTbTableRow.createdAt,
+    boardEvents: allBoardEvents,
+    latestStepIndex: allBoardEvents.length,
   }
 
   return gameRoomSnapshot;
 };
 
 
-// export const useHostedGameLatestTableState = (gameTableId: BfgGameTableId): GameRoomDb | null => {
-//   const hostedGameArchive = useHostedGameArchive(gameTableId);
-//   const latestTableState = hostedGameArchive?.stringifiedLatestTableState;
+export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEventForDb[] => {
+  const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
 
-//   if (!hostedGameArchive) {
-//     return null;
-//   }
-//   return hostedGameArchive.latestTableState;
-// };
+  if (!gameIdentifers) {
+    return [];
+  }
+
+  const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
+
+  // Get the row for this gameTableId
+  const gameStepsRowTb = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
+  
+  if (!gameStepsRowTb) {
+    // return [];
+    console.error("No game steps row found for game table: " + gameTableId);
+    throw new Error("No game steps row found for game table: " + gameTableId);
+  }
+
+  const parseResult = BoardTransitionTbTableRowForZodSchema.safeParse(gameStepsRowTb);
+  if (!parseResult.success) {
+    console.error('Error parsing game board transitions row:', parseResult.error);
+    // return [];
+    throw new Error("Error parsing game board transitions row: " + gameTableId);
+  }
+
+  const gameHistoryTbRow = parseResult.data;
+
+  const gameMetadata = getGameMetadata(gameHistoryTbRow.gameTitle);
+  if (!gameMetadata) {
+    throw new Error("Game metadata not found for game title: " + gameHistoryTbRow.gameTitle);
+  }
+
+  const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+  const boardTransitionsParseResult = BoardTransitionsArraySchema.safeParse(gameHistoryTbRow.stringifiedBoardTransitions);
+  if (!boardTransitionsParseResult.success) {
+    console.error('Error parsing board transitions array:', boardTransitionsParseResult.error);
+    throw new Error("Error parsing board transitions array: " + gameTableId);
+  }
+  const boardTransitions = boardTransitionsParseResult.data;
+
+  return boardTransitions;
+
+  // try {
+  //   const parsedTransitions = JSON.parse(gameHistoryTbRow.stringifiedBoardTransitions);
+  //   if (!Array.isArray(parsedTransitions)) {
+  //     console.error('Parsed board transitions is not an array');
+  //     return [];
+  //   }
+  //   // TODO: Need to get game metadata to properly parse each transition
+  //   // For now, return the parsed array as-is
+  //   return parsedTransitions as GameBoardEventForDb[];
+  // } catch (error) {
+  //   console.error('Error parsing stringified board transitions:', error);
+  //   return [];
+  // }
+}; 
 
 
 export const clearAllGameArchives = (): void => {
   gameArchivesStore.delTable(TB_GAME_ROOMS_TABLE_NAME);
-  gameArchivesStore.delTable(TB_GAME_STEPS_TABLE_NAME);
+  gameArchivesStore.delTable(TB_GAME_EVENTS_TABLE_NAME);
+  gameArchivesStore.delTable(TB_GAME_INSTANCES_TABLE_NAME);
   console.log('Game archives cleared successfully');
 };
 
 
-export const clearGameArchive = (gameTableId: BfgGameTableId): void => {
-  gameArchivesStore.delRow(TB_GAME_ROOMS_TABLE_NAME, gameTableId);
-  gameArchivesStore.delRow(TB_GAME_STEPS_TABLE_NAME, gameTableId);
+export const clearGameArchive = (gameInstanceId: BfgGameInstanceId): void => {
+  const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+  if (!gameIdentifers) {
+    return;
+  }
+
+  const gameRoomId = gameIdentifers.gameRoomId as BfgGameRoomId;
+  const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
+  
+  gameArchivesStore.delRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId);
+  gameArchivesStore.delRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId);
+  gameArchivesStore.delRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId);
+  
   console.log('Game archive cleared successfully');
 };
 
@@ -276,11 +377,22 @@ export const clearGameArchive = (gameTableId: BfgGameTableId): void => {
 // };
 
 
+// TODO: consolidate ID inputs into gameInstanceId
 export const addGameBoardTransition = async (
-  gameRoomId: BfgGameRoomId,
+  gameInstanceId: BfgGameInstanceId,
+  // gameRoomId: BfgGameRoomId,
+  // gameTableId: BfgGameTableId,
   latestBoardTransition: GameBoardEventForDb,
 ): Promise<{ success: boolean; actionId?: string; error?: string }> => {
   try {
+
+    const gameInstanceMapping = getGameInstanceMapping(gameInstanceId);
+    // if (!gameInstanceMappingTbRow) {
+    //   throw new Error("No game instance mapping found for game instance: " + gameInstanceId);
+    // }
+
+    const gameRoomId = gameInstanceMapping.gameRoomId;
+    const gameTableId = gameInstanceMapping.gameTableId;
 
     const currentGameRoomTbRow = gameArchivesStore.getRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId);
     if (!currentGameRoomTbRow) {
@@ -292,31 +404,77 @@ export const addGameBoardTransition = async (
       console.error('Error validating existing game room snapshot:', currentGameRoomParseResult.error);
       return { success: false, error: 'Invalid game room snapshot data' };
     }
-    const currentGameRoom = currentGameRoomParseResult.data;
 
-    const now = Date.now();
-    const latestStepIndex = currentGameRoom.latestStepIndex + 1;
+    // const currentGameRoom = currentGameRoomParseResult.data;
     
-    const stringifiedLatestBoardTransition = JSON.stringify(latestBoardTransition);
-    
-    const newGameRoomSnapshot: GameRoomSnapshotTbTableRow = {
-      ...currentGameRoom,
-      gameRoomId: gameRoomId as BfgGameRoomId,
-      latestStepIndex,
-      stringifiedLatestBoardTransition,      
-      lastUpdatedAt: now,
-    };
+    // const latestGameSnapshot = createHydratedLatestGameSnapshotFromTbData(
+    //   currentGameRoom.stringifiedRoomState,
+    //   currentGameRoom.stringifiedLatestBoardTransition,
+    // );
 
-    const newTransitionTbRow: BoardTransitionTbTableRow = {
-      gameTableId: gameRoomId,
-      transitionIndex: latestStepIndex,
-      stringifiedBoardTransition: stringifiedLatestBoardTransition,
+    // const now = Date.now();
+    // const latestStepIndex = latestGameSnapshot.latestStepIndex + 1;
+    
+    // const stringifiedLatestBoardTransition = JSON.stringify(latestBoardTransition);
+    
+    // const newGameRoomSnapshot: GameRoomSnapshotTbTableRow = {
+    //   ...currentGameRoom,
+    //   gameInstanceId,
+    //   gameRoomId,
+    //   gameTableId,
+    //   latestStepIndex,
+    //   stringifiedLatestBoardTransition,      
+    //   createdAt: now,
+    // };
+
+    // const gameTitle = currentGameRoom.gameTitle;
+    // const gameMetadata = getGameMetadata(gameTitle);
+    // if (!gameMetadata) {
+    //   throw new Error("Game metadata not found for game title: " + gameTitle);
+    // }
+
+    // Get existing game steps row or create new one
+    const existingGameStepsRowTb = gameArchivesStore.getRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId);
+    
+    if (!existingGameStepsRowTb) {
+      throw new Error("No game steps row found for game table: " + gameTableId);
+    }
+
+    const existingGameStepsRowParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(existingGameStepsRowTb);
+    if (!existingGameStepsRowParseResult.success) {
+      console.error('Error parsing existing game steps row:', existingGameStepsRowParseResult.error);
+      throw new Error("Invalid game steps row for game table: " + gameTableId);
+    }
+
+    const existingGameStepsRow = existingGameStepsRowParseResult.data;
+    const gameTitle = existingGameStepsRow.gameTitle;
+    const gameMetadata = getGameMetadata(gameTitle);
+    if (!gameMetadata) {
+      throw new Error("Game metadata not found for game title: " + gameTitle);
+    }
+
+    const arraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+    const arrayParseResult = arraySchema.safeParse(existingGameStepsRow.stringifiedBoardTransitions);
+    if (!arrayParseResult.success) {
+      console.error('Error parsing existing game steps row:', arrayParseResult.error);
+      throw new Error("Invalid game steps row for game table: " + gameTableId);
+    }
+    const boardTransitions = arrayParseResult.data;
+
+    // Append the new transition
+    boardTransitions.push(latestBoardTransition);
+    const stringifiedBoardTransitions = JSON.stringify(boardTransitions);
+
+    const updatedGameStepsRow: BoardTransitionTbTableRow = {
+      ...existingGameStepsRow,
+      stepCount: boardTransitions.length,
+      stringifiedBoardTransitions,
     };
 
     gameArchivesStore.transaction(
       () => {
-        gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, newGameRoomSnapshot);
-        gameArchivesStore.setRow(TB_GAME_STEPS_TABLE_NAME, gameRoomId, newTransitionTbRow);
+        // gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, newGameRoomSnapshot);
+        gameArchivesStore.setRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, updatedGameStepsRow);
       },
     );
 
@@ -329,37 +487,52 @@ export const addGameBoardTransition = async (
 };
 
 
-export const addNewHostedGameRoom = async (
+export const saveNewHostedGame = async (
   gameInstanceId: BfgGameInstanceId,
+  gameRoomId: BfgGameRoomId,
+  gameTableId: BfgGameTableId,
   gameRoom: GameRoomDb,
   initialGameTableEventWithTransition: GameTableEventWithTransition,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const now = Date.now();
-    const latestStepIndex = 0;
     const stringifiedRoomState = JSON.stringify(gameRoom);
-    const stringifiedLatestBoardTransition = JSON.stringify(initialGameTableEventWithTransition);
+    // const latestStepIndex = 0;
+    // const stringifiedLatestBoardTransition = JSON.stringify(initialGameTableEventWithTransition);
 
     const gameRoomSnapshotTbRow: GameRoomSnapshotTbTableRow = {
-      gameRoomId: gameInstanceId as BfgGameRoomId,
-      gameTableId: gameInstanceId as BfgGameTableId,
+      gameInstanceId,
+      gameRoomId,
+      gameTableId,
       stringifiedRoomState,
-      stringifiedLatestBoardTransition,
-      latestStepIndex,
+      // stringifiedLatestBoardTransition,
+      // latestStepIndex,
       createdAt: now,
       lastUpdatedAt: now,
     };
 
-    const newTransitionTbRow: BoardTransitionTbTableRow = {
-      gameTableId: gameInstanceId as BfgGameTableId,
-      transitionIndex: latestStepIndex,
-      stringifiedBoardTransition: stringifiedLatestBoardTransition,
+    // Initialize with an array containing the initial transition
+    const initialBoardTransitions: GameBoardEventForDb[] = [initialGameTableEventWithTransition as GameBoardEventForDb];
+    const stringifiedBoardTransitions = JSON.stringify(initialBoardTransitions);
+
+    const newGameStepsRow: BoardTransitionTbTableRow = {
+      gameTableId,
+      gameTitle: gameRoom.gameTitle,
+      stepCount: initialBoardTransitions.length,
+      stringifiedBoardTransitions,
+    };
+
+    const gameInstanceMappingTbRow: GameInstanceMappingsTinybaseTableColumns = {
+      gameInstanceId,
+      gameRoomId,
+      gameTableId,
     };
 
     gameArchivesStore.transaction(
       () => {
-        gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameInstanceId, gameRoomSnapshotTbRow);
-        gameArchivesStore.setRow(TB_GAME_STEPS_TABLE_NAME, gameInstanceId, newTransitionTbRow);
+        gameArchivesStore.setRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameInstanceMappingTbRow);
+        gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, gameRoomSnapshotTbRow);
+        gameArchivesStore.setRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, newGameStepsRow);
       },
     );
 

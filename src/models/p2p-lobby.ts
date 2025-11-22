@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BfgSupportedGameTitleSchema } from "./game-box-definition";
-import { BfgGameLobbyIdToolbox, BfgGameTableIdToolbox } from "./types/bfg-branded-uuids";
-import { PublicPlayerProfileSchema, SharedPublicPlayerProfileSchema } from "./player-profile/public-player-profile";
+import { BfgGameInstanceIdToolbox, BfgGameLobbyIdToolbox } from "./types/bfg-branded-uuids";
+import { PublicPlayerProfileSchema, SharedPublicPlayerProfileSchema } from "./internal/player-profile/public-player-profile";
 import {
   createStringifiedZod,
   type StringifiedJsonString,
@@ -21,41 +21,47 @@ export type InvalidLobbyReason = z.infer<typeof InvalidLobbyReasonSchema>;
 
 export const GameLobbySchema = z.object({
   id: BfgGameLobbyIdToolbox.idSchema,
-  createdAt: z.number(),
+  // gameTableId: BfgGameTableIdToolbox.idSchema.optional(),
+  gameInstanceId: BfgGameInstanceIdToolbox.idSchema.optional(),
+
   gameHostPlayerProfile: PublicPlayerProfileSchema,
 
   lobbyName: z.string(),
   currentStatusDescription: z.string(),
   isLobbyValid: z.boolean(),
-  // invalidLobbyReasons: z.array(InvalidLobbyReasonSchema),
 
   gameTitle: BfgSupportedGameTitleSchema.optional(),
 
-  gameTableId: BfgGameTableIdToolbox.idSchema.optional(),
   playGameLink: z.string().optional(),
 
   playerPool: z.array(SharedPublicPlayerProfileSchema),
   minNumPlayers: z.number(),
   maxNumPlayers: z.number(),
 
+  createdAt: z.number(),
   updatedAt: z.number(),
 });
 
 export type GameLobby = z.infer<typeof GameLobbySchema>;
 
-export const GameLobbySchemaForTbStore = GameLobbySchema.omit({
+export const GameLobbySchemaForTbStoreSchema = GameLobbySchema.omit({
   gameHostPlayerProfile: true,
   playerPool: true,
   gameTitle: true,
-  gameTableId: true,
+  gameInstanceId: true,
+  // gameTableId: true,
   playGameLink: true,
 }).extend({
   stringifiedGameHostPlayerProfile: z.string(),
   stringifiedPlayerPool: z.string(),
   gameTitle: z.string(),
-  gameTableId: z.string(),
+  // gameTableId: z.string(),
+  gameInstanceId: z.string(),
   playGameLink: z.string(),
 });
+
+export type GameLobbySchemaForTbStore = z.infer<typeof GameLobbySchemaForTbStoreSchema>;
+
 
 export const GameHostPlayerProfileStringifier = createStringifiedZod(
   PublicPlayerProfileSchema,

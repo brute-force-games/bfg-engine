@@ -1,7 +1,9 @@
 import { GameTableActionSource } from "../../models/game-table/game-table-event";
 import { PlayerProfileId } from "../../models/types/bfg-branded-uuids";
-import { GameRoomDb, ALL_PLAYER_SEATS, PlayerSeat1, PlayerSeat2, PlayerSeat3, PlayerSeat4, PlayerSeat5, PlayerSeat6, PlayerSeat7, PlayerSeat8, type GameRoomP2p } from "../../models/game-table/game-room-p2p";
-import { GameTableSeat } from "../../models/game-table/game-room-p2p";
+import { ALL_PLAYER_SEATS, PlayerSeat1, PlayerSeat2, PlayerSeat3, PlayerSeat4, PlayerSeat5, PlayerSeat6, PlayerSeat7, PlayerSeat8, } from "../../models/internal/game-room-base";
+import { GameRoomDb } from "../../models/tinybase/game-room-db";
+import { type GameRoomP2p } from "../../models/p2p/game-room-p2p";
+import { GameTableSeat } from "../../models/internal/game-room-base";
 import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
 
 

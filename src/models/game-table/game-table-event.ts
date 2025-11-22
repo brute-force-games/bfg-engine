@@ -71,7 +71,7 @@ export const createGameTableEventWithTransitionSchema = (schemas: BfgGenericEngi
   const GameStateTransitionSchema = createGameStateTransitionForDbSchema(schemas);
 
   const GameTableStepSchema = GameTableEventDataSchema.extend({
-    transition: GameStateTransitionSchema,
+    transitionForHost: GameStateTransitionSchema,
   });
 
   return GameTableStepSchema;

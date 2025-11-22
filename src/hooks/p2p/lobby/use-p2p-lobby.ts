@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { joinRoom, Room } from "trystero";
 import { HostP2pLobbyDetails, PlayerP2pLobbyMove } from "../../../models/p2p-details";  
-import { PublicPlayerProfile, type SharedPublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
-import { PrivatePlayerProfile, privateToPublicProfile } from "../../../models/player-profile/private-player-profile";
+import { PublicPlayerProfile, type SharedPublicPlayerProfile } from "../../../models/internal/player-profile/public-player-profile";
+import { PrivatePlayerProfile, privateToPublicProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { GameLobbyId, PlayerProfileId } from "../../../models/types/bfg-branded-uuids"
 import { P2P_LOBBY_DETAILS_ACTION_KEY, P2P_LOBBY_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_LOBBY_PLAYER_MOVE_DATA_ACTION_KEY } from "../../../ui/components/constants";
-import { useGameHosting } from "../../games-registry/game-hosting";
+import { useSiteHosting } from "../../site-hosting";
 import { ConnectionEvent, PeerId, PeerIdSchema } from "../p2p-types";
 // import { useRoom } from "@bfg-engine/hooks/use-trystero-room";
 // import { useSupabaseRoom } from "@bfg-engine/hooks/use-trystero-supabase-room";
@@ -55,8 +55,8 @@ export const useP2pLobby = (
   const [peerPlayers, setPeerPlayers] = useState<Map<PeerId, PublicPlayerProfile>>(new Map())
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
-  const gameHosting = useGameHosting();
-  const trysteroConfig = gameHosting.getTrysteroConfig();
+  const siteHosting = useSiteHosting();
+  const trysteroConfig = siteHosting.getTrysteroConfig();
 
   // // Create room - gets recreated on every render
   const room = joinRoom(trysteroConfig, lobbyId, (error: {

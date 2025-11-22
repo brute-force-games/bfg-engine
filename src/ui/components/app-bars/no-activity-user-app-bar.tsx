@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { PrivatePlayerProfile } from "../../../models/player-profile/private-player-profile";
+import { PrivatePlayerProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
 import { Typography, Button, Box } from "../../bfg-ui";
 

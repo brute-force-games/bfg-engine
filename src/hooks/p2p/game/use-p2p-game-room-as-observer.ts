@@ -1,20 +1,20 @@
 import { PlayerProfileId } from "../../../models/types/bfg-branded-uuids";
-import { type GameRoomP2p } from "../../../models/game-table/game-room-p2p";
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile";
+import { type GameRoomP2p } from "../../../models/p2p/game-room-p2p";
+import { PublicPlayerProfile } from "../../../models/internal/player-profile/public-player-profile";
 import { PeerId } from "../p2p-types";
 import { useP2pGameRoomContext } from "./p2p-game-room-context";
 import { IBfgGameTableForObserver, IP2pDetails, IPublicBfgGameDetails } from "./p2p-game-types";
 import { useGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry-hook";
 import { useEffect, useState } from "react";
-import { useRoomUserDetails } from "./use-bfg-game-room";
-import type { GameTableEventForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import { useGameInstanceUserDetails } from "./use-bfg-game-instance";
+import type { GameTableEventForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 import { isMessageFromHost } from "../../../models/game-table/utils";
 
 
 export const useP2pGameRoomAsObserver = (): IBfgGameTableForObserver => {
 
   const p2pGameRoom = useP2pGameRoomContext();
-  const roomUserDetails = useRoomUserDetails(p2pGameRoom.gameTableId, 'watch');
+  const roomUserDetails = useGameInstanceUserDetails(p2pGameRoom.gameInstanceId, 'watch');
 
   const [peers, setPeers] = useState<PeerId[]>([]);
   const [peerIdsToPlayerIds, setPeerIdsToPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(new Map());
@@ -96,6 +96,7 @@ export const useP2pGameRoomAsObserver = (): IBfgGameTableForObserver => {
   } : null;
 
   const retVal: IBfgGameTableForObserver = {
+    gameRoomId: p2pGameRoom.gameRoomId,
     gameTableId: p2pGameRoom.gameTableId,
     gameMetadata,
 

@@ -2,8 +2,8 @@ import { z } from "zod";
 import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
 import type { BfgGameEvent, BfgGameEventOutcome } from "../metadata-types/game-action-types";
 import type { GameBoardEventForDb } from "../../models/game-table/game-table-event-db";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/game-table/game-table-event-p2p";
-import type { GameTableSeat } from "../../models/game-table/game-room-p2p";
+import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
+import type { GameTableSeat } from "../../models/internal/game-room-base";
 
 
 export interface IMyGameAccessLevelAdapterFactory<
@@ -109,7 +109,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
       // Note: nextGamePlayerStates is an empty array because we don't have player seat information
       // in GameBoardEventForDb. This should be populated by the caller if needed.
       const result = {
-        gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTH['gameTableId'],
+        // gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTH['gameTableId'],
         createdAt: hostEventTransitionDb.createdAt,
         stepIndex: hostEventTransitionDb.stepIndex,
         event: adaptedEvent as unknown as GTH['event'],
@@ -134,7 +134,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
 
       // Converting from GameBoardEventForDb structure to GameTableEventForPlayerP2p structure
       const result = {
-        gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTP['gameTableId'],
+        // gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTP['gameTableId'],
         createdAt: hostEventTransitionDb.createdAt,
         stepIndex: hostEventTransitionDb.stepIndex,
         event: adaptedEvent as unknown as GTP['event'],
@@ -160,7 +160,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
 
       // Converting from GameBoardEventForDb structure to GameTableEventForWatcherP2p structure
       const result = {
-        gameTableId: hostEventTransition.gameRoomId as unknown as GTW['gameTableId'],
+        // gameTableId: hostEventTransition.gameRoomId as unknown as GTW['gameTableId'],
         createdAt: hostEventTransition.createdAt,
         stepIndex: hostEventTransition.stepIndex,
         event: adaptedEvent as unknown as GTW['event'],

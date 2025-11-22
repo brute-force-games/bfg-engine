@@ -1,9 +1,7 @@
 import { Container, Box, Typography, Select, Option } from "../bfg-ui"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
-import { GameTableSeat } from "../../models/game-table/game-room-p2p"
-// import { BfgEncodedString } from "@bfg-engine/game-metadata/encoders"
-// import type { IBfgJsonZodObjectDataEncoder } from "@bfg-engine/game-metadata/encoders"
+import { GameTableSeat } from "../../models/internal/game-room-base"
 import { IPublicBfgGameDetails } from "@bfg-engine/hooks/p2p/game/p2p-game-types"
 
 

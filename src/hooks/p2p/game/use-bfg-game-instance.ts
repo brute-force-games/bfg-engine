@@ -4,11 +4,11 @@ import { useP2pGameRoomAsHost } from "./use-p2p-game-room-as-host";
 import { useP2pGameRoomAsPlayer } from "./use-p2p-game-room-as-player";
 import { isProfileIdOkForPlayerAccess, isProfileOkForHostAccess } from "@bfg-engine/models/game-table/utils";
 import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
-import { BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
+import { type BfgGameInstanceId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { PrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
 import { useP2pGameRoomContext } from "./p2p-game-room-context";
 import type { IBfgGameRoomForRole } from "./p2p-game-types";
-import { useLatestHostedGameRoomSnapshot } from "../../../tb-store/games-archives-store";
+import { useLatestHostedGameSnapshot } from "../../../tb-store/games-archives-store";
 
 
 interface RoomUserDetails {
@@ -21,9 +21,9 @@ interface RoomUserDetails {
 }
 
 
-export const useRoomUserDetails = (gameTableId: BfgGameTableId, requestedRole: GameTableAccessRole): RoomUserDetails => {
+export const useGameInstanceUserDetails = (gameInstanceId: BfgGameInstanceId, requestedRole: GameTableAccessRole): RoomUserDetails => {
   const myPlayerProfile = useMyDefaultPlayerProfile();
-  const hostedGameRoomSnapshot = useLatestHostedGameRoomSnapshot(gameTableId);
+  const hostedGameSnapshot = useLatestHostedGameSnapshot(gameInstanceId);
 
   if (!myPlayerProfile) {
     return {
@@ -36,7 +36,7 @@ export const useRoomUserDetails = (gameTableId: BfgGameTableId, requestedRole: G
     };
   }
 
-  if (!hostedGameRoomSnapshot) {
+  if (!hostedGameSnapshot) {
     return {
       currentAccessRole: 'watch',
       maxAllowedAccessRole: 'watch',
@@ -47,7 +47,7 @@ export const useRoomUserDetails = (gameTableId: BfgGameTableId, requestedRole: G
     };
   }
 
-  const hostedGame = hostedGameRoomSnapshot.gameRoom;
+  const hostedGame = hostedGameSnapshot.gameRoom;
 
   
   const amIHost = hostedGame !== null &&

@@ -22,11 +22,24 @@ export type InferTypeFromSchema<T extends TinybaseTableSchema> = {
 };
 
 // Helper function to create a Zod schema from TinyBase table schema definition
-export const createZodSchemaFromTinyBaseSchema = <T extends TinybaseTableSchema>(
+export const createZodSchemaFromTinyBaseSchema = <
+  T extends TinybaseTableSchema,
+  O extends Partial<Record<keyof T, z.ZodTypeAny>> = Partial<Record<keyof T, z.ZodTypeAny>>
+>(
   schema: T,
-  fieldOverrides?: Partial<Record<keyof T, z.ZodTypeAny>>
+  fieldOverrides?: O
 ): z.ZodObject<{
-  [K in keyof T]: T[K] extends { type: 'string' }
+  [K in keyof T]: K extends keyof O
+    ? O[K] extends z.ZodTypeAny
+      ? O[K]
+      : T[K] extends { type: 'string' }
+      ? z.ZodString
+      : T[K] extends { type: 'number' }
+      ? z.ZodNumber
+      : T[K] extends { type: 'boolean' }
+      ? z.ZodBoolean
+      : z.ZodTypeAny
+    : T[K] extends { type: 'string' }
     ? z.ZodString
     : T[K] extends { type: 'number' }
     ? z.ZodNumber
@@ -34,20 +47,40 @@ export const createZodSchemaFromTinyBaseSchema = <T extends TinybaseTableSchema>
     ? z.ZodBoolean
     : z.ZodTypeAny;
 }> => {
-  const shape: Record<string, z.ZodTypeAny> = {};
+  const shape: {
+    [K in keyof T]?: z.ZodTypeAny;
+  } = {};
   
   for (const [key, cellSchema] of Object.entries(schema)) {
     // Use override if provided, otherwise derive from schema
     if (fieldOverrides && key in fieldOverrides) {
-      shape[key] = fieldOverrides[key as keyof T]!;
+      shape[key as keyof T] = fieldOverrides[key as keyof T]!;
     } else if (cellSchema.type === 'string') {
-      shape[key] = z.string();
+      shape[key as keyof T] = z.string();
     } else if (cellSchema.type === 'number') {
-      shape[key] = z.number();
+      shape[key as keyof T] = z.number();
     } else if (cellSchema.type === 'boolean') {
-      shape[key] = z.boolean();
+      shape[key as keyof T] = z.boolean();
     }
   }
   
-  return z.object(shape) as any;
+  return z.object(shape as {
+    [K in keyof T]: K extends keyof O
+      ? O[K] extends z.ZodTypeAny
+        ? O[K]
+        : T[K] extends { type: 'string' }
+        ? z.ZodString
+        : T[K] extends { type: 'number' }
+        ? z.ZodNumber
+        : T[K] extends { type: 'boolean' }
+        ? z.ZodBoolean
+        : z.ZodTypeAny
+      : T[K] extends { type: 'string' }
+      ? z.ZodString
+      : T[K] extends { type: 'number' }
+      ? z.ZodNumber
+      : T[K] extends { type: 'boolean' }
+      ? z.ZodBoolean
+      : z.ZodTypeAny;
+  });
 };

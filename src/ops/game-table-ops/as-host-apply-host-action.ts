@@ -1,6 +1,6 @@
 import { type GameTableEventWithTransition, type GameTableStepHostP2p } from "../../models/game-table/game-table-event";
-import { type GameRoomP2p } from "../../models/game-table/game-room-p2p";
-import { RoomPhase } from "../../models/game-table/table-phase";
+import { type GameRoomP2p } from "../../models/p2p/game-room-p2p";
+import { RoomPhase } from "../../models/internal/table-phase";
 import type { IGameRegistry } from "../../game-metadata/games-registry";
 import type { BfgGameActionByHost, BfgGameHostActionOutcome } from "../../game-metadata/metadata-types/game-action-types";
 import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
@@ -67,7 +67,7 @@ export const asHostApplyHostAction = async (
     stepIndex: nextStepIndex,
     source: 'game-table-action-source-host',
     eventType: 'game-table-action-host-action',
-    transition: transition,
+    transitionForHost: transition,
   }
 
   const retVal: HostApplyHostActionResult = {

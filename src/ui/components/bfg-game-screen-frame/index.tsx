@@ -5,12 +5,12 @@ import { useUserGameTableSettings } from "@bfg-engine/hooks/stores/use-user-game
 import { BfgStarterNavBar } from "../bfg-nav-bar/bfg-starter-nav-bar";
 import { BfgGameSpineNavBar } from "../bfg-nav-bar/bfg-game-spine-nav-bar";
 import { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
-import { type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
+import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { GameLogPanel } from "../game-log-panel";
 import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { AppBarTabsConfig } from "../bfg-app-bar/tabs-config";
 import { createGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
-import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
 import { convertWatcherEventToBoardEvent } from "../../../models/game-table/game-table-event-converter";
 

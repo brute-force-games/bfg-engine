@@ -34,13 +34,12 @@ export interface IBfgBrandedPrefixKeyStringToolbox<
 > {
   idSchema: BrandedPrefixKeyStringSchema<P, KM>;
   idPrefix: P;
-  // idPrefixRegexStr: P;
 
   keyMethodology: IKeyMethodology<P, KM>;
 
   createValidatedId: (id: string) => BrandedPrefixKeyString<P, KM>;
   createRandomId: () => BrandedPrefixKeyString<P, KM>;
-  createdIdForKey: (key: KM) => BrandedPrefixKeyString<P, KM>;
+  createIdForKey: (key: KM) => BrandedPrefixKeyString<P, KM>;
   parseId: (id: string) => BrandedPrefixKeyString<P, KM>;
 }
 
@@ -117,7 +116,7 @@ export const createBfgBrandedPrefixKeyStringToolbox = <P extends BfgIdTypePrefix
 
     createValidatedId,
     createRandomId: createId,
-    createdIdForKey,
+    createIdForKey: createdIdForKey,
     parseId,
   } as const;
 

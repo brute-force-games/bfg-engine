@@ -10,9 +10,9 @@ import {
   TB_PLAYER_PROFILES_TABLE_KEY,
   TB_DEFAULT_PROFILE_ID_KEY,
 } from '../../tb-store/player-profile-store';
-import { PrivatePlayerProfile, PrivatePlayerProfileSchema, privateToPublicProfile } from '../../models/player-profile/private-player-profile';
+import { PrivatePlayerProfile, PrivatePlayerProfileSchema, privateToPublicProfile } from '../../models/internal/player-profile/private-player-profile';
 import { PlayerProfileId } from '../../models/types/bfg-branded-uuids';
-import { PublicPlayerProfile } from '../../models/player-profile/public-player-profile';
+import { PublicPlayerProfile } from '../../models/internal/player-profile/public-player-profile';
 
 
 /**

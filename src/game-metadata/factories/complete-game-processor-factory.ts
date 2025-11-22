@@ -1,13 +1,14 @@
 import { z } from "zod";
 import React from "react";
-import type { GameRoomP2p, GameTableSeat } from "../../models/game-table/game-room-p2p";
+import type { GameRoomP2p } from "../../models/p2p/game-room-p2p";
+import type { GameTableSeat } from "../../models/internal/game-room-base";
 import type { GameTableEventWithTransition } from "../../models/game-table/game-table-event";
 import type { GameLobby } from "../../models/p2p-lobby";
 import type { BfgGameActionByHost, BfgGameActionByPlayer, BfgGameHostActionOutcome, BfgGamePlayerActionOutcome } from "../metadata-types/game-action-types";
 import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
-import type { RoomPhase } from "../../models/game-table/table-phase";
+import type { RoomPhase } from "../../models/internal/table-phase";
 import type { GameBoardEventForDb } from "../../models/game-table/game-table-event-db";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/game-table/game-table-event-p2p";
+import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
 
 
 export const PlayerActionOutcomeSummarySchema = z.string().brand('PlayerActionOutcomeSummary');

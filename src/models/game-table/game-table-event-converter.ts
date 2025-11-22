@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import type { BfgGameEngineMetadata } from "../../game-metadata/metadata-types";
-import type { GameTableEventForWatcherP2p, GameTableEventForPlayerP2p, GameTableEventForHostP2p } from "./game-table-event-p2p";
+import type { GameTableEventForWatcherP2p, GameTableEventForPlayerP2p, GameTableEventForHostP2p } from "../p2p/game-table-event-p2p";
 import type { GameTableEventWithTransition } from "./game-table-event";
 import { createGameTableEventWithTransitionSchema, GameTableActionSource, GameTableEventTypeSchema } from "./game-table-event";
 
@@ -61,7 +61,7 @@ export const convertWatcherEventToBoardEvent = (
     source,
     eventType,
     createdAt,
-    transition,
+    transitionForHost: transition,
   };
   
   return GameTableEventWithTransitionSchema.parse(boardEvent);
@@ -99,7 +99,7 @@ export const convertPlayerEventToBoardEvent = (
     source,
     eventType,
     createdAt,
-    transition,
+    transitionForHost: transition,
   };
   
   return GameTableEventWithTransitionSchema.parse(boardEvent);
@@ -133,7 +133,7 @@ export const convertHostEventToBoardEvent = (
     source,
     eventType,
     createdAt,
-    transition,
+    transitionForHost: transition,
   };
   
   return GameTableEventWithTransitionSchema.parse(boardEvent);

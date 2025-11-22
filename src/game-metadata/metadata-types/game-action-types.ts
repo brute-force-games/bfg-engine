@@ -1,10 +1,5 @@
 import { z } from "zod";
-import { GameTableSeatSchema } from "../../models/game-table/game-room-p2p";
-
-
-// export const BfgGameActionSource = ['player', 'host'] as const;
-
-// export type BfgGameActionSource = typeof BfgGameActionSource[number];
+import { GameTableSeatSchema } from "../../models/internal/game-room-base";
 
 
 export const BfgGameActionSource = ['player', 'host'] as const;
@@ -66,11 +61,26 @@ export type BfgGameAction = z.infer<typeof BfgGameActionSchema>;
 // export type AllBfgGameActionsByHost = z.infer<typeof AllBfgGameActionsByHostSchema>;
 
 
-export const BfgGamePlayerActionOutcomeSchema = z.object({});
-export type BfgGamePlayerActionOutcome = z.infer<typeof BfgGamePlayerActionOutcomeSchema>;
+// Helper type to make accessing non-existent properties return never
+// This prevents TypeScript from allowing property access on empty object types
+// By intersecting with Record<string, never>, any property access will return never
+// instead of unknown, which TypeScript will catch as a type error
+type StrictEmptyObject = Record<string, never>;
 
-export const BfgGameHostActionOutcomeSchema = z.object({});
-export type BfgGameHostActionOutcome = z.infer<typeof BfgGameHostActionOutcomeSchema>;
+export const BfgGamePlayerActionOutcomeSchema = z.object({
+  description: z.string(),
+}).strict();
+// Intersect inferred type with StrictEmptyObject to prevent property access
+// while maintaining the relationship to the schema
+export type BfgGamePlayerActionOutcome = z.infer<typeof BfgGamePlayerActionOutcomeSchema> & StrictEmptyObject;
+
+export const BfgGameHostActionOutcomeSchema = z.object({
+  description: z.string(),
+}).strict()
+.describe("BfgGameHostActionOutcomeSchema");
+// Intersect inferred type with StrictEmptyObject to prevent property access
+// while maintaining the relationship to the schema
+export type BfgGameHostActionOutcome = z.infer<typeof BfgGameHostActionOutcomeSchema> & StrictEmptyObject;
 
 
 export const BfgGameActionOutcomeSchema = z.discriminatedUnion('source', [

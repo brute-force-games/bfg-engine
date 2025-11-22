@@ -4,4 +4,4 @@ export {
   createGameBoardEventSchema as createGameBoardEventForDbSchema,
   type GameStateTransitionForDb,
   type GameBoardEventForDb,
-} from "./game-table-event-board-transition";
+} from "../tinybase/game-board-event";

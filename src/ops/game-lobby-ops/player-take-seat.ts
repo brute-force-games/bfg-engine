@@ -1,5 +1,5 @@
 import { GameLobby } from "../../models/p2p-lobby";
-import type { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import type { PublicPlayerProfile } from "../../models/internal/player-profile/public-player-profile";
 import { validateLobby } from "./lobby-utils";
 import { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
 

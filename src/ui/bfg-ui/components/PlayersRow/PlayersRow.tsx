@@ -1,11 +1,12 @@
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 import { PlayerBox } from '../PlayerBox';
-import { GameTableSeat, type GameRoomP2p } from '@bfg-engine/models/game-table/game-room-p2p';
-import { PublicPlayerProfile } from '@bfg-engine/models/player-profile/public-player-profile';
+import { GameTableSeat, } from '@bfg-engine/models/internal/game-room-base';
+import { type GameRoomP2p } from '@bfg-engine/models/p2p/game-room-p2p';
+import { PublicPlayerProfile } from '@bfg-engine/models/internal/player-profile/public-player-profile';
 import { PlayerProfileId } from '@bfg-engine/models/types/bfg-branded-uuids';
 import { useMyDefaultPublicPlayerProfile } from '@bfg-engine/hooks/stores/use-my-player-profiles-store';
 import styles from './PlayersRow.module.css';
-import { isGameOver } from '../../../../models/game-table/table-phase';
+import { isGameOver } from '../../../../models/internal/table-phase';
 import { BfgGameStateForWatcher } from '@bfg-engine/game-metadata/metadata-types/game-state-types';
 import { useMemo } from 'react';
 import { getActivePlayerSeatsForGameTable } from '../../../../ops/game-table-ops/player-seat-utils';

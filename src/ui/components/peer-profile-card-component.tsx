@@ -8,7 +8,7 @@ import {
   Avatar,
   ExpandMore,
 } from "../bfg-ui";
-import { PublicPlayerProfile } from "../../models/player-profile/public-player-profile";
+import { PublicPlayerProfile } from "../../models/internal/player-profile/public-player-profile";
 
 interface IPeerProfileCardProps {
   peerPlayer?: PublicPlayerProfile;

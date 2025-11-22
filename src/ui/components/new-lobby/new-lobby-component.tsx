@@ -16,13 +16,16 @@ import {
 } from '../../bfg-ui';
 import { useRiskyMyDefaultPlayerProfile } from '../../../hooks/stores/use-my-player-profiles-store';
 import { GameLobby } from '../../../models/p2p-lobby';
-import { convertPrivateToPublicProfile } from '../../../models/player-profile/utils';
+import { convertPrivateToPublicProfile } from '../../../models/internal/player-profile/utils';
 import { useHostedLobbyActions } from '../../../hooks/stores/use-hosted-lobbies-store';
-import { BfgGameLobbyIdToolbox, type GameLobbyId } from '../../../models/types/bfg-branded-uuids';
+import { BfgGameInstanceIdToolbox, BfgGameLobbyIdToolbox } from '../../../models/types/bfg-branded-uuids';
 import { BfgSupportedGameTitle, BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';
 import { useGameRegistry } from '../../../hooks/games-registry/games-registry-hook';
 import { validateLobby } from '@bfg-engine/ops/game-lobby-ops/lobby-utils';
 import { Navigate, useNavigate } from '@tanstack/react-router';
+import { doStartGame } from '../lobby/start-game-utils';
+import { useSiteHosting } from '../../../hooks/site-hosting';
+import { updateHostedLobby } from '../../../tb-store/hosted-lobbies-store';
 
 
 // Form validation schema with enhanced Zod validation
@@ -50,6 +53,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
   
   // Form state
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isLaunchingSolo, setIsLaunchingSolo] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [createdLobbyId, setCreatedLobbyId] = useState<string | null>(null);
   // const [copySuccess, setCopySuccess] = useState<string>('');
@@ -57,6 +61,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
   const hostedLobbyActions = useHostedLobbyActions();
   const registry = useGameRegistry();
   const navigate = useNavigate();
+  const siteHosting = useSiteHosting();
   // const gameHosting = useGameHosting();
 
   // Calculate default lobby name (safe even if profile is null)
@@ -88,6 +93,134 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
     });
   };
 
+  const getMinAndMaxNumPlayers = (gameTitle: BfgSupportedGameTitle | undefined): { minNumPlayers: number; maxNumPlayers: number } | null => {
+    if (!gameTitle) {
+      return null;
+    }
+
+    const selectedGameMetadata = registry.getGameMetadata(gameTitle);
+    return {
+      minNumPlayers: selectedGameMetadata.definition.minNumPlayersForGame,
+      maxNumPlayers: selectedGameMetadata.definition.maxNumPlayersForGame,
+    };
+  }
+
+  const isSoloPlayEnabled = () => {
+    const formData = form.state.values;
+    if (!formData.gameTitle) {
+      return false;
+    }
+    const playerCounts = getMinAndMaxNumPlayers(formData.gameTitle);
+    if (playerCounts === null) {
+      return false;
+    }
+    return playerCounts.minNumPlayers === 1;
+  };
+
+  const handleSoloPlay = async () => {
+    try {
+      // Clear previous messages
+      setError('');
+      setCreatedLobbyId(null);
+      setIsLaunchingSolo(true);
+      
+      if (!defaultPlayerProfile) {
+        setError('No player profile available');
+        return;
+      }
+
+      const formData = form.state.values;
+
+      // Validate that a game is selected
+      if (!formData.gameTitle) {
+        setError('Please select a game first');
+        return;
+      }
+
+      // Validate that the game supports solo play
+      if (!isSoloPlayEnabled()) {
+        setError('This game does not support solo play');
+        return;
+      }
+
+      // Validate lobby name
+      const lobbyNameValidation = createLobbyFormSchema.shape.lobbyName.safeParse(formData.lobbyName);
+      if (!lobbyNameValidation.success) {
+        const firstError = lobbyNameValidation.error.issues[0];
+        setError(firstError.message);
+        return;
+      }
+
+      const playerCounts = getMinAndMaxNumPlayers(formData.gameTitle);
+      if (playerCounts === null) {
+        setError('Please select a game first');
+        return;
+      }
+
+      const { minNumPlayers, maxNumPlayers } = playerCounts;
+
+      const publicHostPlayerProfile = convertPrivateToPublicProfile(defaultPlayerProfile);
+      const newLobbyId = BfgGameLobbyIdToolbox.createRandomId();
+      const newInstanceId = BfgGameInstanceIdToolbox.createRandomId();
+      const now = Date.now();
+
+      // For solo play, always include the player in the pool
+      const playerPool = [defaultPlayerProfile];
+
+      const newLobby: GameLobby = {
+        id: newLobbyId,
+        gameInstanceId: newInstanceId,
+        currentStatusDescription: `Solo play launched from ${formData.lobbyName}`,
+        lobbyName: formData.lobbyName,
+        gameHostPlayerProfile: publicHostPlayerProfile,
+        gameTitle: formData.gameTitle,
+        playerPool,
+        maxNumPlayers,
+        minNumPlayers,
+        isLobbyValid: false,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const invalidLobbyReasons = validateLobby(registry, newLobby);
+      const isLobbyValid = invalidLobbyReasons.length === 0;
+
+      const validatedNewLobby = {
+        ...newLobby,
+        isLobbyValid,
+      } satisfies GameLobby;
+
+      // Add lobby to store first so updateLobbyState can work
+      await hostedLobbyActions.addLobby(validatedNewLobby);
+
+      const updateLobbyState = (lobbyState: GameLobby) => {
+        updateHostedLobby(validatedNewLobby.id, lobbyState);
+      }
+
+      const doStartGameResult = await doStartGame(validatedNewLobby, registry, siteHosting, updateLobbyState);
+      
+
+      if (!doStartGameResult) {
+        setError('Failed to start game. Please try again.');
+        return;
+      }
+      
+      // Navigate with autoStart parameter for solo play
+      // Don't set createdLobbyId since we're navigating manually with search params
+      navigate({
+        to: '/hosted-lobby/$lobbyId',
+        params: { lobbyId: newLobbyId },
+        search: { autoStart: true },
+      });
+      
+    } catch (error) {
+      console.error('Error launching solo play:', error);
+      setError('Failed to launch solo play. Please try again.');
+    } finally {
+      setIsLaunchingSolo(false);
+    }
+  };
+
   const handleSubmit = async (formData: CreateLobbyFormData) => {
     try {
       // Clear previous messages
@@ -108,32 +241,25 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
         return;
       }
 
-      const getMinAndMaxNumPlayers = (gameTitle: BfgSupportedGameTitle | undefined) => {
-        if (!gameTitle) {
-          return {
-            minNumPlayers: 1,
-            maxNumPlayers: 8,
-          };
-        }
-
-        const selectedGameMetadata = registry.getGameMetadata(gameTitle);
-        return {
-          minNumPlayers: selectedGameMetadata.definition.minNumPlayersForGame,
-          maxNumPlayers: selectedGameMetadata.definition.maxNumPlayersForGame,
-        };
+      const playerCounts = getMinAndMaxNumPlayers(formData.gameTitle);
+      if (playerCounts === null) {
+        setError('Please select a game first');
+        return;
       }
 
-      const { minNumPlayers, maxNumPlayers } = getMinAndMaxNumPlayers(formData.gameTitle);
+      const { minNumPlayers, maxNumPlayers } = playerCounts;
 
       const publicHostPlayerProfile = convertPrivateToPublicProfile(defaultPlayerProfile);
-      const newLobbyId = BfgGameLobbyIdToolbox.createRandomId() as GameLobbyId;
+      const newLobbyId = BfgGameLobbyIdToolbox.createRandomId();
+      const newInstanceId = BfgGameInstanceIdToolbox.createRandomId();
+
       const now = Date.now();
 
       const playerPool = formData.joinLobbyAsPlayer ? [defaultPlayerProfile] : [];
 
       const newLobby: GameLobby = {
         id: newLobbyId,
-        createdAt: now,
+        gameInstanceId: newInstanceId,
         currentStatusDescription: `Launched from ${formData.lobbyName}`,
         lobbyName: formData.lobbyName,
         gameHostPlayerProfile: publicHostPlayerProfile,
@@ -142,6 +268,7 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
         maxNumPlayers,
         minNumPlayers,
         isLobbyValid: false,
+        createdAt: now,
         updatedAt: now,
       };
 
@@ -309,10 +436,20 @@ export const NewLobbyComponent = ({ defaultGameTitle }: NewLobbyComponentProps) 
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isCreating || !form.state.isValid}
+                disabled={isCreating || isLaunchingSolo || !form.state.isValid}
                 style={{ minWidth: 160 }}
               >
                 {isCreating ? 'Creating...' : 'Host Game Lobby'}
+              </Button>
+              <Button 
+                type="button"
+                variant="outlined"
+                color="primary"
+                disabled={isCreating || isLaunchingSolo || !isSoloPlayEnabled()}
+                onClick={handleSoloPlay}
+                style={{ minWidth: 160 }}
+              >
+                {isLaunchingSolo ? 'Launching...' : 'Launch Solo Play'}
               </Button>
             </Stack>
           </Stack>

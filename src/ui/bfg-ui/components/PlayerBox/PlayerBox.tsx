@@ -1,5 +1,6 @@
 import { Card, Stack, Typography, Avatar } from '@bfg-engine/ui/bfg-ui';
-import { GameTableSeat, type GameRoomP2p } from '@bfg-engine/models/game-table/game-room-p2p';
+import { GameTableSeat, } from '@bfg-engine/models/internal/game-room-base';
+import { type GameRoomP2p } from '@bfg-engine/models/p2p/game-room-p2p';
 import styles from './PlayerBox.module.css';
 import { ArrowLeft } from '../../icons';
 import type { BfgGameStateForWatcher } from '../../../../game-metadata/metadata-types/game-state-types';

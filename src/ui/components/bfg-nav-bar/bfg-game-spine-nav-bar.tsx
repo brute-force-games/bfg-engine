@@ -1,9 +1,9 @@
 import type { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
 import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
-import { type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
+import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { BfgGameSpine } from "@bfg-engine/ui/bfg-ui";
 import { OptionalGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
 

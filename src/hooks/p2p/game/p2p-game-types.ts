@@ -1,13 +1,14 @@
-import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { PeerId } from "../p2p-types";
 import { ConnectionEvent } from "../p2p-types";
-import { BfgGameTableId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { BfgGameTableId, PlayerProfileId, type BfgGameRoomId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
-import { GameTableSeat, type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
-import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
+import { GameTableSeat } from "@bfg-engine/models/internal/game-room-base";
+import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
+import { PrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
 import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../../../game-metadata/metadata-types/game-action-types";
 import type { GenericGameMetadata } from "../../../game-metadata/games-registry";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 
 
 
@@ -32,6 +33,7 @@ export interface IBfgGameTableForUserBase <
   // HGA extends BfgGameActionByHost,
   // AllPGA extends AllPGAExt,
 > {
+  gameRoomId: BfgGameRoomId;
   gameTableId: BfgGameTableId;
   gameMetadata: GenericGameMetadata | null;
   

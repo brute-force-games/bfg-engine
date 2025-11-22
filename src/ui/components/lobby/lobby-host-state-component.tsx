@@ -1,8 +1,7 @@
 import { GameLobby, LobbyOptions } from "../../../models/p2p-lobby"
-import { BfgGameTableIdToolbox, PlayerProfileId, type BfgGameTableId } from "../../../models/types/bfg-branded-uuids"
-import { PublicPlayerProfile } from "../../../models/player-profile/public-player-profile"
-import { asHostStartNewGame } from "../../../ops/game-table-ops/as-host-start-game"
-import { useState } from "react"
+import { PlayerProfileId } from "../../../models/types/bfg-branded-uuids"
+import { PublicPlayerProfile } from "../../../models/internal/player-profile/public-player-profile"
+import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { BfgShareableLinkComponent } from "../bfg-shareable-link-component"
 import {
@@ -18,11 +17,12 @@ import {
   Settings,
   Groups
 } from "../../bfg-ui" 
-import { useGameHosting } from "../../../hooks/games-registry/game-hosting"
+import { useSiteHosting } from "../../../hooks/site-hosting"
 import { useGameRegistry } from "../../../hooks/games-registry/games-registry-hook"
 import { PlayerProfileChip } from "../player-profile-chip"
 import { validateLobby } from "../../../ops/game-lobby-ops/lobby-utils"
 import { LobbyHostOptionsDialog } from "../dialogs/lobby-host-options-dialog"
+import { doStartGame } from "./start-game-utils"
 
 
 interface ILobbyHostStateComponentProps {
@@ -33,6 +33,7 @@ interface ILobbyHostStateComponentProps {
 
   lobbyOptions: LobbyOptions
   setLobbyOptions: (lobbyOptions: LobbyOptions) => void
+  autoStart?: boolean
 }
 
 export const LobbyHostStateComponent = ({
@@ -42,17 +43,19 @@ export const LobbyHostStateComponent = ({
   // setLobbyPlayerPool,
   lobbyOptions,
   setLobbyOptions,
+  autoStart = false,
 }: ILobbyHostStateComponentProps) => {
 
-  const gameHosting = useGameHosting();
+  const siteHosting = useSiteHosting();
   const gameRegistry = useGameRegistry();
   const navigate = useNavigate();
 
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [isLobbyOptionsDialogOpen, setIsLobbyOptionsDialogOpen] = useState(false);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
 
-  const startGame = async () => {
+  const startGame = useCallback(async () => {
     if (!lobbyState.gameTitle) {
       alert('Please select a game title first');
       return;
@@ -77,20 +80,32 @@ export const LobbyHostStateComponent = ({
     setIsStartingGame(true);
 
     try {
-      const newGameTableId = BfgGameTableIdToolbox.createRandomId() as BfgGameTableId;
-
-      console.log("starting game", lobbyState);
-      const gameTable = await asHostStartNewGame(gameRegistry, lobbyState, newGameTableId);
-      console.log("NEW GAME TABLE", gameTable);
-
-      const playGameLink = gameHosting.createPlayerGameUrl(newGameTableId);
-      updateLobbyState({ ...lobbyState, playGameLink, gameTableId: newGameTableId });
+      await doStartGame(lobbyState, gameRegistry, siteHosting, updateLobbyState);
     } catch (error) {
       console.error("Error starting game:", error);
     } finally {
       setIsStartingGame(false);
     }
-  }
+
+    // try {
+    //   // const newGameTableId = BfgGameTableIdToolbox.createRandomId() as BfgGameTableId;
+    //   const newGameRoomGuid = generateUuidKey();
+    //   const newGameRoomId = BfgGameRoomIdToolbox.createIdForKey(newGameRoomGuid);
+    //   const newGameTableId = BfgGameTableIdToolbox.createIdForKey(newGameRoomGuid);
+    //   const newGameInstanceId = BfgGameInstanceIdToolbox.createIdForKey(newGameRoomGuid);
+
+    //   console.log("starting game", lobbyState);
+    //   const gameTable = await asHostStartNewGame(gameRegistry, lobbyState, newGameRoomId, newGameTableId);
+    //   console.log("NEW GAME TABLE", gameTable);
+
+    //   const playGameLink = siteHosting.createPlayerGameUrl(newGameInstanceId);
+    //   updateLobbyState({ ...lobbyState, playGameLink, gameInstanceId: newGameInstanceId });
+    // } catch (error) {
+    //   console.error("Error starting game:", error);
+    // } finally {
+    //   setIsStartingGame(false);
+    // }
+  }, [lobbyState, isStartingGame, gameRegistry, siteHosting, updateLobbyState]);
 
   const startNewLobby = () => {
     navigate({
@@ -114,17 +129,25 @@ export const LobbyHostStateComponent = ({
 
   const isGameStarted = lobbyState.playGameLink !== undefined;
 
-  const baseUrl = gameHosting.getBaseUrl();
+  // Auto-start game when autoStart is true and lobby is valid
+  useEffect(() => {
+    if (autoStart && !hasAutoStarted && lobbyState.isLobbyValid && lobbyState.gameTitle && !isGameStarted && !isStartingGame) {
+      setHasAutoStarted(true);
+      startGame();
+    }
+  }, [autoStart, hasAutoStarted, lobbyState.isLobbyValid, lobbyState.gameTitle, isGameStarted, isStartingGame, startGame]);
+
+  const baseUrl = siteHosting.getBaseUrl();
   
   // const hostingLink = lobbyState.gameTableId ? 
   //   `${baseUrl}/hosted-games/${lobbyState.gameTableId}` :
   //   '';
-  const hostingLink = lobbyState.gameTableId ? 
-    gameHosting.createHostedGameUrl(lobbyState.gameTableId) :
+  const hostingLink = lobbyState.gameInstanceId ? 
+    siteHosting.createHostedGameUrl(lobbyState.gameInstanceId) :
     '';
       
-  const observerLink = lobbyState.gameTableId ?
-    gameHosting.createObserverGameUrl(lobbyState.gameTableId) :
+  const observerLink = lobbyState.gameInstanceId ?
+    siteHosting.createObserverGameUrl(lobbyState.gameInstanceId) :
     '';
 
   const lobbyValidLabel = lobbyState.isLobbyValid ? 

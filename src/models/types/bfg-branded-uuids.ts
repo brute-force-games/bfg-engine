@@ -38,7 +38,6 @@ export type GameMoveId = z.infer<typeof BfgGameMoveIdToolbox.idSchema>;
 
 export type PlayerProfileId = BrandedUuid<typeof BfgPlayerProfileIdToolbox.idPrefix>;
 export type CommMessageChannelId = z.infer<typeof BfgCommMessageChannelIdToolbox.idSchema>;
-// export type BfgGameTableId = BrandedUuid<typeof BfgGameTableIdToolbox.idPrefix>;
 export type BfgGameTableId = z.infer<typeof BfgGameTableIdToolbox.idSchema>;
 export type BfgGameRoomId = z.infer<typeof BfgGameRoomIdToolbox.idSchema>;
 export type GameTableEventId = z.infer<typeof BfgGameTableEventIdToolbox.idSchema>;

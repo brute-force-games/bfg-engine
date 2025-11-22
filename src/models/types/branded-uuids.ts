@@ -8,12 +8,11 @@ export const BfgUuidMethodKeyValueSchema = BfgIdTypeKeyMethodBrandSchema.brand(B
 export type BfgUuidMethodKeyValue = z.infer<typeof BfgUuidMethodKeyValueSchema>;
 
 const UuidRegexString = "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}" as RegexableString;
-const generateUuidKey = () => crypto.randomUUID() as BfgUuidMethodKeyValue;
+export const generateUuidKey = () => crypto.randomUUID() as BfgUuidMethodKeyValue;
 
 
 
 export const createRawBrandedUuidSchema = <T extends BfgUuidBrand>(idPrefix: T) => {
-  // const idPrefixRegexStr = `^${idPrefix}` as BfgUuidPrefixType;
   
   const keyMethodology: IKeyMethodology<BfgUuidPrefixType, BfgUuidMethodKeyValue> = {
     idPrefix,

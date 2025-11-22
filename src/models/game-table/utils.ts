@@ -1,7 +1,7 @@
 import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
-import { PublicPlayerProfile } from "../player-profile/public-player-profile";
+import { PublicPlayerProfile } from "../internal/player-profile/public-player-profile";
 import { PlayerProfileId } from "../types/bfg-branded-uuids";
-import { GameRoomDb } from "./game-room-p2p";
+import { GameRoomDb } from "../tinybase/game-room-db";
 import { GameTableActionSource, HostActionSources, PlayerActionSources } from "./game-table-event";
 
 

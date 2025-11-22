@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GameTableSeatSchema } from "../../models/game-table/game-room-p2p";
+import { GameTableSeatSchema } from "../../models/internal/game-room-base";
 
 
 export const BfgGameStateBaseSchema = z.object({}).catchall(z.unknown());

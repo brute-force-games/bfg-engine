@@ -1,6 +1,6 @@
 import { BfgGameRoomIdToolbox } from "../types/bfg-branded-uuids";
-import { GameRoomDbSchema } from "./game-room-p2p";
-import { createGameBoardEventForDbSchema } from "./game-table-event-db";
+import { GameRoomDbSchema } from "../tinybase/game-room-db";
+import { createGameBoardEventForDbSchema } from "../game-table/game-table-event-db";
 import { z } from "zod";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
 
@@ -16,15 +16,14 @@ import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metada
 //   lastUpdatedAt: number;
 // }
 
-export const createGameRoomSnapshotForDbSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
-  const GameBoardEventForDbSchema = createGameBoardEventForDbSchema(schemas);
+export const createGameRoomSnapshotForP2pSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+  const GameBoardTransitionForP2pSchema = createGameBoardEventForDbSchema(schemas);
 
   const GameRoomSnapshotForDbSchema = z.object({
     gameRoomId: BfgGameRoomIdToolbox.idSchema,
     
     gameRoom: GameRoomDbSchema,
-    boardEvents: z.array(GameBoardEventForDbSchema),
-    latestBoardEvent: GameBoardEventForDbSchema,
+    latestBoardTransition: GameBoardTransitionForP2pSchema,
 
     latestStepIndex: z.number(),
     createdAt: z.number(),
@@ -35,4 +34,4 @@ export const createGameRoomSnapshotForDbSchema = (schemas: BfgGenericEngineMetad
 }
 
 // export type GameRoomSnapshot = ReturnType<typeof createGameRoomSnapshotSchema>;
-export type GameRoomSnapshotForDb = z.infer<ReturnType<typeof createGameRoomSnapshotForDbSchema>>;
+export type GameRoomSnapshotForP2p = z.infer<ReturnType<typeof createGameRoomSnapshotForP2pSchema>>;

@@ -11,5 +11,6 @@ export const getAllowedRolesForAccessRole = (accessRole: GameTableAccessRole): G
   if (accessRole === 'watch') {
     return ['watch'];
   }
-  return ['none'];
+  // return ['none'];
+  throw new Error('Invalid access role: ' + accessRole);
 }

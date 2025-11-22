@@ -1,13 +1,13 @@
 import { createContext, useContext, useRef, useState } from "react";
 import { joinRoom, Room } from "trystero";
-import { useGameHosting } from "@bfg-engine/hooks/games-registry/game-hosting";
-import { type GameRoomP2p } from "@bfg-engine/models/game-table/game-room-p2p";
-import { PublicPlayerProfile } from "@bfg-engine/models/player-profile/public-player-profile";
+import { useSiteHosting } from "@bfg-engine/hooks/site-hosting";
+import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
+import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { P2P_GAME_PLAYER_PROFILE_DATA_ACTION_KEY, P2P_GAME_PLAYER_ACTION_DATA_ACTION_KEY, P2P_GAME_ACTIONS_ACTION_KEY, P2P_GAME_PRIVATE_PLAYER_KNOWLEDGE_DATA_ACTION_KEY, P2P_GAME_ROOM_ACTION_KEY } from "@bfg-engine/ui/components/constants";
 import { ConnectionEvent, PeerId, PeerIdSchema, PlayerP2pActionStr, PrivatePlayerKnowledgeStr } from "../p2p-types";
-import { BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { type BfgGameInstanceId, type BfgGameRoomId, type BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
-import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/game-table/game-table-event-p2p";
+import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 import { GameTableEventForWatcherP2pSchemaToolbox, type GameTableEventForWatcherP2pString } from "../../../models/types/bfg-branded-string-types";
 
 
@@ -46,7 +46,9 @@ class SubscriptionManager<T> {
 
 
 export interface IP2pGameRoomValue {
+  gameRoomId: BfgGameRoomId;
   gameTableId: BfgGameTableId;
+  gameInstanceId: BfgGameInstanceId;
   requestedRole: GameTableAccessRole;
 
   room: Room;
@@ -81,7 +83,9 @@ export interface IP2pGameRoomValue {
 
 
 export interface IP2pGameRoomContextProviderProps {
+  gameRoomId: BfgGameRoomId;
   gameTableId: BfgGameTableId;
+  gameInstanceId: BfgGameInstanceId;
   requestedRole: GameTableAccessRole;
   children: React.ReactNode;
 }
@@ -89,14 +93,16 @@ export interface IP2pGameRoomContextProviderProps {
 const P2pGameRoomContext = createContext<IP2pGameRoomValue | null>(null);
 
 export const P2pGameRoomContextProvider = ({ 
+  gameRoomId,
   gameTableId,
+  gameInstanceId,
   requestedRole,
   children 
 }: IP2pGameRoomContextProviderProps) => {
 
   // Create room - gets recreated on every render
-  const gameHosting = useGameHosting();
-  const trysteroConfig = gameHosting.getTrysteroConfig();
+  const siteHosting = useSiteHosting();
+  const trysteroConfig = siteHosting.getTrysteroConfig();
 
   const [connectionEvents, setConnectionEvents] = useState<ConnectionEvent[]>([]);
 
@@ -110,7 +116,7 @@ export const P2pGameRoomContextProvider = ({
   const gameEventsDataManager = useRef(new SubscriptionManager<GameTableEventWithTransitionForWatcherP2p[]>());
   const privatePlayerKnowledgeManager = useRef(new SubscriptionManager<PrivatePlayerKnowledgeStr>());
 
-  const room = joinRoom(trysteroConfig, gameTableId, (error: {
+  const room = joinRoom(trysteroConfig, gameRoomId, (error: {
     error: string;
     appId: string;
     roomId: string;
@@ -228,7 +234,9 @@ export const P2pGameRoomContextProvider = ({
   const connectionStatus = `Connected to ${peers.length} peers`;
 
   const retVal: IP2pGameRoomValue = {
+    gameRoomId,
     gameTableId,
+    gameInstanceId,
     requestedRole,
 
     room,

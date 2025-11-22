@@ -5,13 +5,13 @@ import { GameLobbyId } from '../models/types/bfg-branded-uuids';
 import {
   GameLobby,
   GameLobbySchema,
-  GameLobbySchemaForTbStore,
   GameHostPlayerProfileStringifier,
   PlayerPoolStringifier,
+  GameLobbySchemaForTbStoreSchema,
 } from '../models/p2p-lobby';
 import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
-import { BfgGameTableIdToolbox } from '../models/types/bfg-branded-uuids';
-import type { SharedPublicPlayerProfile } from '../models/player-profile/public-player-profile';
+import { BfgGameInstanceIdToolbox } from '../models/types/bfg-branded-uuids';
+import type { SharedPublicPlayerProfile } from '../models/internal/player-profile/public-player-profile';
 import type { EnsureCells, InvalidCellFields } from '../models/tb-utils';
 import type { AssertNever } from '../models/ts-type-utils';
 
@@ -35,7 +35,7 @@ persister.startAutoSave();
 
 export type GameLobbyUpdateFields = Partial<Omit<GameLobby, 'id' | 'createdAt'>>;
 
-export type GameLobbyForTbStoreFields = z.infer<typeof GameLobbySchemaForTbStore>;
+export type GameLobbyForTbStoreFields = z.infer<typeof GameLobbySchemaForTbStoreSchema>;
 
 export type GameLobbyForTbStore = EnsureCells<GameLobbyForTbStoreFields>;
 
@@ -46,29 +46,43 @@ export type GameLobbyForTbStoreInvalidFields = AssertNever<
 export const serializeGameLobbyForTinybase = (
   gameLobby: GameLobby,
 ): GameLobbyForTbStore => {
-  const { gameHostPlayerProfile, playerPool, gameTitle, gameTableId, playGameLink, ...rest } = gameLobby;
+  const { gameHostPlayerProfile, playerPool, gameTitle, gameInstanceId, playGameLink, ...rest } = gameLobby;
   const stringifiedGameHostPlayerProfile = GameHostPlayerProfileStringifier.stringify(gameHostPlayerProfile);
   const stringifiedPlayerPool = PlayerPoolStringifier.stringify(playerPool);
 
-  return GameLobbySchemaForTbStore.parse({
+  const serialized: GameLobbyForTbStore = {
     ...rest,
     stringifiedGameHostPlayerProfile,
     stringifiedPlayerPool,
     gameTitle: gameTitle ?? '',
-    gameTableId: gameTableId ?? '',
+    gameInstanceId: gameInstanceId ?? '',
     playGameLink: playGameLink ?? '',
-  });
+  };
+
+  const retVal = GameLobbySchemaForTbStoreSchema.parse(serialized);
+
+  return retVal;
+
+  // return GameLobbySchemaForTbStore.parse({
+  //   ...rest,
+  //   stringifiedGameHostPlayerProfile,
+  //   stringifiedPlayerPool,
+  //   gameTitle: gameTitle ?? '',
+  //   gameTableId: gameInstanceId ?? '',
+  //   playGameLink: playGameLink ?? '',
+  // });
 };
 
 export const deserializeGameLobbyFromTinybase = (
   tinybaseRow: GameLobbyForTbStore,
 ): GameLobby => {
-  const { stringifiedGameHostPlayerProfile, stringifiedPlayerPool, gameTitle, gameTableId, playGameLink, ...rest } = tinybaseRow;
+  const { stringifiedGameHostPlayerProfile, stringifiedPlayerPool, gameTitle, gameInstanceId, playGameLink, ...rest } = tinybaseRow;
   const gameHostPlayerProfile = GameHostPlayerProfileStringifier.parseString(stringifiedGameHostPlayerProfile);
   const playerPool = PlayerPoolStringifier.parseString(stringifiedPlayerPool);
 
   const parsedGameTitle = gameTitle === '' ? undefined : BfgSupportedGameTitleSchema.parse(gameTitle);
-  const parsedGameTableId = gameTableId === '' ? undefined : BfgGameTableIdToolbox.idSchema.parse(gameTableId);
+  // const parsedGameTableId = gameTableId === '' ? undefined : BfgGameTableIdToolbox.idSchema.parse(gameTableId);
+  const parsedGameInstanceId = gameInstanceId === '' ? undefined : BfgGameInstanceIdToolbox.idSchema.parse(gameInstanceId);
   const parsedPlayGameLink = playGameLink === '' ? undefined : playGameLink;
 
   return GameLobbySchema.parse({
@@ -76,7 +90,8 @@ export const deserializeGameLobbyFromTinybase = (
     gameHostPlayerProfile,
     playerPool,
     gameTitle: parsedGameTitle,
-    gameTableId: parsedGameTableId,
+    // gameTableId: parsedGameTableId,
+    gameInstanceId: parsedGameInstanceId,
     playGameLink: parsedPlayGameLink,
   });
 };
@@ -86,7 +101,7 @@ export const deserializeGameLobbyFromTinybase = (
  * Safely parse hosted lobby data from TinyBase store
  */
 export const parseRawHostedLobbyData = (lobbyId: string, rawData: unknown): GameLobby | null => {
-  const result = GameLobbySchemaForTbStore.safeParse(rawData);
+  const result = GameLobbySchemaForTbStoreSchema.safeParse(rawData);
 
   if (!result.success) {
     console.error(`Error parsing hosted lobby data for ${lobbyId}:`, result.error);
@@ -141,7 +156,7 @@ export const updateHostedLobby = (
       return false;
     }
 
-    const existingParseResult = GameLobbySchemaForTbStore.safeParse(existingLobby);
+    const existingParseResult = GameLobbySchemaForTbStoreSchema.safeParse(existingLobby);
     if (!existingParseResult.success) {
       console.error('Error parsing existing hosted lobby for update:', existingParseResult.error);
       return false;

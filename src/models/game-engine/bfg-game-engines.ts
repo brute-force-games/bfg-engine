@@ -1,4 +1,5 @@
-import { GameRoomDb, GameTableSeat } from "../game-table/game-room-p2p";
+import { GameRoomDb } from "../tinybase/game-room-db";
+import { GameTableSeat } from "../internal/game-room-base";
 import { PlayerProfileId } from "../types/bfg-branded-uuids";
 import type { GameTableEventWithTransition } from "../game-table/game-table-event";
 import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
