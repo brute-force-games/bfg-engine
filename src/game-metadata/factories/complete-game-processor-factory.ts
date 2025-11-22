@@ -42,42 +42,20 @@ export type ApplyHostActionResult<
 }
 
 
-export interface IBfgGameProcessor
-// <
-//   // GHA extends BfgGameActionByHost,
-//   GAHSchema extends z.ZodType<BfgGameActionByHost>,
-//   GSHSchema extends z.ZodType<BfgGameStateForHost>,
-//   // GAHSchema extends z.ZodSchema<BfgGameActionByHost>,
-//   // GSH extends BfgGameStateForHost,
-//   // // GSP extends BfgGameStateForPlayer,
-//   // // GSW extends BfgGameStateForWatcher,
-//   // // PGA extends BfgGameActionByPlayer,
-//   // HGA extends BfgGameActionByHost,
-// > 
-{
-
+export interface IBfgGameProcessor {
   createHostStartsGameAction: <
     GAH extends BfgGameActionByHost,
-    // GED extends z.ZodType<GameTableEventData>
   >(lobbyState: GameLobby) => GAH,
 
   createHostOpensGameOutcome: <
     GAH extends BfgGameActionByHost,
     GHAO extends BfgGameHostActionOutcome,
-    // GED extends z.ZodType<GameTableEventData>
   >(startGameAction: GAH) => GHAO,
 
   createHostOpensGameState: <
     GAH extends BfgGameActionByHost,
     GSH extends BfgGameStateForHost,
-    // GED extends z.ZodType<GameTableEventData>
   >(startGameAction: GAH) => GSH,
-
-  // applyHostStartsGameAction: <
-  //   GAH extends BfgGameActionByHost,
-  //   GSH extends BfgGameStateForHost,
-  //   // GED extends z.ZodType<GameTableEventData>
-  // >(gameRoom: GameRoomP2p, startGameAction: GAH) => Promise<GSH>,
 
   getNextToActPlayers: <
     GSH extends BfgGameStateForHost,
@@ -86,7 +64,6 @@ export interface IBfgGameProcessor
   getPlayerDetailsLine: <
     GSH extends BfgGameStateForHost,
   >(gameRoom: GameRoomP2p, gameState: GSH, playerSeat: GameTableSeat) => React.ReactNode,
-  // getPlayerDetailsLine: (gameState: BfgGameStateForHost, playerSeat: GameTableSeat) => React.ReactNode,
 
   summarizeGameEvent: (gameEvent: GameTableEventWithTransition) => string,
 
@@ -103,46 +80,13 @@ export interface IBfgGameProcessor
   >(gameRoom: GameRoomP2p, gameState: GSH, hostAction: GAH) => Promise<ApplyHostActionResult<GSH, GAH, GHAO>>,
 
   summarizePlayerActionOutcome: <
-    // GSH extends z.ZodType<BfgGameStateForHost>,
     GPAO extends BfgGamePlayerActionOutcome,
   >(playerActionOutcome: GPAO) => PlayerActionOutcomeSummary,
   
   summarizeHostActionOutcome: <
-    // GSH extends z.ZodType<BfgGameStateForHost>,
     GHAO extends BfgGameHostActionOutcome,
   >(hostActionOutcome: GHAO) => HostActionOutcomeSummary,
 }
-
-
-// export const createCompleteGameProcessor = (
-//   gameStateAccessTypes: BfgMetadataGameStateAccessTypes,
-//   processorHandlers: IBfgGameProcessor<
-//     typeof gameStateAccessTypes.hostGameStateSchema,
-//     HGAExt
-//   >,
-// ) => {
-
-//   type InferredGSH = z.infer<typeof gameStateAccessTypes.hostGameStateSchema>;
-
-//   const applyPlayerAction = async (_tableState: GameTable, _gameState: InferredGSH, _playerAction: BfgGameActionByPlayer) => {
-//     throw new Error('Not implemented');
-//   };
-
-//   const applyHostAction = async (_tableState: GameTable, _gameState: InferredGSH, _hostAction: BfgGameActionByHost) => {
-//     throw new Error('Not implemented');
-//   };
-
-//   const retVal = {
-//     ...processorHandlers,
-//     applyPlayerAction,
-//     applyHostAction,
-//   };
-
-//   return retVal;
-// }
-
-// export type CompleteGameProcessor = ReturnType<typeof createCompleteGameProcessor>;
-
 
 
 export interface IBfgGameEngineAccessLevelAdapters {
