@@ -5,16 +5,21 @@ import {
   type BfgGameInstanceId,
 } from '../models/types/bfg-branded-uuids';
 import { createZodSchemaFromTinyBaseSchema, InferTypeFromSchema, type TinybaseTableSchema } from './zod-tb-utils';
-import { useRow } from 'tinybase/ui-react';
 import { gameArchivesStore } from './games-archives-store';
 import { TB_GAME_INSTANCES_TABLE_NAME } from './tb-constants';
 import type z from 'zod';
+import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
 
 
 export const GameInstanceMappingsTinybaseTableColumnsSchema = {
   gameInstanceId: { type: 'string' as const },
   gameRoomId: { type: 'string' as const },
   gameTableId: { type: 'string' as const },
+  
+  gameTitle: { type: 'string' as const },
+
+  createdAt: { type: 'number' as const },
+  lastUpdatedAt: { type: 'number' as const },
 } as const satisfies TinybaseTableSchema;
 
 export type GameInstanceMappingsTinybaseTableColumns = InferTypeFromSchema<typeof GameInstanceMappingsTinybaseTableColumnsSchema>;
@@ -24,6 +29,7 @@ export const GameInstanceMappingsForZodSchema = createZodSchemaFromTinyBaseSchem
   gameInstanceId: BfgGameInstanceIdToolbox.idSchema,
   gameRoomId: BfgGameRoomIdToolbox.idSchema,
   gameTableId: BfgGameTableIdToolbox.idSchema,
+  gameTitle: BfgSupportedGameTitleSchema,
 });
 
 export type GameInstanceMappings = z.infer<typeof GameInstanceMappingsForZodSchema>;
@@ -38,7 +44,7 @@ export type GameInstanceMappings = z.infer<typeof GameInstanceMappingsForZodSche
 
 
 export const getGameInstanceMapping = (gameInstanceId: BfgGameInstanceId): GameInstanceMappings => {
-  const gameInstanceMappingTbRow = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+  const gameInstanceMappingTbRow = gameArchivesStore.getRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId);
   if (!gameInstanceMappingTbRow) {
     throw new Error(`No game instance mapping found for game instance: ${gameInstanceId}`);
   }

@@ -5,7 +5,6 @@ import { BfgGameTableId, BfgGameTableIdToolbox, type BfgGameInstanceId, type Bfg
 import type { GameRoomDb } from '../models/tinybase/game-room-db';
 import { GameRoomDbSchema } from '../models/tinybase/game-room-db';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
-import { useRow } from 'tinybase/ui-react';
 import { type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
 import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot-from-tb';
 import { getGameMetadata } from '../game-metadata/games-registry';
@@ -63,7 +62,6 @@ import { BfgStringifiedBoardTransitionsStrToolbox, } from '../models/types/bfg-b
 const BoardTransitionTinybaseTableColumnsSchema = {
   gameTableId: { type: 'string' as const },
   gameTitle: { type: 'string' as const },
-  stepCount: { type: 'number' as const },
   stringifiedBoardTransitions: { type: 'string' as const },
 } as const satisfies TinybaseTableSchema;
 
@@ -232,7 +230,7 @@ export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): 
     gameRoom: hydratedRoomState,
     // createdAt: gameRoomSnapshotTbTableRow.createdAt,
     boardEvents: allBoardEvents,
-    latestStepIndex: allBoardEvents.length,
+    // latestStepIndex: allBoardEvents.length,
   }
 
   return gameRoomSnapshot;
@@ -240,13 +238,17 @@ export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): 
 
 
 export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEventForDb[] => {
-  const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+  // const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
 
-  if (!gameIdentifers) {
-    return [];
-  }
+  // if (!gameIdentifers) {
+  //   return [];
+  // }
 
-  const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
+  const gameIdentifiers = useLatestHostedGameIdentifiers(gameInstanceId);
+
+  const { gameTableId, gameTitle } = gameIdentifiers;
+
+  // const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
 
   // Get the row for this gameTableId
   const gameStepsRowTb = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
@@ -266,9 +268,9 @@ export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEven
 
   const gameHistoryTbRow = parseResult.data;
 
-  const gameMetadata = getGameMetadata(gameHistoryTbRow.gameTitle);
+  const gameMetadata = getGameMetadata(gameTitle);
   if (!gameMetadata) {
-    throw new Error("Game metadata not found for game title: " + gameHistoryTbRow.gameTitle);
+    throw new Error("Game metadata not found for game title: " + gameTitle);
   }
 
   const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
@@ -294,7 +296,51 @@ export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEven
   //   console.error('Error parsing stringified board transitions:', error);
   //   return [];
   // }
-}; 
+};
+
+
+export const updateHostedGameWithNewNextBoardState = (
+  gameInstanceId: BfgGameInstanceId,
+  latestStepIndex: number,
+  updatedGameEvent: GameTableEventWithTransition,
+): void => {
+  const gameInstanceMapping = getGameInstanceMapping(gameInstanceId);
+  const gameTableId = gameInstanceMapping.gameTableId;
+
+  const gameTableHistoryRowTb = gameArchivesStore.getRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId);
+  if (!gameTableHistoryRowTb) {
+    throw new Error("No game table history row found for game table: " + gameTableId);
+  }
+
+  const gameTableHistoryRowParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(gameTableHistoryRowTb);
+  if (!gameTableHistoryRowParseResult.success) {
+    console.error('Error parsing game table history row:', gameTableHistoryRowParseResult.error);
+    throw new Error("Error parsing game table history row: " + gameTableId);
+  }
+
+  const gameTableHistoryRow = gameTableHistoryRowParseResult.data;
+
+  const boardTransitions = JSON.parse(gameTableHistoryRow.stringifiedBoardTransitions);
+
+  if (latestStepIndex !== boardTransitions.length) {
+    console.error("Current step index does not match the number of board transitions");
+    console.error("Current step index: " + latestStepIndex);
+    console.error("Number of board transitions: " + boardTransitions.length);
+    console.error("Board transitions: " + JSON.stringify(boardTransitions));
+    console.error("Updated game event: " + JSON.stringify(updatedGameEvent));
+    throw new Error("Current step index does not match the number of board transitions");
+  }
+
+  boardTransitions.push(updatedGameEvent);
+  const stringifiedBoardTransitions = JSON.stringify(boardTransitions);
+  
+  const updatedGameTableHistoryRow: BoardTransitionTbTableRow = {
+    ...gameTableHistoryRow,
+    stringifiedBoardTransitions,
+  };
+
+  gameArchivesStore.setRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, updatedGameTableHistoryRow);
+}
 
 
 export const clearAllGameArchives = (): void => {
@@ -306,7 +352,7 @@ export const clearAllGameArchives = (): void => {
 
 
 export const clearGameArchive = (gameInstanceId: BfgGameInstanceId): void => {
-  const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+  const gameIdentifers = gameArchivesStore.getRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId);
   if (!gameIdentifers) {
     return;
   }
@@ -447,7 +493,7 @@ export const addGameBoardTransition = async (
     }
 
     const existingGameStepsRow = existingGameStepsRowParseResult.data;
-    const gameTitle = existingGameStepsRow.gameTitle;
+    const gameTitle = gameInstanceMapping.gameTitle;
     const gameMetadata = getGameMetadata(gameTitle);
     if (!gameMetadata) {
       throw new Error("Game metadata not found for game title: " + gameTitle);
@@ -467,7 +513,6 @@ export const addGameBoardTransition = async (
 
     const updatedGameStepsRow: BoardTransitionTbTableRow = {
       ...existingGameStepsRow,
-      stepCount: boardTransitions.length,
       stringifiedBoardTransitions,
     };
 
@@ -518,7 +563,6 @@ export const saveNewHostedGame = async (
     const newGameStepsRow: BoardTransitionTbTableRow = {
       gameTableId,
       gameTitle: gameRoom.gameTitle,
-      stepCount: initialBoardTransitions.length,
       stringifiedBoardTransitions,
     };
 
@@ -526,6 +570,9 @@ export const saveNewHostedGame = async (
       gameInstanceId,
       gameRoomId,
       gameTableId,
+      gameTitle: gameRoom.gameTitle,
+      createdAt: now,
+      lastUpdatedAt: now,
     };
 
     gameArchivesStore.transaction(

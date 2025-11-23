@@ -32,7 +32,7 @@ export const createHydratedLatestGameSnapshotFromTbData = (
   const hydratedLatestGameSnapshot = {
     gameRoom: hydratedGameRoomState,
     boardEvents: hydratedBoardEvents,
-    latestStepIndex: hydratedGameRoomState.latestGameStepIndex,
+    // latestStepIndex: hydratedGameRoomState.latestGameStepIndex,
   };
 
   return hydratedLatestGameSnapshot;

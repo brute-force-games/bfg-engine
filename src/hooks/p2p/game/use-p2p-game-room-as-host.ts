@@ -15,7 +15,10 @@ import { selfId } from "trystero";
 import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../../../game-metadata/metadata-types/game-action-types";
 // import { useHostedGameArchive } from "../../../tb-store/games-archives-store";
 import type { GameRoomP2p } from "../../../models/p2p/game-room-p2p";
-import { useLatestHostedGameSnapshot } from "../../../tb-store/games-archives-store";
+import { updateHostedGameWithNewNextBoardState, useLatestHostedGameSnapshot } from "../../../tb-store/games-archives-store";
+import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
+import type { GameStateTransitionForDb } from "../../../models/game-table/game-table-event-db";
+import type { GameTableActionSource } from "../../../models/game-table/game-table-event";
 
 
 export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
@@ -62,6 +65,15 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   const hostedGame = hostedGameSnapshot.gameRoom;
   // const hostedGameLatestBoardEvent = hostedGameSnapshot.latestBoardEvent;
   const hostedGameBoardEvents = hostedGameSnapshot.boardEvents;
+
+  // 
+  const latestStepIndex = hostedGameBoardEvents.length - 1;
+  const latestBoardEvent = hostedGameBoardEvents[latestStepIndex];
+  // if (!latestBoardEvent) {
+  //   throw new Error('No board events found - cannot apply player action');
+  // }
+  const latestGameState = latestBoardEvent.transitionForHost.nextBoardState;
+
 
   // const gameActions = useGameActions(p2pGameRoom.gameTableId);
 
@@ -371,6 +383,52 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     }
 
     console.warn("Implement me - as host apply move from player");
+    console.warn(playerAction);
+
+
+    const moveResult = await gameMetadata.gameProcessor.applyPlayerAction(hostedGame, latestGameState, playerAction);
+    if (!moveResult) {
+      console.error('❌ Failed to apply player action');
+      console.warn(moveResult);
+      console.warn(playerAction);
+      console.warn(latestGameState);
+      throw new Error('Failed to apply player action');
+    }
+
+    // const latestStepIndex = hostedGame.latestGameStepIndex;
+    // const updatedGameTable = moveResult.updatedGameState;
+    // const updatedGameEvent = moveResult.updatedGameEvent;
+    // const updatedGameEventChange = moveResult.updatedGameEventChange;
+    // const updatedNextGameState = moveResult.updatedNextGameState;
+    const { updatedGameState, playerActionOutcome } = moveResult;
+
+    const now = Date.now();
+    const nextStepIndex = latestStepIndex + 1;
+
+    // Get player action source from playerSeat
+    const playerActionSource: GameTableActionSource = `game-table-action-source-player-${playerAction.playerSeat}` as GameTableActionSource;
+
+    // Create the transition
+    const transition: GameStateTransitionForDb = {
+      event: playerAction,
+      change: playerActionOutcome,
+      nextBoardState: updatedGameState,
+    };
+
+    // Create the game event with transition
+    const playerActionEvent: GameTableEventWithTransition = {
+      createdAt: now,
+      stepIndex: nextStepIndex,
+      source: playerActionSource,
+      eventType: 'game-table-action-player-action',
+      transitionForHost: transition,
+    };
+
+    updateHostedGameWithNewNextBoardState(p2pGameRoom.gameInstanceId, nextStepIndex, playerActionEvent);
+
+    // updateHostedGame(hostedGameState.id, updatedGameTable, updatedGameEvent, updatedGameEventChange, updatedNextGameState);
+    
+      
     // const moveResult = await asHostApplyMoveFromPlayer(gameRegistry, hostedGameState, gameActions, hostPlayerProfileId, playerAction);
     // if (moveResult) {
     //   const updatedGameTable = moveResult.gameTable;
@@ -384,6 +442,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   const onHostAction = useCallback(async (hostAction: BfgGameActionByHost) => {
     console.log('🎮 Host received host action:', hostAction);
     console.warn("Implement me - as host apply host action");
+    console.warn(hostAction);
     // Convert to encoded string if needed (hosted-game-view.tsx sends it as a string)
     // let hostActionStr: HostP2pActionStr;
     // if (typeof hostAction === 'string') {
