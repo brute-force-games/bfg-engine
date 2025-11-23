@@ -106,7 +106,7 @@ export const PlayerGameView =
   // AssignedBfgGameStateForPlayer extends BfgGameStateForPlayer and adds playerSeat
   // We need to extract just the game state part (without playerSeat) for the component
   // But first validate that all required properties are present
-  const { playerSeat: _playerSeat, ...gameStateWithoutSeat } = gameSpecificStateRaw;
+  const { playerSeat, ...gameStateWithoutSeat } = gameSpecificStateRaw;
   
   // Validate the gameState to ensure all required properties are present
   const gameStateParseResult = gameMetadata.schemas.playerGameStateSchema.safeParse(gameStateWithoutSeat);

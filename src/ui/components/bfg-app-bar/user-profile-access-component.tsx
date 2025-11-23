@@ -1,13 +1,16 @@
 import { Avatar, Box, IconButton } from "../../bfg-ui/index"
 import { DbkAppBarMenu, DbkAppBarMenuItem } from "../app-bar-menu/app-bar-menu"
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { PrivatePlayerProfile } from "../../../models/internal/player-profile/private-player-profile";
 import { AppSettingsDialog } from "../app-settings/app-settings-dialog";
 import { GameSettingsDialog } from "../app-settings/game-settings-dialog";
 import { TableSettingsDialog } from "../app-settings/table-settings-dialog";
+import { ObserverLinksDialog } from "../observer-links-dialog/observer-links-dialog";
 import { OptionalGameContext, EMPTY_GAME_CONTEXT } from "../../../hooks/p2p/game/use-optional-game-context";
 import { useAppSettings, useAppSettingsActions } from "../../../hooks/stores/use-my-app-settings-store";
 import { useTbStoresManager } from "../../../hooks/games-registry/use-tb-stores-manager-hook";
+import { P2pGameRoomContext } from "../../../hooks/p2p/game/p2p-game-room-context";
+import { BfgGameInstanceId } from "../../../models/types/bfg-branded-uuids";
 
 
 interface UserProfileAccessComponentProps {
@@ -38,6 +41,7 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const [isAppSettingsDialogOpen, setIsAppSettingsDialogOpen] = useState(false);
   const [isGameSettingsDialogOpen, setIsGameSettingsDialogOpen] = useState(false);
   const [isTableSettingsDialogOpen, setIsTableSettingsDialogOpen] = useState(false);
+  const [isObserverLinksDialogOpen, setIsObserverLinksDialogOpen] = useState(false);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -82,6 +86,15 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
     setIsTableSettingsDialogOpen(false);
   };
 
+  const handleOpenObserverLinksDialog = async () => {
+    setIsObserverLinksDialogOpen(true);
+    handleCloseUserMenu();
+  };
+
+  const handleCloseObserverLinksDialog = () => {
+    setIsObserverLinksDialogOpen(false);
+  };
+
   const handleClearAllStores = async () => {
     if (window.confirm('Are you sure you want to clear ALL stores (games, lobbies, and actions)? This action cannot be undone.')) {
       clearAllStores();
@@ -108,6 +121,11 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const hasGameContext = gameContext.gameTitle !== null;
   const hasTableContext = gameContext.gameTitle !== null && gameContext.gameTableId !== null;
 
+  // Try to get gameInstanceId from P2P context (if available)
+  const p2pGameRoomContext = useContext(P2pGameRoomContext);
+  const gameInstanceId: BfgGameInstanceId | null = p2pGameRoomContext?.gameInstanceId ?? null;
+  const hasActiveGame = gameInstanceId !== null;
+
   const menuItems: DbkAppBarMenuItem[] = [
     { type: 'menu-label', title: userName },
     { type: 'menu-divider' },
@@ -129,6 +147,13 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
       action: handleOpenTableSettingsDialog,
       disabled: !hasTableContext,
       disabledReason: 'Table Settings are available when playing at a specific table'
+    },
+    {
+      type: 'menu-action',
+      title: 'Observer Links',
+      action: handleOpenObserverLinksDialog,
+      disabled: !hasActiveGame,
+      disabledReason: 'Observer links are available when viewing an active game'
     },
     {
       type: 'sub-menu',
@@ -194,6 +219,13 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
           gameTableId={gameContext.gameTableId}
           gameTitle={gameContext.gameTitle!}
           tableName={gameContext.tableName}
+        />
+      )}
+      {hasActiveGame && gameInstanceId && (
+        <ObserverLinksDialog
+          open={isObserverLinksDialogOpen}
+          onClose={handleCloseObserverLinksDialog}
+          gameInstanceId={gameInstanceId}
         />
       )}
     </Box>  

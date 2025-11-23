@@ -90,7 +90,7 @@ export interface IP2pGameRoomContextProviderProps {
   children: React.ReactNode;
 }
 
-const P2pGameRoomContext = createContext<IP2pGameRoomValue | null>(null);
+export const P2pGameRoomContext = createContext<IP2pGameRoomValue | null>(null);
 
 export const P2pGameRoomContextProvider = ({ 
   gameRoomId,
