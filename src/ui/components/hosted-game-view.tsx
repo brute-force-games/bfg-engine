@@ -75,10 +75,17 @@ export const HostedGameView = (props: IBfgGameTableForHost) => {
   //   onHostAction(hostAction);
   // }
 
-  const gameState = latestEvent.nextGameHostState;
-
   const { hostGameStateSchema } = gameMetadata.schemas;
   type HostGameState = z.infer<typeof hostGameStateSchema>;
+  
+  // Validate the gameState to ensure all required properties are present
+  const gameStateParseResult = hostGameStateSchema.safeParse(latestEvent.nextGameHostState);
+  if (!gameStateParseResult.success) {
+    console.error('❌ Game state validation failed:', gameStateParseResult.error);
+    console.error('❌ Raw game state:', latestEvent.nextGameHostState);
+    throw new Error('Game state validation failed: ' + gameStateParseResult.error.message);
+  }
+  const gameState = gameStateParseResult.data;
   
   const hostComponentProps: GameHostComponentProps<HostGameState> = {
     gameState,

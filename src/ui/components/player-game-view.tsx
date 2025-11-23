@@ -21,7 +21,20 @@ export const PlayerGameView =
   const gameTable = gameRoom;
   const latestAction = latestPlayerGameEvent;
 
-  const gameSpecificState = latestAction.nextGamePlayerState;
+  if (!latestAction) {
+    return (
+      <Container style={{ padding: '24px' }}>
+        <Stack spacing={3}>
+          <Typography variant="h3">Loading Game State...</Typography>
+          <Typography variant="body1" color="secondary">
+            Waiting for game state from host...
+          </Typography>
+        </Stack>
+      </Container>
+    )
+  }
+
+  const gameSpecificStateRaw = latestAction.nextGamePlayerState;
 
   // if (!latestAction) {
   //   return <Typography variant="body1">No game actions yet...</Typography>;
@@ -88,19 +101,22 @@ export const PlayerGameView =
   //   )
   // }
 
-  if (!gameSpecificState) {
-    return (
-      <Container style={{ padding: '24px' }}>
-        <Stack spacing={3}>
-          <Typography variant="h3">Loading Game State...</Typography>
-          <Typography variant="body1" color="secondary">
-            Waiting for game state from host...
-          </Typography>
-        </Stack>
-      </Container>
-    )
-  }
   type GameSpecificState = z.infer<typeof gameMetadata.schemas.playerGameStateSchema>;
+  
+  // AssignedBfgGameStateForPlayer extends BfgGameStateForPlayer and adds playerSeat
+  // We need to extract just the game state part (without playerSeat) for the component
+  // But first validate that all required properties are present
+  const { playerSeat: _playerSeat, ...gameStateWithoutSeat } = gameSpecificStateRaw;
+  
+  // Validate the gameState to ensure all required properties are present
+  const gameStateParseResult = gameMetadata.schemas.playerGameStateSchema.safeParse(gameStateWithoutSeat);
+  if (!gameStateParseResult.success) {
+    console.error('❌ Player game state validation failed:', gameStateParseResult.error);
+    console.error('❌ Raw game state:', gameSpecificStateRaw);
+    console.error('❌ Game state without seat:', gameStateWithoutSeat);
+    throw new Error('Player game state validation failed: ' + gameStateParseResult.error.message);
+  }
+  const gameSpecificState = gameStateParseResult.data;
 
   const playerGameComponentProps: PlayerComponentProps<GameSpecificState>
   // <

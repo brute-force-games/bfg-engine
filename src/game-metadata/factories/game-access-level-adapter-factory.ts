@@ -133,6 +133,8 @@ export const createBfgGameEngineAccessLevelAdapters = <
       const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
 
       // Converting from GameBoardEventForDb structure to GameTableEventForPlayerP2p structure
+      // AssignedBfgGameStateForPlayer extends the player state schema and adds playerSeat
+      // So we need to spread the adaptedPlayerState and add playerSeat
       const result = {
         // gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTP['gameTableId'],
         createdAt: hostEventTransitionDb.createdAt,
@@ -140,8 +142,8 @@ export const createBfgGameEngineAccessLevelAdapters = <
         event: adaptedEvent as unknown as GTP['event'],
         outcome: hostEventTransitionDb.transitionForHost.change as unknown as GTP['outcome'],
         nextGamePlayerState: {
-          seat: playerSeat,
-          state: adaptedPlayerState,
+          ...adaptedPlayerState,
+          playerSeat: playerSeat,
         } as unknown as GTP['nextGamePlayerState'],
         nextGameWatcherState: adaptedWatcherState as unknown as GTP['nextGameWatcherState'],
       };
