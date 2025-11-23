@@ -50,25 +50,20 @@ export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameA
       render: (source) => <SourceChip source={source} />
     },
     {
-      key: 'actionType',
+      key: 'eventType',
       label: 'Action Type',
       sortable: true,
       width: '150px',
-      render: (actionType) => <ActionTypeChip actionType={actionType} />
+      render: (eventType) => eventType ? <ActionTypeChip actionType={eventType} /> : null
     }
   ];
 
   const actionSummaryColumn: TableColumn<GameTableEventWithTransition> = {
-    key: 'actionStr',
+    key: 'stepIndex', // Use an existing property for the key, but we'll use the row in render
     label: 'Action Summary',
     sortable: false,
     width: '250px',
-    render: (actionStr, row) => {
-      console.log("ACTION STR", actionStr);
-      if (!actionStr) {
-        return null;
-      }
-
+    render: (_value, row) => {
       const summary = summarizeGameEvent(row);
 
       return (
@@ -87,12 +82,13 @@ export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameA
   };
 
   const actionDetailsColumn: TableColumn<GameTableEventWithTransition> = {
-    key: 'actionStr',
+    key: 'stepIndex', // Use an existing property for the key, but we'll use the row in render
     label: 'Action Details',
     sortable: false,
     width: '250px',
-    render: (actionStr) => {
-      console.log("ACTION STR", actionStr);
+    render: (_value, row) => {
+      // Show the raw event data as JSON
+      const eventData = JSON.stringify(row.transitionForHost.event, null, 2);
       
       return (
         <Typography
@@ -100,10 +96,12 @@ export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameA
           style={{
             wordBreak: 'break-word',
             whiteSpace: 'pre-wrap',
-            maxWidth: '250px'
+            maxWidth: '250px',
+            fontFamily: 'monospace',
+            fontSize: '0.75rem'
           }}
         >
-          {actionStr}
+          {eventData}
         </Typography>
       );
     }

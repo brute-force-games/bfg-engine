@@ -121,7 +121,7 @@ const createNewGameRoomFromGameSpecificState = (
     latestGameStepIndex: 0,
     // latestStep: gameSpecificStep,
     // latestGameStatusDescription: gameSpecificStep.nextGameState.summary,
-    latestRoomStatusDescription: `${playerCount} playing${gameTitle}`,
+    latestRoomStatusDescription: `${playerCount} playing ${gameTitle}`,
     latestGameStatusDescription: `Game setup in progress: ${lobbyState.lobbyName} [${gameTitle}]`,
     latestRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     createdAt: now,

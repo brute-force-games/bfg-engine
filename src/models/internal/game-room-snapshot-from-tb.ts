@@ -29,10 +29,19 @@ export const createHydratedLatestGameSnapshotFromTbData = (
 
   const hydratedBoardEvents = hydratedBoardEventsParseResult.data;
 
+  const latestStepIndex = hydratedGameRoomState.latestGameStepIndex;
+  if (latestStepIndex !== hydratedBoardEvents.length) {
+    console.error("Latest step index does not match the number of board events");
+    console.error("Latest step index: " + latestStepIndex);
+    console.error("Number of board events: " + hydratedBoardEvents.length);
+    console.error("Board events: " + JSON.stringify(hydratedBoardEvents));
+    throw new Error("Latest step index does not match the number of board events");
+  }
+
   const hydratedLatestGameSnapshot = {
     gameRoom: hydratedGameRoomState,
     boardEvents: hydratedBoardEvents,
-    // latestStepIndex: hydratedGameRoomState.latestGameStepIndex,
+    latestStepIndex,
   };
 
   return hydratedLatestGameSnapshot;

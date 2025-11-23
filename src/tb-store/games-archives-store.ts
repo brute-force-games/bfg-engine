@@ -5,6 +5,7 @@ import { BfgGameTableId, BfgGameTableIdToolbox, type BfgGameInstanceId, type Bfg
 import type { GameRoomDb } from '../models/tinybase/game-room-db';
 import { GameRoomDbSchema } from '../models/tinybase/game-room-db';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
+import { useRow } from 'tinybase/ui-react';
 import { type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
 import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot-from-tb';
 import { getGameMetadata } from '../game-metadata/games-registry';
@@ -230,7 +231,7 @@ export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): 
     gameRoom: hydratedRoomState,
     // createdAt: gameRoomSnapshotTbTableRow.createdAt,
     boardEvents: allBoardEvents,
-    // latestStepIndex: allBoardEvents.length,
+    latestStepIndex: allBoardEvents.length,
   }
 
   return gameRoomSnapshot;
@@ -423,113 +424,113 @@ export const clearGameArchive = (gameInstanceId: BfgGameInstanceId): void => {
 // };
 
 
-// TODO: consolidate ID inputs into gameInstanceId
-export const addGameBoardTransition = async (
-  gameInstanceId: BfgGameInstanceId,
-  // gameRoomId: BfgGameRoomId,
-  // gameTableId: BfgGameTableId,
-  latestBoardTransition: GameBoardEventForDb,
-): Promise<{ success: boolean; actionId?: string; error?: string }> => {
-  try {
+// // TODO: consolidate ID inputs into gameInstanceId
+// export const addGameBoardTransition = async (
+//   gameInstanceId: BfgGameInstanceId,
+//   // gameRoomId: BfgGameRoomId,
+//   // gameTableId: BfgGameTableId,
+//   latestBoardTransition: GameBoardEventForDb,
+// ): Promise<{ success: boolean; actionId?: string; error?: string }> => {
+//   try {
 
-    const gameInstanceMapping = getGameInstanceMapping(gameInstanceId);
-    // if (!gameInstanceMappingTbRow) {
-    //   throw new Error("No game instance mapping found for game instance: " + gameInstanceId);
-    // }
+//     const gameInstanceMapping = getGameInstanceMapping(gameInstanceId);
+//     // if (!gameInstanceMappingTbRow) {
+//     //   throw new Error("No game instance mapping found for game instance: " + gameInstanceId);
+//     // }
 
-    const gameRoomId = gameInstanceMapping.gameRoomId;
-    const gameTableId = gameInstanceMapping.gameTableId;
+//     const gameRoomId = gameInstanceMapping.gameRoomId;
+//     const gameTableId = gameInstanceMapping.gameTableId;
 
-    const currentGameRoomTbRow = gameArchivesStore.getRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId);
-    if (!currentGameRoomTbRow) {
-      throw new Error("No game room found for game room: " + gameRoomId);
-    }
+//     const currentGameRoomTbRow = gameArchivesStore.getRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId);
+//     if (!currentGameRoomTbRow) {
+//       throw new Error("No game room found for game room: " + gameRoomId);
+//     }
 
-    const currentGameRoomParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(currentGameRoomTbRow);
-    if (!currentGameRoomParseResult.success) {
-      console.error('Error validating existing game room snapshot:', currentGameRoomParseResult.error);
-      return { success: false, error: 'Invalid game room snapshot data' };
-    }
+//     const currentGameRoomParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(currentGameRoomTbRow);
+//     if (!currentGameRoomParseResult.success) {
+//       console.error('Error validating existing game room snapshot:', currentGameRoomParseResult.error);
+//       return { success: false, error: 'Invalid game room snapshot data' };
+//     }
 
-    // const currentGameRoom = currentGameRoomParseResult.data;
+//     // const currentGameRoom = currentGameRoomParseResult.data;
     
-    // const latestGameSnapshot = createHydratedLatestGameSnapshotFromTbData(
-    //   currentGameRoom.stringifiedRoomState,
-    //   currentGameRoom.stringifiedLatestBoardTransition,
-    // );
+//     // const latestGameSnapshot = createHydratedLatestGameSnapshotFromTbData(
+//     //   currentGameRoom.stringifiedRoomState,
+//     //   currentGameRoom.stringifiedLatestBoardTransition,
+//     // );
 
-    // const now = Date.now();
-    // const latestStepIndex = latestGameSnapshot.latestStepIndex + 1;
+//     // const now = Date.now();
+//     // const latestStepIndex = latestGameSnapshot.latestStepIndex + 1;
     
-    // const stringifiedLatestBoardTransition = JSON.stringify(latestBoardTransition);
+//     // const stringifiedLatestBoardTransition = JSON.stringify(latestBoardTransition);
     
-    // const newGameRoomSnapshot: GameRoomSnapshotTbTableRow = {
-    //   ...currentGameRoom,
-    //   gameInstanceId,
-    //   gameRoomId,
-    //   gameTableId,
-    //   latestStepIndex,
-    //   stringifiedLatestBoardTransition,      
-    //   createdAt: now,
-    // };
+//     // const newGameRoomSnapshot: GameRoomSnapshotTbTableRow = {
+//     //   ...currentGameRoom,
+//     //   gameInstanceId,
+//     //   gameRoomId,
+//     //   gameTableId,
+//     //   latestStepIndex,
+//     //   stringifiedLatestBoardTransition,      
+//     //   createdAt: now,
+//     // };
 
-    // const gameTitle = currentGameRoom.gameTitle;
-    // const gameMetadata = getGameMetadata(gameTitle);
-    // if (!gameMetadata) {
-    //   throw new Error("Game metadata not found for game title: " + gameTitle);
-    // }
+//     // const gameTitle = currentGameRoom.gameTitle;
+//     // const gameMetadata = getGameMetadata(gameTitle);
+//     // if (!gameMetadata) {
+//     //   throw new Error("Game metadata not found for game title: " + gameTitle);
+//     // }
 
-    // Get existing game steps row or create new one
-    const existingGameStepsRowTb = gameArchivesStore.getRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId);
+//     // Get existing game steps row or create new one
+//     const existingGameStepsRowTb = gameArchivesStore.getRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId);
     
-    if (!existingGameStepsRowTb) {
-      throw new Error("No game steps row found for game table: " + gameTableId);
-    }
+//     if (!existingGameStepsRowTb) {
+//       throw new Error("No game steps row found for game table: " + gameTableId);
+//     }
 
-    const existingGameStepsRowParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(existingGameStepsRowTb);
-    if (!existingGameStepsRowParseResult.success) {
-      console.error('Error parsing existing game steps row:', existingGameStepsRowParseResult.error);
-      throw new Error("Invalid game steps row for game table: " + gameTableId);
-    }
+//     const existingGameStepsRowParseResult = BoardTransitionTbTableRowForZodSchema.safeParse(existingGameStepsRowTb);
+//     if (!existingGameStepsRowParseResult.success) {
+//       console.error('Error parsing existing game steps row:', existingGameStepsRowParseResult.error);
+//       throw new Error("Invalid game steps row for game table: " + gameTableId);
+//     }
 
-    const existingGameStepsRow = existingGameStepsRowParseResult.data;
-    const gameTitle = gameInstanceMapping.gameTitle;
-    const gameMetadata = getGameMetadata(gameTitle);
-    if (!gameMetadata) {
-      throw new Error("Game metadata not found for game title: " + gameTitle);
-    }
+//     const existingGameStepsRow = existingGameStepsRowParseResult.data;
+//     const gameTitle = gameInstanceMapping.gameTitle;
+//     const gameMetadata = getGameMetadata(gameTitle);
+//     if (!gameMetadata) {
+//       throw new Error("Game metadata not found for game title: " + gameTitle);
+//     }
 
-    const arraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
-    const arrayParseResult = arraySchema.safeParse(existingGameStepsRow.stringifiedBoardTransitions);
-    if (!arrayParseResult.success) {
-      console.error('Error parsing existing game steps row:', arrayParseResult.error);
-      throw new Error("Invalid game steps row for game table: " + gameTableId);
-    }
-    const boardTransitions = arrayParseResult.data;
+//     const arraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+//     const arrayParseResult = arraySchema.safeParse(existingGameStepsRow.stringifiedBoardTransitions);
+//     if (!arrayParseResult.success) {
+//       console.error('Error parsing existing game steps row:', arrayParseResult.error);
+//       throw new Error("Invalid game steps row for game table: " + gameTableId);
+//     }
+//     const boardTransitions = arrayParseResult.data;
 
-    // Append the new transition
-    boardTransitions.push(latestBoardTransition);
-    const stringifiedBoardTransitions = JSON.stringify(boardTransitions);
+//     // Append the new transition
+//     boardTransitions.push(latestBoardTransition);
+//     const stringifiedBoardTransitions = JSON.stringify(boardTransitions);
 
-    const updatedGameStepsRow: BoardTransitionTbTableRow = {
-      ...existingGameStepsRow,
-      stringifiedBoardTransitions,
-    };
+//     const updatedGameStepsRow: BoardTransitionTbTableRow = {
+//       ...existingGameStepsRow,
+//       stringifiedBoardTransitions,
+//     };
 
-    gameArchivesStore.transaction(
-      () => {
-        // gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, newGameRoomSnapshot);
-        gameArchivesStore.setRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, updatedGameStepsRow);
-      },
-    );
+//     gameArchivesStore.transaction(
+//       () => {
+//         // gameArchivesStore.setRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, newGameRoomSnapshot);
+//         gameArchivesStore.setRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, updatedGameStepsRow);
+//       },
+//     );
 
-    return { success: true };
+//     return { success: true };
 
-  } catch (error) {
-    console.error('Error adding game step:', error);
-    return { success: false, error: 'Failed to add game step' };
-  }
-};
+//   } catch (error) {
+//     console.error('Error adding game step:', error);
+//     return { success: false, error: 'Failed to add game step' };
+//   }
+// };
 
 
 export const saveNewHostedGame = async (
@@ -571,6 +572,7 @@ export const saveNewHostedGame = async (
       gameRoomId,
       gameTableId,
       gameTitle: gameRoom.gameTitle,
+      latestStepIndex: 0,
       createdAt: now,
       lastUpdatedAt: now,
     };

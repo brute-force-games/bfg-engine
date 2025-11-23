@@ -41,13 +41,14 @@ export const asHostApplyHostAction = async (
   // console.log("MAKE MOVE - AFTER ACTION RESULT", afterActionResult);
 
   const now = Date.now();
-  const nextStepIndex = gameRoom.latestGameStepIndex + 1;
+  // const nextStepIndex = gameRoom.latestGameStepIndex + 1;
+  const nextStepIndex = latestGameStep.stepIndex + 1;
 
   const nextGameRoom: GameRoomP2p = {
     ...gameRoom,
     latestRoomPhase: updatedRoomPhase,
     latestRoomStatusDescription: afterActionSummary,
-    latestGameStepIndex: nextStepIndex,
+    // latestGameStepIndex: nextStepIndex,
   }
 
   // const updatedWatcherState = gameMetadata.accessLevelAdapters.hostToWatcherAccessLevelAdapter(updatedGameState);

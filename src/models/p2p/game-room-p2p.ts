@@ -155,8 +155,8 @@ export const GameRoomP2pSchema = z.object({
 
   players: BfgPlayersSchema,
 
-  latestGameStepIndex: z.number(),
-  latestGameStatusDescription: z.string(),
+  // latestGameStepIndex: z.number(),
+  // latestGameStatusDescription: z.string(),
   latestRoomPhase: RoomPhaseEnumSchema,
 
   createdAt: z.number(),

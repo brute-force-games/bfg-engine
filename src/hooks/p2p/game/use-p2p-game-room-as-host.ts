@@ -66,6 +66,15 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   // const hostedGameLatestBoardEvent = hostedGameSnapshot.latestBoardEvent;
   const hostedGameBoardEvents = hostedGameSnapshot.boardEvents;
 
+  // Debug: log when board events change
+  useEffect(() => {
+    console.log('🎮 Board events updated, count:', hostedGameBoardEvents.length);
+    if (hostedGameBoardEvents.length > 0) {
+      const latestEvent = hostedGameBoardEvents[hostedGameBoardEvents.length - 1];
+      console.log('🎮 Latest event stepIndex:', latestEvent.stepIndex, 'source:', latestEvent.transitionForHost.event.source);
+    }
+  }, [hostedGameBoardEvents.length, hostedGameBoardEvents]);
+
   // 
   const latestStepIndex = hostedGameBoardEvents.length - 1;
   const latestBoardEvent = hostedGameBoardEvents[latestStepIndex];
@@ -73,6 +82,11 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   //   throw new Error('No board events found - cannot apply player action');
   // }
   const latestGameState = latestBoardEvent.transitionForHost.nextBoardState;
+  
+  // Debug: log when latest game state changes
+  useEffect(() => {
+    console.log('🎮 Latest game state updated, stepIndex:', latestStepIndex);
+  }, [latestStepIndex, latestGameState]);
 
 
   // const gameActions = useGameActions(p2pGameRoom.gameTableId);
@@ -335,6 +349,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   // Call doSendGameUpdates when game actions actually change (new moves applied)
   useEffect(() => {
     console.warn("Implement me - game actions???");
+    console.warn(hostedGameBoardEvents.length);
     // if (gameActions && gameActions.length > 0) {
     //   const latestAction = gameActions[gameActions.length - 1];
     //   const latestActionTimestamp = latestAction?.createdAt.toString();
@@ -424,6 +439,8 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
       transitionForHost: transition,
     };
 
+    // addGameBoardTransition(p2pGameRoom.gameInstanceId, playerActionEvent);
+
     updateHostedGameWithNewNextBoardState(p2pGameRoom.gameInstanceId, nextStepIndex, playerActionEvent);
 
     // updateHostedGame(hostedGameState.id, updatedGameTable, updatedGameEvent, updatedGameEventChange, updatedNextGameState);
@@ -437,29 +454,49 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     //   const updatedNextGameState = moveResult.nextGameState;
     //   updateHostedGame(hostedGameState.id, updatedGameTable, updatedGameEvent, updatedGameEventChange, updatedNextGameState);
     // }
-  }, [gameMetadata, gameRegistry, hostedGame, hostedGameSnapshot, gameInstanceUserDetails.myHostProfile]);
+  }, [gameMetadata, gameRegistry, hostedGame, hostedGameSnapshot, gameInstanceUserDetails.myHostProfile, latestGameState, latestStepIndex, p2pGameRoom.gameInstanceId]);
 
   const onHostAction = useCallback(async (hostAction: BfgGameActionByHost) => {
     console.log('🎮 Host received host action:', hostAction);
-    console.warn("Implement me - as host apply host action");
-    console.warn(hostAction);
-    // Convert to encoded string if needed (hosted-game-view.tsx sends it as a string)
-    // let hostActionStr: HostP2pActionStr;
-    // if (typeof hostAction === 'string') {
-    //   hostActionStr = hostAction as unknown as HostP2pActionStr;
-    // } else {
-    //   hostActionStr = gameMetadata.encoders.hostActionEncoder.encode(hostAction) as unknown as HostP2pActionStr;
-    // }
-    // const hostActionStr = gameMetadata.encoders.hostActionEncoder.encode(hostAction) as unknown as HostP2pActionStr;
 
-    // Use the existing helper function to apply the host action
-    // const result = await asHostApplyHostAction(gameRegistry, hostedGameState, [], hostAction);
+    const hostPlayerProfileId = gameInstanceUserDetails.myHostProfile?.id;
+    if (!hostPlayerProfileId) {
+      throw new Error('Host player profile ID not found');
+    }
 
-    // Update the stored game table and add the action
-    // updateHostedGame(hostedGameState.id, result.gameTable, result.gameEvent, result.gameEventChange, result.nextGameState);
-    // await addGameHostAction(hostedGameState.id, result.gameAction);
+    const moveResult = await gameMetadata.gameProcessor.applyHostAction(hostedGame, latestGameState, hostAction);
+    if (!moveResult) {
+      console.error('❌ Failed to apply host action');
+      console.warn(moveResult);
+      console.warn(hostAction);
+      console.warn(latestGameState);
+      throw new Error('Failed to apply host action');
+    }
 
-  }, [gameMetadata, gameRegistry, hostedGame, hostedGameSnapshot, gameInstanceUserDetails.myHostProfile]);
+    const { updatedGameState, hostActionOutcome } = moveResult;
+
+    const now = Date.now();
+    const nextStepIndex = latestStepIndex + 1;
+
+    // Create the transition
+    const transition: GameStateTransitionForDb = {
+      event: hostAction,
+      change: hostActionOutcome,
+      nextBoardState: updatedGameState,
+    };
+
+    // Create the game event with transition
+    const hostActionEvent: GameTableEventWithTransition = {
+      createdAt: now,
+      stepIndex: nextStepIndex,
+      source: 'game-table-action-source-host',
+      eventType: 'game-table-action-host-action',
+      transitionForHost: transition,
+    };
+
+    updateHostedGameWithNewNextBoardState(p2pGameRoom.gameInstanceId, nextStepIndex, hostActionEvent);
+
+  }, [gameMetadata, gameRegistry, hostedGame, hostedGameSnapshot, gameInstanceUserDetails.myHostProfile, latestGameState, latestStepIndex, p2pGameRoom.gameInstanceId]);
 
   if (!hostedGame || !hostedGameSnapshot) {
     return null;
@@ -476,6 +513,16 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   const latestMyPlayerGameEvent = myPlayerSeat ? 
     myPlayerGameEvents[myPlayerGameEvents.length - 1] : 
     null;
+
+  // Debug: log when player game events change
+  useEffect(() => {
+    if (myPlayerSeat) {
+      console.log('🎮 Player game events updated, count:', myPlayerGameEvents.length);
+      if (latestMyPlayerGameEvent) {
+        console.log('🎮 Latest player game event stepIndex:', latestMyPlayerGameEvent.stepIndex);
+      }
+    }
+  }, [myPlayerGameEvents.length, latestMyPlayerGameEvent, myPlayerSeat]);
 
   const watcherGameEvents = hostedGameBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
     .hostEventTransitionToWatcherAccessLevelAdapter(boardEvent));

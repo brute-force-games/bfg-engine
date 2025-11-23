@@ -5,23 +5,31 @@ import type { GameTableActionSource } from '../../models/game-table/game-table-e
 
 
 interface ActionTypeChipProps {
-  actionType: GameTableActionSource;
+  actionType: string | undefined;
 }
 
 export const ActionTypeChip = ({ actionType }: ActionTypeChipProps) => {
-  const getChipColor = (type: string) => {
+  const getChipColor = (type: string | undefined) => {
+    if (!type) return 'default';
     if (type.includes('host')) return 'primary';
     if (type.includes('player')) return 'secondary';
     return 'default';
   };
 
-  const getDisplayText = (type: string) => {
+  const getDisplayText = (type: string | undefined) => {
+    if (!type) {
+      return 'Unknown';
+    }
     // Convert kebab-case to readable text
     return type
       .replace(/^game-table-action-/, '')
       .replace(/-/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
+
+  if (!actionType) {
+    return <Chip label="Unknown" color="default" size="small" />;
+  }
 
   return (
     <Chip 

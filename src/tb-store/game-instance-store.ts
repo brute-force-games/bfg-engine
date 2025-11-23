@@ -9,6 +9,7 @@ import { gameArchivesStore } from './games-archives-store';
 import { TB_GAME_INSTANCES_TABLE_NAME } from './tb-constants';
 import type z from 'zod';
 import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
+import { useRow } from 'tinybase/ui-react';
 
 
 export const GameInstanceMappingsTinybaseTableColumnsSchema = {
@@ -17,6 +18,7 @@ export const GameInstanceMappingsTinybaseTableColumnsSchema = {
   gameTableId: { type: 'string' as const },
   
   gameTitle: { type: 'string' as const },
+  latestStepIndex: { type: 'number' as const },
 
   createdAt: { type: 'number' as const },
   lastUpdatedAt: { type: 'number' as const },
@@ -58,7 +60,20 @@ export const useLatestHostedGameIdentifiers = (gameInstanceId: BfgGameInstanceId
 
   // Check if row exists first
   if (!gameIdentifersTbRow) {
-    throw new Error(`No game instance mapping found for game instance: ${gameInstanceId}`);
+    // Enhanced error message with debugging info
+    const allInstanceIds = gameArchivesStore.getRowIds(TB_GAME_INSTANCES_TABLE_NAME);
+    console.error('Game instance mapping not found:', {
+      requestedId: gameInstanceId,
+      availableIds: Array.from(allInstanceIds),
+      storeTable: TB_GAME_INSTANCES_TABLE_NAME,
+      file: 'game-instance-store.ts',
+      function: 'useLatestHostedGameIdentifiers',
+    });
+    throw new Error(
+      `No game instance mapping found for game instance: ${gameInstanceId}. ` +
+      `Available instances: ${Array.from(allInstanceIds).join(', ') || 'none'}. ` +
+      `File: modules/bfg-engine/src/tb-store/game-instance-store.ts:63`
+    );
   }
 
   // Debug: log what we actually got from TinyBase

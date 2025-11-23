@@ -167,7 +167,6 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameTableForPlayer | null => {
     gameRoom: gameTable,
     latestWatcherGameEvent,
     watcherGameEvents,
-    // gameActions,
     allPlayerProfiles,
   } : null;
 
@@ -183,8 +182,6 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameTableForPlayer | null => {
       latestPlayerGameEvent: latestMyPlayerGameEvent,
       playerGameEvents: myPlayerGameEvents,
 
-      // gameActions,
-      // myPrivatePlayerKnowledgeStr,
       myPlayerSeat,
       onPlayerAction,
     } satisfies IPlayerBfgGameDetails;
