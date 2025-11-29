@@ -82,6 +82,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
       // This is safe because the function is only called with the specific types at runtime
       return result as unknown as GSP;
     },
+
     hostGameStateToWatcherAccessLevelAdapter: <
       GSH extends BfgGameStateForHost,
       GSW extends BfgGameStateForWatcher,
@@ -95,6 +96,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
       // This is safe because the function is only called with the specific types at runtime
       return result as unknown as GSW;
     },
+
     hostEventTransitionFromHostEventTransitionDb: <
       GTDb extends GameBoardEventForDb,
       GTH extends GameTableEventForHostP2p,
@@ -103,7 +105,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
       const adaptedEvent = adapters.myHostEventTransitionFromHostEventTransitionDb(typedEvent);
       
       const typedHostState = hostEventTransitionDb.transitionForHost.nextBoardState as unknown as InferredGSH;
-      const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
+      // const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
 
       // Converting from GameBoardEventForDb structure to GameTableEventForHostP2p structure
       // Note: nextGamePlayerStates is an empty array because we don't have player seat information
@@ -115,12 +117,13 @@ export const createBfgGameEngineAccessLevelAdapters = <
         event: adaptedEvent as unknown as GTH['event'],
         outcome: hostEventTransitionDb.transitionForHost.change as unknown as GTH['outcome'],
         nextGameHostState: typedHostState as unknown as GTH['nextGameHostState'],
-        nextGamePlayerStates: [] as unknown as GTH['nextGamePlayerStates'],
-        nextGameWatcherState: adaptedWatcherState as unknown as GTH['nextGameWatcherState'],
+        // nextGamePlayerStates: [] as unknown as GTH['nextGamePlayerStates'],
+        // nextGameWatcherState: adaptedWatcherState as unknown as GTH['nextGameWatcherState'],
       };
 
       return result as unknown as GTH;
     },
+
     hostEventTransitionToPlayerAccessLevelAdapter: <
       GTH extends GameBoardEventForDb,
       GTP extends GameTableEventForPlayerP2p,
@@ -130,7 +133,7 @@ export const createBfgGameEngineAccessLevelAdapters = <
       
       const typedHostState = hostEventTransitionDb.transitionForHost.nextBoardState as unknown as InferredGSH;
       const adaptedPlayerState = adapters.myHostGameStateToPlayerAccessLevelAdapter(typedHostState);
-      const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
+      // const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
 
       // Converting from GameBoardEventForDb structure to GameTableEventForPlayerP2p structure
       // AssignedBfgGameStateForPlayer extends the player state schema and adds playerSeat
@@ -145,11 +148,12 @@ export const createBfgGameEngineAccessLevelAdapters = <
           ...adaptedPlayerState,
           playerSeat: playerSeat,
         } as unknown as GTP['nextGamePlayerState'],
-        nextGameWatcherState: adaptedWatcherState as unknown as GTP['nextGameWatcherState'],
+        // nextGameWatcherState: adaptedWatcherState as unknown as GTP['nextGameWatcherState'],
       };
 
       return result as unknown as GTP;
     },
+    
     hostEventTransitionToWatcherAccessLevelAdapter: <
       GTH extends GameBoardEventForDb,
       GTW extends GameTableEventForWatcherP2p,

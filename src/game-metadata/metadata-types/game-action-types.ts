@@ -7,55 +7,43 @@ export const BfgGameActionSource = ['player', 'host'] as const;
 export type BfgGameActionSource = typeof BfgGameActionSource[number];
 
 
-export const BfgGameEventSchema = z.object({
+export const BfgGameEventBaseSchema = z.object({
   source: z.enum(BfgGameActionSource),
 })
 .catchall(z.unknown())
 .describe("BfgGameEventSchema");
-export type BfgGameEvent = z.infer<typeof BfgGameEventSchema>;
+export type BfgGameEventBase = z.infer<typeof BfgGameEventBaseSchema>;
 
 export const BfgGameEventOutcomeSchema = z.object({
   description: z.string(),
-}).describe("BfgGameEventOutcomeSchema");
+})
+.describe("BfgGameEventOutcomeSchema");
 export type BfgGameEventOutcome = z.infer<typeof BfgGameEventOutcomeSchema>;
 
 
-
-// export const BfgGameEventBaseSchema = BfgGameActionBaseSchema.extend({
-//   source: z.enum(BfgGameActionSource),
-//   // actionType: z.string(),
-// });
-// export type BfgGameEventBase = z.infer<typeof BfgGameEventBaseSchema>;
-
-
-export const BfgGameActionByPlayerSchema = BfgGameEventSchema.extend({
+export const BfgGameActionByPlayerSchema = BfgGameEventBaseSchema.extend({
   source: z.literal('player'),
   playerSeat: GameTableSeatSchema,
-  // actionType: z.string(),
 });
 
 export type BfgGameActionByPlayer = z.infer<typeof BfgGameActionByPlayerSchema>;
-// export type PGAExt = Extends<BfgGameActionByPlayer, typeof BfgGameActionByPlayerSchema>;
 
 
 export const AllBfgGameActionsByPlayerSchema = z.array(BfgGameActionByPlayerSchema);
-// export type AllBfgGameActionsByPlayer = z.infer<typeof AllBfgGameActionsByPlayerSchema>;
 
 
-
-export const BfgGameActionByHostSchema = BfgGameEventSchema.extend({
+export const BfgGameActionByHostSchema = BfgGameEventBaseSchema.extend({
   source: z.literal('host'),
-  // actionType: z.string(),
 });
 
 export type BfgGameActionByHost = z.infer<typeof BfgGameActionByHostSchema>;
 
-export const BfgGameActionSchema = z.discriminatedUnion('source', [
+export const BfgGameEventSchema = z.discriminatedUnion('source', [
   BfgGameActionByPlayerSchema,
   BfgGameActionByHostSchema,
 ]);
 
-export type BfgGameAction = z.infer<typeof BfgGameActionSchema>;
+export type BfgGameEvent = z.infer<typeof BfgGameEventSchema>;
 
 // export const AllBfgGameActionsByHostSchema = z.array(BfgGameActionByHostSchema);
 // export type AllBfgGameActionsByHost = z.infer<typeof AllBfgGameActionsByHostSchema>;

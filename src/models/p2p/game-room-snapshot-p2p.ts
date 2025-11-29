@@ -1,37 +1,37 @@
-import { BfgGameRoomIdToolbox } from "../types/bfg-branded-uuids";
-import { GameRoomDbSchema } from "../tinybase/game-room-db";
-import { createGameBoardEventForDbSchema } from "../game-table/game-table-event-db";
-import { z } from "zod";
-import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
+// import { BfgGameRoomIdToolbox } from "../types/bfg-branded-uuids";
+// import { GameRoomDbSchema } from "../tinybase/game-room-db";
+// import { createGameBoardEventForDbSchema } from "../game-table/game-table-event-db";
+// import { z } from "zod";
+// import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
 
 
-// export type GameRoomSnapshot = {
-//   gameRoomId: BfgGameRoomId;
+// // export type GameRoomSnapshot = {
+// //   gameRoomId: BfgGameRoomId;
 
-//   gameRoom: GameRoomDb;
-//   latestBoardTransition: GameBoardTransition;
+// //   gameRoom: GameRoomDb;
+// //   latestBoardTransition: GameBoardTransition;
 
-//   latestStepIndex: number;
-//   createdAt: number;
-//   lastUpdatedAt: number;
+// //   latestStepIndex: number;
+// //   createdAt: number;
+// //   lastUpdatedAt: number;
+// // }
+
+// export const createGameRoomSnapshotForP2pSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+//   const GameBoardTransitionForP2pSchema = createGameBoardEventForDbSchema(schemas);
+
+//   const GameRoomSnapshotForP2pSchema = z.object({
+//     gameRoomId: BfgGameRoomIdToolbox.idSchema,
+    
+//     gameRoom: GameRoomDbSchema,
+//     latestBoardTransition: GameBoardTransitionForP2pSchema,
+
+//     latestStepIndex: z.number(),
+//     createdAt: z.number(),
+//     lastUpdatedAt: z.number(),
+//   });
+
+//   return GameRoomSnapshotForP2pSchema;
 // }
 
-export const createGameRoomSnapshotForP2pSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
-  const GameBoardTransitionForP2pSchema = createGameBoardEventForDbSchema(schemas);
-
-  const GameRoomSnapshotForDbSchema = z.object({
-    gameRoomId: BfgGameRoomIdToolbox.idSchema,
-    
-    gameRoom: GameRoomDbSchema,
-    latestBoardTransition: GameBoardTransitionForP2pSchema,
-
-    latestStepIndex: z.number(),
-    createdAt: z.number(),
-    lastUpdatedAt: z.number(),
-  });
-
-  return GameRoomSnapshotForDbSchema;
-}
-
-// export type GameRoomSnapshot = ReturnType<typeof createGameRoomSnapshotSchema>;
-export type GameRoomSnapshotForP2p = z.infer<ReturnType<typeof createGameRoomSnapshotForP2pSchema>>;
+// // export type GameRoomSnapshot = ReturnType<typeof createGameRoomSnapshotSchema>;
+// export type GameRoomSnapshotForP2p = z.infer<ReturnType<typeof createGameRoomSnapshotForP2pSchema>>;

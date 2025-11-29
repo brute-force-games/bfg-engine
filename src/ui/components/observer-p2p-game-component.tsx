@@ -127,7 +127,7 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
                       return (
                         <Option key={player.playerProfileId} value={player.playerProfileId}>
                           {player.playerProfileId.substring(0, 16)}...
-                          {player.playerName}
+                          {player.playerProfile.handle}
                         </Option>
                       );
                     })}

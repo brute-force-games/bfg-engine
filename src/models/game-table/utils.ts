@@ -46,8 +46,8 @@ export const isMessageFromHost = (_peerId: PeerId): boolean => {
 // export const getTableAccessRoleForProfile = (
 //   playerId: PlayerProfileId | null, 
 //   gameTable: GameTable | null,
-//   requestedRole: GameTableAccessRole
-// ): GameTableAccessRole => {
+//   requestedRole: GameTableAccessLevel
+// ): GameTableAccessLevel => {
 
 //   if (!gameTable || !playerId) {
 //     return 'observer';
@@ -73,7 +73,7 @@ export const isMessageFromHost = (_peerId: PeerId): boolean => {
 // export const hasTableAccessRoleForProfile = (
 //   playerId: PlayerProfileId | null, 
 //   gameTable: GameTable | null,
-//   requestedRole: GameTableAccessRole
+//   requestedRole: GameTableAccessLevel
 // ): boolean => {
 
 //   if (!gameTable || !playerId) {

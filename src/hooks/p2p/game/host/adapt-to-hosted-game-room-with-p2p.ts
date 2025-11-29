@@ -1,32 +1,86 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry-hook";
 import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { PeerId, PeerIdSchema } from "../p2p-types";
-import { useP2pGameRoomContext } from "./p2p-game-room-context";
-import { IBfgGameTableForHost, IHostBfgGameDetails, IP2pDetails, IPlayerBfgGameDetails, IPublicBfgGameDetails } from "./p2p-game-types";
-import { useGameInstanceUserDetails } from "./use-bfg-game-instance";
-// import { useHostedGame } from "@bfg-engine/hooks/stores/use-hosted-games-store";
-// import { useGameActions } from "@bfg-engine/hooks/stores/use-game-actions-store";
+import { PeerId, PeerIdSchema, type UserGameRoomPerspectiveStr } from "../../p2p-types";
+import { IBfgGameTableForHost, IHostBfgGameDetails, IP2pDetails, IPlayerBfgGameDetails, IPublicBfgGameDetails } from "../p2p-game-types";
 import { matchPlayerToSeat } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
-// import { updateHostedGame } from "@bfg-engine/tb-store/hosted-games-store";
-// import { addGamePlayerAction, addGameHostAction } from "@bfg-engine/tb-store/hosted-game-archive-store";
 import { selfId } from "trystero";
-import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../../../game-metadata/metadata-types/game-action-types";
-// import { useHostedGameArchive } from "../../../tb-store/games-archives-store";
-import type { GameRoomP2p } from "../../../models/p2p/game-room-p2p";
-import { updateHostedGameWithNewNextBoardState, useLatestHostedGameSnapshot } from "../../../tb-store/games-archives-store";
-import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
-import type { GameStateTransitionForDb } from "../../../models/game-table/game-table-event-db";
-import type { GameTableActionSource } from "../../../models/game-table/game-table-event";
+import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../../../../game-metadata/metadata-types/game-action-types";
+import { updateHostedGameWithNewNextBoardState, useLatestHostedGameSnapshot } from "../../../../tb-store/games-archives-store";
+import type { GameTableEventWithTransition } from "../../../../models/game-table/game-table-event";
+import type { GameStateTransitionForDb } from "../../../../models/game-table/game-table-event-db";
+import type { GameTableActionSource } from "../../../../models/game-table/game-table-event";
+import type { GameTableSeat } from "../../../../models/internal/game-room-base";
+import type { GameRoomModeHostPlusP2pAccess } from "../p2p-game-types";
+import { useGameInstanceUserDetails } from "../use-bfg-game-instance";
+import { convertGameRoomDbToP2p, convertGameBoardEventDbToPlayerP2p } from "../hosted-game-room-context-utils";
+import { type UserGameRoomDataForPlayer, type UserGameRoomDataForWatcher } from "../user-game-room-data";
+import { GameTableEventForWatcherP2pSchema } from "../../../../models/p2p/game-table-event-p2p";
 
 
-export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
+type P2pPlayerGameRoomData = {
+  type: 'p2p';
+  peerId: PeerId;
+  playerProfile: PublicPlayerProfile;
+  gameSeat: GameTableSeat;
+}
 
-  const p2pGameRoom = useP2pGameRoomContext();
+type HostPlayerGameRoomData = {
+  type: 'host';
+  playerProfile: PublicPlayerProfile;
+  gameSeat: GameTableSeat | null;
+}
+
+type PlayerGameRoomData = P2pPlayerGameRoomData | HostPlayerGameRoomData;
+
+
+export const adaptToHostedGameRoomWithP2p = (
+  hostingMode: GameRoomModeHostPlusP2pAccess,
+  // p2pRawRoom: IP2pRawRoomValue,
+): IBfgGameTableForHost | null => {
+
+  const hostedGameRoomContext = hostingMode.hostedGameRoom;
+  const p2pGameRoom = hostingMode.p2pRawRoom;
+
   const gameInstanceUserDetails = useGameInstanceUserDetails(p2pGameRoom.gameInstanceId, 'host');
 
+  const { hostedGame, hostedGameBoardEvents, latestStepIndex, latestBoardEvent } = hostedGameRoomContext;
+
   const myPlayerProfile = gameInstanceUserDetails.myPlayerProfile;
+
+  const createPlayerGameRoomData = (playerProfile: PublicPlayerProfile, peerId: PeerId): PlayerGameRoomData | null => {
+    const gameSeat = matchPlayerToSeat(playerProfile.id, hostedGame);
+    if (!gameSeat) {
+      console.error('❌ Player seat not found');
+      console.error('❌ Player profile:', myPlayerProfile);
+      console.error('❌ Hosted game:', hostedGame);
+      return null;
+    }
+
+    const playerGameRoomData: PlayerGameRoomData = {
+      type: 'p2p',
+      peerId,
+      playerProfile,
+      gameSeat,
+    };  
+    return playerGameRoomData;
+  }
+
+  const createPlayerGameRoomDataForHost = (playerProfile: PublicPlayerProfile): PlayerGameRoomData | null => {
+    const gameSeat = matchPlayerToSeat(playerProfile.id, hostedGame);
+    if (gameSeat === null) {
+      return null;
+    }
+
+    const myPlayerGameRoomData: PlayerGameRoomData = {
+      type: 'host',
+      playerProfile,
+      gameSeat,
+    };  
+    return myPlayerGameRoomData;
+  }
+
 
   const [peers, setPeers] = useState<PeerId[]>([]);
   const [peerIdsToPlayerIds, setPeerIdsToPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(() => {
@@ -37,23 +91,16 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     }
     return map;
   });
-  const [allPlayerProfiles, setAllPlayerProfiles] = useState<Map<PlayerProfileId, PublicPlayerProfile>>(() => {
-    const profiles = new Map<PlayerProfileId, PublicPlayerProfile>();
+  const [allPlayerGameRoomData, setAllPlayerGameRoomData] = useState<Map<PlayerProfileId, PlayerGameRoomData>>(() => {
+    const profiles = new Map<PlayerProfileId, PlayerGameRoomData>();
     if (myPlayerProfile) {
-      profiles.set(myPlayerProfile.id, myPlayerProfile);
+      const myPlayerGameRoomData = createPlayerGameRoomDataForHost(myPlayerProfile);
+      if (myPlayerGameRoomData !== null) {
+        profiles.set(myPlayerProfile.id, myPlayerGameRoomData);
+      }
     }
     return profiles;
-  });  
-  
-  // const [myHostGameState, setMyHostGameState] = useState<BfgGameStateForHost | null>(null);
-  // Use a ref to store the latest doSendGameUpdates to avoid infinite loops
-  const doSendGameUpdatesRef = useRef<(
-    // publicGameState: BfgGameStateForWatcher,
-    // publicGameActions: DbGameTableAction[],
-  ) => void>(() => {});
-  
-  // Track the last game action ID to prevent sending on every render
-  // const lastGameActionIdRef = useRef<string | null>(null);
+  });
 
   const gameRegistry = useGameRegistry();
   const hostedGameSnapshot = useLatestHostedGameSnapshot(p2pGameRoom.gameInstanceId);
@@ -62,9 +109,10 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     return null;
   }
 
-  const hostedGame = hostedGameSnapshot.gameRoom;
-  // const hostedGameLatestBoardEvent = hostedGameSnapshot.latestBoardEvent;
-  const hostedGameBoardEvents = hostedGameSnapshot.boardEvents;
+  // const hostedGame = hostedGameSnapshot.gameRoom;
+  // // const hostedGameLatestBoardEvent = hostedGameSnapshot.latestBoardEvent;
+  // const hostedGameBoardEvents = hostedGameSnapshot.boardEvents;
+
 
   // Debug: log when board events change
   useEffect(() => {
@@ -76,8 +124,8 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   }, [hostedGameBoardEvents.length, hostedGameBoardEvents]);
 
   // 
-  const latestStepIndex = hostedGameBoardEvents.length - 1;
-  const latestBoardEvent = hostedGameBoardEvents[latestStepIndex];
+  // const latestStepIndex = hostedGameBoardEvents.length - 1;
+  // const latestBoardEvent = hostedGameBoardEvents[latestStepIndex];
   // if (!latestBoardEvent) {
   //   throw new Error('No board events found - cannot apply player action');
   // }
@@ -96,7 +144,10 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   // const [watcherGameActions, setWatcherGameActions] = useState<DbGameTableAction[]>([]);
 
   
-  const { txGameRoom, txPublicGameEventsDataStr, txPrivatePlayerKnowledgeStr } = p2pGameRoom;
+  // const { txGameRoom, txPublicGameEventsDataStr, txPrivatePlayerKnowledgeStr } = p2pGameRoom;
+  const { txUserGameRoomPerspectiveStr } = hostingMode.p2pRawRoom;
+
+  
   
   const myHostProfile = gameInstanceUserDetails.myHostProfile;
   if (!myHostProfile) {
@@ -138,27 +189,172 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     //   ...hostedGameState,
     // }
 
-    const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+    // const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
 
-    const gameRoomP2p: GameRoomP2p = {
-      // id: hostedGameState.id,
-      // gameTitle: hostedGameState.gameTitle,
-      // tableName: hostedGameState.tableName,
-      // gameHostPlayerProfileId: hostedGameState.gameHostPlayerProfileId,
-      // latestRoomStatusDescription: hostedGameState.latestRoomStatusDescription,
-      // players: hostedGameState.players,
-      // latestGameStepIndex: hostedGameState.latestGameStepIndex,
-      // latestGameStatusDescription: hostedGameState.latestGameStatusDescription,
-      // latestRoomPhase: hostedGameState.latestRoomPhase,
-      // createdAt: hostedGameState.createdAt,
-      // lastUpdatedAt: hostedGameState.lastUpdatedAt,
-      ...hostedGame,
-    } satisfies GameRoomP2p;
+
+    // go through peer IDs. 
+    // * for those who are players, create their version of the game room data, stringify it, and send it to them.
+    // * for those who are not players (i.e. observers), stringify the observer version of the room data, and send it to them.
+
+    // Step 1: Classify peer IDs into players and watchers
+    const playerPeers: PeerId[] = [];
+    const watcherPeers: PeerId[] = [];
+    
+    console.log('🎮 Host: Classifying peers. Total peers:', peers.length);
+    console.log('🎮 Host: peerIdsToPlayerIds map:', Array.from(peerIdsToPlayerIds.entries()));
+    
+    for (const peerId of peers) {
+      const playerProfileId = peerIdsToPlayerIds.get(peerId);
+      if (playerProfileId) {
+        playerPeers.push(peerId);
+        console.log('🎮 Host: Classified peer as player:', peerId, '->', playerProfileId);
+      } else {
+        watcherPeers.push(peerId);
+        console.log('🎮 Host: Classified peer as watcher:', peerId);
+      }
+    }
+
+    console.log('🎮 Host: Player peers:', playerPeers.length, 'Watcher peers:', watcherPeers.length);
+
+    // Step 2: If watchers exist, create watcher data
+    const gameRoomP2p = convertGameRoomDbToP2p(hostedGame);
+    // const stringifiedRoomState = JSON.stringify(gameRoomP2p);
+    
+    // let watcherUserGameRoomDataStr: ReturnType<typeof UserGameRoomDataStrSchema.parse> | null = null;
+    if (watcherPeers.length > 0) {
+      console.log('🎮 Host: Creating watcher data for', watcherPeers.length, 'watcher(s)');
+      // const watcherBoardTransitions = hostedGameBoardEvents.map(convertGameBoardEventDbToWatcherP2p);
+      // const stringifiedBoardTransitions = JSON.stringify(watcherBoardTransitions);
+      
+      // const watcherUserGameRoomDataP2p = UserGameRoomDataP2pSchema.parse({
+      //   gameInstanceId: p2pGameRoom.gameInstanceId,
+      //   gameRole: 'watch',
+      //   stringifiedRoomState,
+      //   stringifiedBoardTransitions,
+      // });
+
+      // Use the game metadata adapter to properly convert host events to watcher events
+      const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+      if (!gameMetadata) {
+        console.error('❌ Game metadata not found for game title:', hostedGame.gameTitle);
+        return;
+      }
+
+      // Convert host events to watcher events and validate through schema to ensure clean data
+      // This removes any extra fields like nextGamePlayerStates that might be in the host state
+      const watcherGameHistory = hostedGameBoardEvents.map(boardEvent => {
+        const converted = gameMetadata.accessLevelAdapters.hostEventTransitionToWatcherAccessLevelAdapter(boardEvent);
+        // Log the converted object to debug
+        if (Object.keys(converted).includes('nextGamePlayerStates')) {
+          console.error('❌ Host: Converted watcher event still has nextGamePlayerStates!', converted);
+        }
+        // Validate through schema to ensure no extra fields like nextGamePlayerStates
+        // The schema will strip out any fields that aren't in the watcher schema
+        const parsed = GameTableEventForWatcherP2pSchema.parse(converted);
+        if (Object.keys(parsed).includes('nextGamePlayerStates')) {
+          console.error('❌ Host: Parsed watcher event still has nextGamePlayerStates after schema parse!', parsed);
+        }
+        return parsed;
+      });
+
+      const watcherUserGameRoomDataP2p: UserGameRoomDataForWatcher = {
+        gameInstanceId: hostingMode.gameInstanceId,
+        accessLevel: 'observer',
+        role: 'watcher',
+        gameRoom: gameRoomP2p,
+        watcherGameHistory,
+      };
+      
+      // watcherUserGameRoomDataStr = UserGameRoomDataStrSchema.parse(JSON.stringify(watcherUserGameRoomDataP2p));
+      const watcherUserGameRoomDataStr = JSON.stringify(watcherUserGameRoomDataP2p) as UserGameRoomPerspectiveStr;
+      for (const peerId of watcherPeers) {
+        txUserGameRoomPerspectiveStr(watcherUserGameRoomDataStr, peerId);
+        console.log('🎮 Host: Sent watcher game room data to peer:', peerId);
+      }
+    }
+
+    // Step 3: For each classified peer ID, send player or watcher data as applicable
+    // Send player-specific data to each player
+    for (const peerId of playerPeers) {
+      const playerProfileId = peerIdsToPlayerIds.get(peerId);
+      if (!playerProfileId) {
+        // This shouldn't happen since we classified above, but handle it gracefully
+        console.error('❌ Player profile ID not found for peer:', peerId);
+        continue;
+      }
+      
+      const playerGameRoomData = allPlayerGameRoomData.get(playerProfileId);
+      if (!playerGameRoomData) {
+        console.error('❌ Player game room data not found for peer:', peerId, 'player profile:', playerProfileId);
+        continue;
+      }
+      
+      if (playerGameRoomData.type !== 'p2p') {
+        console.error('❌ Expected p2p player game room data, got:', playerGameRoomData.type);
+        continue;
+      }
+      
+      const playerSeat = playerGameRoomData.gameSeat;
+      const playerBoardTransitions = hostedGameBoardEvents.map((event) => 
+        convertGameBoardEventDbToPlayerP2p(event, playerSeat)
+      );
+      // const stringifiedBoardTransitions = JSON.stringify(playerBoardTransitions);
+
+      const playerGameRoomDataP2p: UserGameRoomDataForPlayer = {
+        gameInstanceId: hostingMode.gameInstanceId,
+        accessLevel: 'player',
+        role: 'player',
+        playerSeat,
+        gameRoom: gameRoomP2p,
+        playerGameHistory: playerBoardTransitions,
+      };
+
+      const playerUserGameRoomDataStr = JSON.stringify(playerGameRoomDataP2p) as UserGameRoomPerspectiveStr;
+      txUserGameRoomPerspectiveStr(playerUserGameRoomDataStr, peerId);
+      console.log('🎮 Host: Sent player game room data to peer:', peerId, 'for seat:', playerSeat);
+
+      // const playerUserGameRoomDataP2p = UserGameRoomDataP2pSchema.parse({
+      //   gameInstanceId: p2pGameRoom.gameInstanceId,
+      //   gameRole: 'play',
+      //   stringifiedRoomState,
+      //   stringifiedBoardTransitions,
+      // });
+      
+      // const userGameRoomDataStr = UserGameRoomDataStrSchema.parse(JSON.stringify(playerUserGameRoomDataP2p));
+      // txUserGameRoomDataStr(userGameRoomDataStr, peerId);
+      // console.log('🎮 Host: Sent player game room data to peer:', peerId, 'for seat:', playerSeat);
+    }
+
+    // // Send watcher data to each watcher
+    // if (watcherUserGameRoomDataStr !== null) {
+    //   for (const peerId of watcherPeers) {
+    //     txUserGameRoomDataStr(watcherUserGameRoomDataStr, peerId);
+    //     console.log('🎮 Host: Sent watcher game room data to peer:', peerId);
+    //   }
+    // }
+
+
+    // const gameRoomP2p: GameRoomP2p = {
+    //   // id: hostedGameState.id,
+    //   // gameTitle: hostedGameState.gameTitle,
+    //   // tableName: hostedGameState.tableName,
+    //   // gameHostPlayerProfileId: hostedGameState.gameHostPlayerProfileId,
+    //   // latestRoomStatusDescription: hostedGameState.latestRoomStatusDescription,
+    //   // players: hostedGameState.players,
+    //   // latestGameStepIndex: hostedGameState.latestGameStepIndex,
+    //   // latestGameStatusDescription: hostedGameState.latestGameStatusDescription,
+    //   // latestRoomPhase: hostedGameState.latestRoomPhase,
+    //   // createdAt: hostedGameState.createdAt,
+    //   // lastUpdatedAt: hostedGameState.lastUpdatedAt,
+    //   ...hostedGame,
+    // } satisfies GameRoomP2p;
+
+    // const gameRoomP2p = hostedGame;
 
     // console.log('🎮 Host sending game data:', gameTable)
 
     // txPublicGameTableData(gameTable);
-    txGameRoom(gameRoomP2p);
+    // txUserGameRoomDataStr(gameRoomP2p);
 
     // const latestGameAction = gameActions[gameActions.length - 1];
     // const gameState = gameMetadata.encoders.hostGameStateEncoder.decode(latestGameAction.nextGameStateStr);
@@ -167,84 +363,84 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     //   return;
     // }
 
-    // For private knowledge games, transform game actions to contain only public state before sending
-    if (gameMetadata.metadataType === 'public-knowledge-game') {
-      // For public knowledge games, send as-is
-      // txPublicGameActionsData(gameActions);
-    } else {
+    // // For private knowledge games, transform game actions to contain only public state before sending
+    // if (gameMetadata.metadataType === 'public-knowledge-game') {
+    //   // For public knowledge games, send as-is
+    //   // txPublicGameActionsData(gameActions);
+    // } else {
 
-      // // Transform all game actions to use public game state instead of host game state
-      // const publicGameActions = gameActions.map(action => {
-      //   const hostState = gameMetadata.encoders.hostGameStateEncoder.decode(action.nextGameStateStr);
-      //   if (!hostState) {
-      //     console.error('❌ Failed to decode host state for action:', action);
-      //     return action;
-      //   }
+    //   // // Transform all game actions to use public game state instead of host game state
+    //   // const publicGameActions = gameActions.map(action => {
+    //   //   const hostState = gameMetadata.encoders.hostGameStateEncoder.decode(action.nextGameStateStr);
+    //   //   if (!hostState) {
+    //   //     console.error('❌ Failed to decode host state for action:', action);
+    //   //     return action;
+    //   //   }
         
-      //   // Extract only public fields by parsing through the public schema
-      //   // This ensures we don't include private fields like 'deck' or 'playerHandStates'
-      //   try {
-      //     // const publicState = gameMetadata.schemas.publicGameStateSchema.parse(hostState);
+    //   //   // Extract only public fields by parsing through the public schema
+    //   //   // This ensures we don't include private fields like 'deck' or 'playerHandStates'
+    //   //   try {
+    //   //     // const publicState = gameMetadata.schemas.publicGameStateSchema.parse(hostState);
           
-      //     const watcherState = gameMetadata.accessLevelConverters.hostToWatcherAccessLevel(hostState);
-      //     const publicStateStr = gameMetadata.encoders.watcherGameStateEncoder.encode(watcherState);
+    //   //     const watcherState = gameMetadata.accessLevelConverters.hostToWatcherAccessLevel(hostState);
+    //   //     const publicStateStr = gameMetadata.encoders.watcherGameStateEncoder.encode(watcherState);
         
-      //     return {
-      //       ...action,
-      //       nextGameStateStr: publicStateStr,
-      //     };
+    //   //     return {
+    //   //       ...action,
+    //   //       nextGameStateStr: publicStateStr,
+    //   //     };
 
-      //   } catch (error) {
-      //     console.error('❌ Failed to parse host state as public state:', error);
-      //     console.error('❌ Host state:', hostState);
-      //     console.error('❌ Game:', gameMetadata.gameTitle);
-      //     return action;
-      //   }
-      // });
+    //   //   } catch (error) {
+    //   //     console.error('❌ Failed to parse host state as public state:', error);
+    //   //     console.error('❌ Host state:', hostState);
+    //   //     console.error('❌ Game:', gameMetadata.gameTitle);
+    //   //     return action;
+    //   //   }
+    //   // });
       
-      // txPublicGameActionsData(publicGameActions);
-      // setMyPlayerSeatGameStates(playerSeatGameStates);
-      console.warn("Implement me");
-    }
+    //   // txPublicGameActionsData(publicGameActions);
+    //   // setMyPlayerSeatGameStates(playerSeatGameStates);
+    //   console.warn("Implement me");
+    // }
 
-    // send private player knowledge updates; update self player knowledge
-    if (gameMetadata.metadataType === 'private-player-knowledge-game') {
-      // const playerSeatGameStates = gameMetadata.accessLevelConverters.hostToPlayerSeatGameStates(gameTable, gameState);
-      // if (!playerSeatGameStates || playerSeatGameStates.length === 0) {
-      //   console.error('❌ Player seat access levels not found');
-      //   return;
-      // }
+    // // send private player knowledge updates; update self player knowledge
+    // if (gameMetadata.metadataType === 'private-player-knowledge-game') {
+    //   // const playerSeatGameStates = gameMetadata.accessLevelConverters.hostToPlayerSeatGameStates(gameTable, gameState);
+    //   // if (!playerSeatGameStates || playerSeatGameStates.length === 0) {
+    //   //   console.error('❌ Player seat access levels not found');
+    //   //   return;
+    //   // }
 
-      // for (const { playerSeat, } of playerSeatGameStates) {
+    //   // for (const { playerSeat, } of playerSeatGameStates) {
         
-      //   if (playerSeat === myPlayerSeat) {
-      //     console.log('🎮 Host: Setting my own private knowledge');
-      //     // setMyPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr);
-      //     console.warn("Implement me");
-      //   } else {
-      //     console.log('🎮 Host: Looking up peer ID for seat', playerSeat);
-      //     const playerSeatPeerId = getPeerIdForPlayerSeat(playerSeat, gameTable, peerIdsToPlayerIds);
-      //     if (!playerSeatPeerId) {
-      //       console.error('❌ Player seat peer ID not found:', playerSeat);
-      //       // console.error('❌ Expected profile ID:', gameTable[playerSeat]);
-      //       console.error('❌ Available peers:', Array.from(peerIdsToPlayerIds.entries()));
-      //       continue;
-      //     }
-      //     console.log('🎮 Host: Sending private knowledge to peer', playerSeatPeerId, 'for seat', playerSeat);
-      //     // txPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr, playerSeatPeerId);
-      //     console.warn("Implement me");
-      //   }
-      // }
-    }
+    //   //   if (playerSeat === myPlayerSeat) {
+    //   //     console.log('🎮 Host: Setting my own private knowledge');
+    //   //     // setMyPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr);
+    //   //     console.warn("Implement me");
+    //   //   } else {
+    //   //     console.log('🎮 Host: Looking up peer ID for seat', playerSeat);
+    //   //     const playerSeatPeerId = getPeerIdForPlayerSeat(playerSeat, gameTable, peerIdsToPlayerIds);
+    //   //     if (!playerSeatPeerId) {
+    //   //       console.error('❌ Player seat peer ID not found:', playerSeat);
+    //   //       // console.error('❌ Expected profile ID:', gameTable[playerSeat]);
+    //   //       console.error('❌ Available peers:', Array.from(peerIdsToPlayerIds.entries()));
+    //   //       continue;
+    //   //     }
+    //   //     console.log('🎮 Host: Sending private knowledge to peer', playerSeatPeerId, 'for seat', playerSeat);
+    //   //     // txPrivatePlayerKnowledgeStr(privatePlayerKnowledgeStr, playerSeatPeerId);
+    //   //     console.warn("Implement me");
+    //   //   }
+    //   // }
+    // }
       
     // } else {
     //   console.log('🎮 Host cannot send game data - missing:', { hostedGame: !!hostedGameState, gameActions: !!gameActions })
     // }
-  }, [hostedGame, hostedGameSnapshot, peerIdsToPlayerIds, txGameRoom, txPublicGameEventsDataStr, txPrivatePlayerKnowledgeStr, gameRegistry, myPlayerSeat])
+  }, [hostedGame, hostedGameSnapshot, peers, peerIdsToPlayerIds, allPlayerGameRoomData, hostingMode.gameInstanceId, hostedGameBoardEvents, txUserGameRoomPerspectiveStr])
 
   // Update the ref whenever doSendGameUpdates changes
   // doSendGameUpdatesRef.current = doSendGameUpdates;
-  doSendGameUpdatesRef.current = doSendGameUpdates;
+  // doSendGameUpdatesRef.current = doSendGameUpdates;
   
 
   useEffect(() => {
@@ -254,7 +450,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
       // Send game updates to the new peer after a short delay to ensure they're subscribed
       setTimeout(() => {
         console.log('🎮 Host: Sending game updates after peer join');
-        doSendGameUpdatesRef.current();
+        doSendGameUpdates();
       }, 100);
     });
 
@@ -277,9 +473,15 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
 
     const rxPlayerProfileUnsubscribe = p2pGameRoom.rxPlayerProfile((playerProfile, peerId) => {
       console.log('🎮 Host: Received player profile from peer:', peerId, playerProfile);
-      setAllPlayerProfiles(prev => {
+      setAllPlayerGameRoomData(prev => {
         const newMap = new Map(prev);
-        newMap.set(playerProfile.id, playerProfile);
+
+        const playerGameRoomData = createPlayerGameRoomData(playerProfile, peerId);
+        if (playerGameRoomData === null) {
+          console.error('❌ Failed to create player game room data');
+          return prev;
+        }
+        newMap.set(playerProfile.id, playerGameRoomData);
         console.log('🎮 Host: Updated allPlayerProfiles, now has:', Array.from(newMap.keys()));
         return newMap;
       });
@@ -346,6 +548,14 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     };
   }, [hostedGame, hostedGameSnapshot, myHostProfile, gameRegistry, p2pGameRoom]);
 
+  // Call doSendGameUpdates when peers, game data, or board events change
+  useEffect(() => {
+    if (hostedGame && hostedGameSnapshot && peers.length > 0) {
+      console.log('🎮 Host: Sending game updates (peers, game data, or events changed)');
+      doSendGameUpdates();
+    }
+  }, [peers, hostedGame, hostedGameSnapshot, hostedGameBoardEvents, peerIdsToPlayerIds, doSendGameUpdates])
+
   // Call doSendGameUpdates when game actions actually change (new moves applied)
   useEffect(() => {
     console.warn("Implement me - game actions???");
@@ -362,6 +572,11 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     // }
   }, [])
 
+  const allPlayerProfiles = new Map<PlayerProfileId, PublicPlayerProfile>();
+  for (const playerGameRoomData of allPlayerGameRoomData.values()) {
+    allPlayerProfiles.set(playerGameRoomData.playerProfile.id, playerGameRoomData.playerProfile);
+  }
+
   const p2pDetails: IP2pDetails = {
     peerIds: peers,
     peerIdsToPlayerIds,
@@ -371,7 +586,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     connectionEvents: p2pGameRoom.connectionEvents,
   }
 
-  if (gameInstanceUserDetails.maxAllowedAccessRole !== 'host' ||
+  if (gameInstanceUserDetails.maxAllowedAccessLevel !== 'host' ||
       gameInstanceUserDetails.myHostProfile === null ||
       hostedGame === null ||
       hostedGameSnapshot === null ||
@@ -569,7 +784,7 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
     gameInstanceUserDetails.myPlayerProfile &&
     myPlayerSeat !== null &&
     latestMyPlayerGameEvent !== null &&
-    gameInstanceUserDetails.allowedRoles.includes('play') ? {
+    gameInstanceUserDetails.allowedLevels.includes('player') ? {
       gameMetadata,
       myPlayerProfile: gameInstanceUserDetails.myPlayerProfile,
       allPlayerProfiles,
@@ -592,13 +807,12 @@ export const useP2pGameRoomAsHost = (): IBfgGameTableForHost | null => {
   }
 
   const retVal: IBfgGameTableForHost = {
-    gameRoomId: p2pGameRoom.gameRoomId,
-    gameTableId: p2pGameRoom.gameTableId,
+    gameInstanceId: p2pGameRoom.gameInstanceId,
     gameMetadata,
 
-    accessRole: 'host',
-    maxAllowedAccessRole: gameInstanceUserDetails.maxAllowedAccessRole,
-    allowedRoles: gameInstanceUserDetails.allowedRoles,
+    accessLevel: 'host',
+    maxAllowedAccessLevel: gameInstanceUserDetails.maxAllowedAccessLevel,
+    allowedLevels: gameInstanceUserDetails.allowedLevels,
     myHostProfile: gameInstanceUserDetails.myHostProfile,
 
     p2pDetails,

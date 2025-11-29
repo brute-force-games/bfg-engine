@@ -4,7 +4,7 @@ import type { BfgStringifiedBoardTransitionsStr, BfgStringifiedRoomStateStr } fr
 import { createBoardTransitionsArraySchema } from "../tinybase/game-board-event";
 
 
-export const createHydratedLatestGameSnapshotFromTbData = (
+export const createHydratedLatestGameSnapshotFromStringifiedData = (
   stringifiedGameRoomState: BfgStringifiedRoomStateStr,
   stringifiedBoardEvents: BfgStringifiedBoardTransitionsStr,
 ) => {
@@ -47,4 +47,4 @@ export const createHydratedLatestGameSnapshotFromTbData = (
   return hydratedLatestGameSnapshot;
 }
 
-export type HydratedLatestGameSnapshot = ReturnType<typeof createHydratedLatestGameSnapshotFromTbData>;
+export type HydratedLatestGameSnapshot = ReturnType<typeof createHydratedLatestGameSnapshotFromStringifiedData>;

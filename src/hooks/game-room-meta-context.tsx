@@ -7,7 +7,7 @@
 // import type { BfgGameEngineMetadata } from "../game-metadata/metadata-types";
 // import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../game-metadata/metadata-types/game-action-types";
 // import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../game-metadata/metadata-types/game-state-types";
-// import type { GameTableAccessRole } from "../models/game-roles";
+// import type { GameTableAccessLevel } from "../models/game-roles";
 // import type { GenericGameMetadata } from "../game-metadata/games-registry";
 
 
@@ -24,15 +24,15 @@
 //   genericGameMetadata: GenericGameMetadata;
 //   gameMetadata: BfgGameEngineMetadata<GSH, GSP, GSW, PGA, HGA>;
 
-//   accessRole: GameTableAccessRole;
-//   maxAllowedAccessRole: GameTableAccessRole;
-//   allowedRoles: GameTableAccessRole[];
+//   accessRole: GameTableAccessLevel;
+//   maxAllowedAccessRole: GameTableAccessLevel;
+//   allowedRoles: GameTableAccessLevel[];
 // }
 
 
 // export interface IGameRoomMetaContextProviderProps {
 //   // gameTableId: BfgGameTableId;
-//   // requestedRole: GameTableAccessRole;
+//   // requestedRole: GameTableAccessLevel;
 //   children: React.ReactNode;
 // }
 

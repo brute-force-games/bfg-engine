@@ -1,22 +1,20 @@
 import { z } from "zod";
-import { BfgGameTableIdToolbox } from "../types/bfg-branded-uuids";
-import { AllAssignedBfgGameStateForPlayersSchema, AssignedBfgGameStateForPlayerSchema, BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
-import { BfgGameActionOutcomeSchema, BfgGameActionSchema } from "../../game-metadata/metadata-types/game-action-types";
+import { AssignedBfgGameStateForPlayerSchema, BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
+import { BfgGameActionOutcomeSchema, BfgGameEventSchema } from "../../game-metadata/metadata-types/game-action-types";
 
 
 
 
 export const GameTableEventForHostP2pSchema = z.object({
-  gameTableId: BfgGameTableIdToolbox.idSchema,
+  // gameTableId: BfgGameTableIdToolbox.idSchema,
   createdAt: z.number(),
   stepIndex: z.number(),
 
-  event: BfgGameActionSchema,
+  event: BfgGameEventSchema,
   outcome: BfgGameActionOutcomeSchema,
-
   nextGameHostState: BfgGameStateForHostSchema,
-  nextGamePlayerStates: AllAssignedBfgGameStateForPlayersSchema,
-  nextGameWatcherState: BfgGameStateForWatcherSchema
+  // nextGamePlayerStates: AllAssignedBfgGameStateForPlayersSchema,
+  // nextGameWatcherState: BfgGameStateForWatcherSchema
 }).describe("GameTableEventForHostP2p");
 
 export type GameTableEventForHostP2p = z.infer<typeof GameTableEventForHostP2pSchema>;
@@ -45,6 +43,8 @@ export type GameTableEventForPlayerP2p = z.infer<typeof GameTableEventForPlayerP
 export const GameTableEventForWatcherP2pSchema = GameTableEventForHostP2pSchema.omit({
   nextGameHostState: true,
   nextGamePlayerStates: true,
+}).extend({
+  nextGameWatcherState: BfgGameStateForWatcherSchema,
 }).describe("GameTableEventForWatcherP2p");
 
 export type GameTableEventForWatcherP2p = z.infer<typeof GameTableEventForWatcherP2pSchema>;

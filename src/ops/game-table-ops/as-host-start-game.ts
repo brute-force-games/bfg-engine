@@ -89,6 +89,7 @@ const createNewGameRoomFromGameSpecificState = (
       role,
       playerName: player.handle,
       playerProfileId: player.id,
+      playerProfile: player,
     }
     return retVal;
   });

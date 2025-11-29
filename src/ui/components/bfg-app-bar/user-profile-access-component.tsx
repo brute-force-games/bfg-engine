@@ -9,8 +9,8 @@ import { ObserverLinksDialog } from "../observer-links-dialog/observer-links-dia
 import { OptionalGameContext, EMPTY_GAME_CONTEXT } from "../../../hooks/p2p/game/use-optional-game-context";
 import { useAppSettings, useAppSettingsActions } from "../../../hooks/stores/use-my-app-settings-store";
 import { useTbStoresManager } from "../../../hooks/games-registry/use-tb-stores-manager-hook";
-import { P2pGameRoomContext } from "../../../hooks/p2p/game/p2p-game-room-context";
 import { BfgGameInstanceId } from "../../../models/types/bfg-branded-uuids";
+import { P2pRawRoomContext } from "../../../hooks/p2p/game/p2p-raw-room-context";
 
 
 interface UserProfileAccessComponentProps {
@@ -122,8 +122,8 @@ export const UserProfileAccessComponent = (props: UserProfileAccessComponentProp
   const hasTableContext = gameContext.gameTitle !== null && gameContext.gameTableId !== null;
 
   // Try to get gameInstanceId from P2P context (if available)
-  const p2pGameRoomContext = useContext(P2pGameRoomContext);
-  const gameInstanceId: BfgGameInstanceId | null = p2pGameRoomContext?.gameInstanceId ?? null;
+  const p2pRawRoomContext = useContext(P2pRawRoomContext);
+  const gameInstanceId: BfgGameInstanceId | null = p2pRawRoomContext?.gameInstanceId ?? null;
   const hasActiveGame = gameInstanceId !== null;
 
   const menuItems: DbkAppBarMenuItem[] = [

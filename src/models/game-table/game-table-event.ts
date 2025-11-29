@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BfgGameTableIdToolbox } from "../types/bfg-branded-uuids";
 import { BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
-import { BfgGameActionOutcomeSchema, BfgGameActionSchema } from "../../game-metadata/metadata-types/game-action-types";
+import { BfgGameActionOutcomeSchema, BfgGameEventSchema } from "../../game-metadata/metadata-types/game-action-types";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
 import { createGameStateTransitionForDbSchema } from "./game-table-event-db";
 
@@ -270,7 +270,7 @@ export const GameTableStepHostP2pSchema = z.object({
   createdAt: z.number(),
   stepIndex: z.number(),
 
-  event: BfgGameActionSchema,
+  event: BfgGameEventSchema,
   outcome: BfgGameActionOutcomeSchema,
   nextGameHostState: BfgGameStateForHostSchema,
   // nextGamePlayerStates: BfgGameStateForPlayerSchema,

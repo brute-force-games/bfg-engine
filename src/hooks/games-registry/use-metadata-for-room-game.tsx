@@ -5,26 +5,26 @@
 // import { useP2pGameRoomAsHost } from "./use-p2p-game-room-as-host";
 // import { useP2pGameRoomAsPlayer } from "./use-p2p-game-room-as-player";
 // import { isProfileIdOkForPlayerAccess, isProfileOkForHostAccess } from "@bfg-engine/models/game-table/utils";
-// import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+// import { GameTableAccessLevel } from "@bfg-engine/models/game-roles";
 // import { BfgGameTableId } from "@bfg-engine/models/types/bfg-branded-uuids";
 // import { PrivatePlayerProfile } from "@bfg-engine/models/player-profile/private-player-profile";
 // import { useP2pGameRoomContext } from "./p2p-game-room-context";
 // import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../../../game-metadata/metadata-types/game-state-types";
 // import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../../../game-metadata/metadata-types/game-action-types";
-// import type { IBfgGameRoomForRole } from "./p2p-game-types";
+// import type { IBfgGameRoomForAccessLevel } from "./p2p-game-types";
 
 
 // interface RoomUserDetails {
-//   currentAccessRole: GameTableAccessRole;
-//   maxAllowedAccessRole: GameTableAccessRole;
-//   allowedRoles: GameTableAccessRole[];
+//   currentAccessRole: GameTableAccessLevel;
+//   maxAllowedAccessRole: GameTableAccessLevel;
+//   allowedRoles: GameTableAccessLevel[];
 
 //   myPlayerProfile: PrivatePlayerProfile | null;
 //   myHostProfile: PrivatePlayerProfile | null;
 // }
 
 
-// export const useRoomUserDetails = (gameTableId: BfgGameTableId, requestedRole: GameTableAccessRole): RoomUserDetails => {
+// export const useRoomUserDetails = (gameTableId: BfgGameTableId, requestedRole: GameTableAccessLevel): RoomUserDetails => {
 //   const myPlayerProfile = useMyDefaultPlayerProfile();
 //   const hostedGame = useHostedGame(gameTableId);
   
@@ -72,7 +72,7 @@
 //   GSW extends BfgGameStateForWatcher,
 //   PGA extends BfgGameActionByPlayer,
 //   HGA extends BfgGameActionByHost,
-// > (role: GameTableAccessRole): IBfgGameRoomForRole<GSH, GSP, GSW, PGA, HGA> | null => {
+// > (role: GameTableAccessLevel): IBfgGameRoomForAccessLevel<GSH, GSP, GSW, PGA, HGA> | null => {
 //   if (role === 'watch') {
 //     return useP2pGameRoomAsObserver();
 //   }
@@ -87,7 +87,7 @@
 // }
 
 
-// // const adaptP2pGameRoomToRole = (p2pGameRoom: IP2pGameRoomValue, role: GameTableAccessRole): IBfgGameRoomForRole => {
+// // const adaptP2pGameRoomToRole = (p2pGameRoom: IP2pGameRoomValue, role: GameTableAccessLevel): IBfgGameRoomForAccessLevel => {
 // //   if (role === 'watch') {
 // //     return {
 // //       role: 'watch',

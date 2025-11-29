@@ -57,7 +57,7 @@ export const BfgGameImplPublicHistoryActionSchema = z.object({});
 export type BfgGameImplPublicHistoryAction = z.infer<typeof BfgGameImplPublicHistoryActionSchema>;
 
 
-export type GameAccessRole = 'observer-role' | 'host-role' | 'player-role';
+// export type GameAccessRole = 'observer-role' | 'host-role' | 'player-role';
 export type ViewLevel = 'observer-level' | 'host-level' | 'player-level';
 
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
+import { BfgGameStepIndexSchema, BfgTimestampSchema } from "../types/bfg-versions";
 
 // Consolidated transition schema - structure is identical for DB and P2P
 // though they have different security profiles and serialization paths
@@ -30,8 +31,8 @@ export const createGameBoardEventSchema = (schemas: BfgGenericEngineMetadataSche
   const GameBoardEventSchema = z.object({
     // gameStateId: BfgGameStateIdToolbox.idSchema,
     // gameRoomId: BfgGameRoomIdToolbox.idSchema,
-    createdAt: z.number(),
-    stepIndex: z.number(),
+    createdAt: BfgTimestampSchema,
+    stepIndex: BfgGameStepIndexSchema,
   
     transitionForHost: transitionSchema,
   });
@@ -50,3 +51,14 @@ export const createBoardTransitionsArraySchema = (schemas: BfgGenericEngineMetad
 }
 export type BoardTransitionsArray = z.infer<ReturnType<typeof createBoardTransitionsArraySchema>>;
 
+
+
+
+
+// export const GameHistorySchema = z.object({
+//   gameInstanceId: BfgGameInstanceIdToolbox.idSchema,
+//   gameRoomId: BfgGameRoomIdToolbox.idSchema,
+//   gameTableId: BfgGameTableIdToolbox.idSchema,
+//   boardEvents: createBoardTransitionsArraySchema(schemas),
+// });
+// export type GameHistory = z.infer<typeof GameHistorySchema>;

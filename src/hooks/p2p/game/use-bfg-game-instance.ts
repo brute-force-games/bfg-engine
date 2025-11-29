@@ -1,35 +1,38 @@
 import { useMyDefaultPlayerProfile } from "@bfg-engine/hooks/stores/use-my-player-profiles-store";
-import { useP2pGameRoomAsObserver } from "./use-p2p-game-room-as-observer";
-import { useP2pGameRoomAsHost } from "./use-p2p-game-room-as-host";
-import { useP2pGameRoomAsPlayer } from "./use-p2p-game-room-as-player";
+import { useGameRoomAsObserver } from "./use-game-room-as-observer";
+import { useGameRoomAsHost } from "./use-game-room-as-host";
+import { useGameRoomAsPlayer } from "./use-game-room-as-player";
 import { isProfileIdOkForPlayerAccess, isProfileOkForHostAccess } from "@bfg-engine/models/game-table/utils";
-import { GameTableAccessRole } from "@bfg-engine/models/game-roles";
+import { GameTableAccessLevel } from "@bfg-engine/models/internal/user-game-perspective";
 import { type BfgGameInstanceId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { PrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
-import { useP2pGameRoomContext } from "./p2p-game-room-context";
-import type { IBfgGameRoomForRole } from "./p2p-game-types";
+import type { IBfgGameRoomForAccessLevel } from "./p2p-game-types";
 import { useLatestHostedGameSnapshot } from "../../../tb-store/games-archives-store";
 
 
-interface RoomUserDetails {
-  currentAccessRole: GameTableAccessRole;
-  maxAllowedAccessRole: GameTableAccessRole;
-  allowedRoles: GameTableAccessRole[];
+export interface RoomUserDetails {
+  currentAccessLevel: GameTableAccessLevel;
+  maxAllowedAccessLevel: GameTableAccessLevel;
+  allowedLevels: GameTableAccessLevel[];
 
   myPlayerProfile: PrivatePlayerProfile | null;
   myHostProfile: PrivatePlayerProfile | null;
 }
 
 
-export const useGameInstanceUserDetails = (gameInstanceId: BfgGameInstanceId, requestedRole: GameTableAccessRole): RoomUserDetails => {
+export const useGameInstanceUserDetails = (
+  gameInstanceId: BfgGameInstanceId,
+  requestedRole: GameTableAccessLevel,
+): RoomUserDetails => {
+  
   const myPlayerProfile = useMyDefaultPlayerProfile();
   const hostedGameSnapshot = useLatestHostedGameSnapshot(gameInstanceId);
 
   if (!myPlayerProfile) {
     return {
-      currentAccessRole: 'watch',
-      maxAllowedAccessRole: 'watch',
-      allowedRoles: ['watch'],
+      currentAccessLevel: 'observer',
+      maxAllowedAccessLevel: 'observer',
+      allowedLevels: ['observer'],
 
       myPlayerProfile: null,
       myHostProfile: null,
@@ -38,9 +41,9 @@ export const useGameInstanceUserDetails = (gameInstanceId: BfgGameInstanceId, re
 
   if (!hostedGameSnapshot) {
     return {
-      currentAccessRole: 'watch',
-      maxAllowedAccessRole: 'watch',
-      allowedRoles: ['watch'],
+      currentAccessLevel: 'observer',
+      maxAllowedAccessLevel: 'observer',
+      allowedLevels: ['observer'],
 
       myPlayerProfile: null,
       myHostProfile: null,
@@ -58,9 +61,9 @@ export const useGameInstanceUserDetails = (gameInstanceId: BfgGameInstanceId, re
       isProfileIdOkForPlayerAccess(myPlayerProfile.id, hostedGame);
 
     return {
-      currentAccessRole: requestedRole,
-      maxAllowedAccessRole: 'host',
-      allowedRoles: amIPlayer ? ['host', 'play', 'watch'] : ['host', 'watch'],
+      currentAccessLevel: requestedRole,
+      maxAllowedAccessLevel: 'host',
+      allowedLevels: amIPlayer ? ['host', 'player', 'observer'] : ['host', 'observer'],
 
       myPlayerProfile: amIPlayer ? myPlayerProfile : null,
       myHostProfile: myPlayerProfile,
@@ -68,55 +71,54 @@ export const useGameInstanceUserDetails = (gameInstanceId: BfgGameInstanceId, re
   }
 
   return {
-    currentAccessRole: requestedRole,
-    maxAllowedAccessRole: 'play',
-    allowedRoles: ['play', 'watch'],
+    currentAccessLevel: requestedRole,
+    maxAllowedAccessLevel: 'player',
+    allowedLevels: ['player', 'observer'],
     myPlayerProfile: myPlayerProfile,
     myHostProfile: null,
   };
 }
 
 
-export const useBfgGameRoomForRole = (role: GameTableAccessRole): IBfgGameRoomForRole | null => {
-  if (role === 'watch') {
-    const observerGameRoom = useP2pGameRoomAsObserver();
-    if (observerGameRoom === null) {
+export const useBfgGameRoomForAccessLevel = (accessLevel: GameTableAccessLevel): IBfgGameRoomForAccessLevel | null => {
+  if (accessLevel === 'observer') {
+    const observerGameRoom = useGameRoomAsObserver();
+    if (observerGameRoom.accessLevel === 'none') {
       // return null;
       throw new Error('You are not an observer in this game table');
     }
     return {
-      role: 'watch',
+      accessLevel: 'observer',
       gameRoom: observerGameRoom,
     };
   }
-  if (role === 'play') {
-    const playerGameRoom = useP2pGameRoomAsPlayer();
-    if (playerGameRoom === null) {
-      // return null;
+  if (accessLevel === 'player') {
+    const playerGameRoom = useGameRoomAsPlayer();
+    if (playerGameRoom.accessLevel === 'none') {
       throw new Error('You are not a player in this game table');
     }
     return {
-      role: 'play',
+      accessLevel: 'player',
       gameRoom: playerGameRoom,
     };
   }
-  if (role === 'host') {
-    const hostGameRoom = useP2pGameRoomAsHost();  
-    if (hostGameRoom === null) {
+  if (accessLevel === 'host') {
+    const hostGameRoom = useGameRoomAsHost();  
+    if (hostGameRoom.accessLevel === 'none') {
       // return null;
       throw new Error('You are not a host in this game table');
     }
     return {
-      role: 'host',
+      accessLevel: 'host',
       gameRoom: hostGameRoom,
     };
   }
 
-  throw new Error('Invalid role for getting BFG game room: ' + role);
+  throw new Error('Invalid role for getting BFG game room: ' + accessLevel);
 }
 
 
-// const adaptP2pGameRoomToRole = (p2pGameRoom: IP2pGameRoomValue, role: GameTableAccessRole): IBfgGameRoomForRole => {
+// const adaptP2pGameRoomToRole = (p2pGameRoom: IP2pGameRoomValue, role: GameTableAccessLevel): IBfgGameRoomForAccessLevel => {
 //   if (role === 'watch') {
 //     return {
 //       role: 'watch',
@@ -142,10 +144,10 @@ export const useBfgGameRoomForRole = (role: GameTableAccessRole): IBfgGameRoomFo
 // }
 
 
-export const useBfgGameRoomForContextRole = (): IBfgGameRoomForRole | null => {
-  const p2pGameRoom = useP2pGameRoomContext();
-  const { requestedRole } = p2pGameRoom;
-  // const roomForRole = adaptP2pGameRoomToRole(p2pGameRoom, requestedRole);
-  const roomForRole = useBfgGameRoomForRole(requestedRole);
-  return roomForRole;
-}
+// export const useBfgGameRoomForContextRole = (): IBfgGameRoomForAccessLevel | null => {
+//   const p2pGameRoom = useP2pGameRoomContext();
+//   const { requestedRole } = p2pGameRoom;
+//   // const roomForRole = adaptP2pGameRoomToRole(p2pGameRoom, requestedRole);
+//   const roomForRole = useBfgGameRoomForRole(requestedRole);
+//   return roomForRole;
+// }

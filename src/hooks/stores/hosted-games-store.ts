@@ -18,7 +18,7 @@ import { TB_GAME_EVENTS_TABLE_NAME, TB_GAME_INSTANCES_TABLE_NAME, TB_GAME_ROOMS_
 import { GameRoomSnapshotTbTableRowForZodSchema } from "../../models/tinybase/game-snapshot";
 import { getGameInstanceMapping } from "../../tb-store/game-instance-store";
 import type { BfgGameInstanceId } from "../../models/types/bfg-branded-uuids";
-import { createHydratedLatestGameSnapshotFromTbData, type HydratedLatestGameSnapshot } from "../../models/internal/game-room-snapshot-from-tb";
+import { createHydratedLatestGameSnapshotFromStringifiedData, type HydratedLatestGameSnapshot } from "../../models/internal/game-room-snapshot";
 
 // /**
 //  * React hooks for hosted game management with TinyBase
@@ -251,7 +251,7 @@ export const useHostedGames = (): HydratedLatestGameSnapshot[] => {
 
       const gameEvent = gameEventParseResult.data;
 
-      const hydratedGameSnapshot = createHydratedLatestGameSnapshotFromTbData(
+      const hydratedGameSnapshot = createHydratedLatestGameSnapshotFromStringifiedData(
         gameRoom.stringifiedRoomState,
         gameEvent.stringifiedBoardTransitions,
       );

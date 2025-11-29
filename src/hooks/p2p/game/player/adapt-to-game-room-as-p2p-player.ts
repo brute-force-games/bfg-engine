@@ -4,21 +4,28 @@ import { GameRoomDb } from "@bfg-engine/models/tinybase/game-room-db";
 import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { convertPrivateToPublicProfile } from "@bfg-engine/models/internal/player-profile/utils";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { PeerId, PeerIdSchema } from "../p2p-types";
-import { useP2pGameRoomContext } from "./p2p-game-room-context";
-import { IBfgGameTableForPlayer, IP2pDetails, IPlayerBfgGameDetails, IPublicBfgGameDetails } from "./p2p-game-types";
-import { useGameInstanceUserDetails } from "./use-bfg-game-instance";
+import { PeerId, PeerIdSchema } from "../../p2p-types";
+import { IBfgGameTableForPlayer, IP2pDetails, IPlayerBfgGameDetails, IPublicBfgGameDetails } from "../p2p-game-types";
 import { matchPlayerToSeat } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 import { selfId } from "trystero";
-import type { BfgGameActionByPlayer } from "../../../game-metadata/metadata-types/game-action-types";
-import type { GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
+import type { BfgGameActionByPlayer } from "../../../../game-metadata/metadata-types/game-action-types";
+import type { GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../../models/p2p/game-table-event-p2p";
+import type { GameRoomModeHostPlusP2pAccess, GameRoomModeP2pOnlyAccess } from "../p2p-game-types";
+import { useGameInstanceUserDetails } from "../use-bfg-game-instance";
+import type { PrivatePlayerProfile } from "../../../..";
 
 
-export const useP2pGameRoomAsPlayer = (): IBfgGameTableForPlayer | null => {
+export const adaptToGameRoomAsP2pPlayer = (
+  gameRoomUnknown: GameRoomModeP2pOnlyAccess | GameRoomModeHostPlusP2pAccess,
+  myPlayerProfile: PrivatePlayerProfile,
+): IBfgGameTableForPlayer | null => {
 
-  const p2pGameRoom = useP2pGameRoomContext();
-  const roomUserDetails = useGameInstanceUserDetails(p2pGameRoom.gameInstanceId, 'play');
-  const myPlayerProfile = roomUserDetails.myPlayerProfile;
+  const p2pGameRoom = gameRoomUnknown.p2pRawRoom;
+
+  // const p2pGameRoom = useP2pGameRoomContext();
+  const roomUserDetails = useGameInstanceUserDetails(p2pGameRoom.gameInstanceId, 'player');
+  // const myPlayerProfile = roomUserDetails.myPlayerProfile;
+  // const myPlayerProfile = useMyDefaultPlayerProfile();
 
   const [peers, setPeers] = useState<PeerId[]>([]);
   const [peerIdsToPlayerIds, setPeerIdsToPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(() => {
@@ -30,8 +37,6 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameTableForPlayer | null => {
     return map;
   });
   
-  // const [myPrivatePlayerKnowledgeStr, setMyPrivatePlayerKnowledgeStr] = useState<PrivatePlayerKnowledgeStr | null>(null);
-  // const [gameActions, setGameActions] = useState<DbGameTableAction[]>([]);
   const [allPlayerProfiles, setAllPlayerProfiles] = useState<Map<PlayerProfileId, PublicPlayerProfile>>(new Map());
   const [gameTable, _setGameTable] = useState<GameRoomDb | null>(null);
   const [watcherGameEvents, _setWatcherGameEvents] = useState<GameTableEventForWatcherP2p[]>([]);
@@ -187,13 +192,12 @@ export const useP2pGameRoomAsPlayer = (): IBfgGameTableForPlayer | null => {
     } satisfies IPlayerBfgGameDetails;
 
   const retVal: IBfgGameTableForPlayer = {
-    gameRoomId: p2pGameRoom.gameRoomId,
-    gameTableId: p2pGameRoom.gameTableId,
+    gameInstanceId: p2pGameRoom.gameInstanceId,
     gameMetadata,
 
-    accessRole: 'play',
-    maxAllowedAccessRole: roomUserDetails.maxAllowedAccessRole,
-    allowedRoles: roomUserDetails.allowedRoles,
+    accessLevel: 'player',
+    maxAllowedAccessLevel: roomUserDetails.maxAllowedAccessLevel,
+    allowedLevels: roomUserDetails.allowedLevels,
     myPlayerProfile,
 
     p2pDetails,

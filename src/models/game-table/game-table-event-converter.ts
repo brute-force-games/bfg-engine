@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import type { BfgGameEngineMetadata } from "../../game-metadata/metadata-types";
-import type { GameTableEventForWatcherP2p, GameTableEventForPlayerP2p, GameTableEventForHostP2p } from "../p2p/game-table-event-p2p";
+import type { GameTableEventForWatcherP2p, GameTableEventForHostP2p } from "../p2p/game-table-event-p2p";
 import type { GameTableEventWithTransition } from "./game-table-event";
 import { createGameTableEventWithTransitionSchema, GameTableActionSource, GameTableEventTypeSchema } from "./game-table-event";
 
@@ -67,43 +67,43 @@ export const convertWatcherEventToBoardEvent = (
   return GameTableEventWithTransitionSchema.parse(boardEvent);
 };
 
-/**
- * Converts a player P2P event to a DB board event format.
- * This is useful for displaying player events in components that expect GameTableEventWithTransition.
- * 
- * Note: This conversion uses watcher state as host state, which may be lossy since watcher state
- * is a subset of host state. For a complete conversion back to host state, use the access level adapters.
- */
-export const convertPlayerEventToBoardEvent = (
-  playerEvent: GameTableEventForPlayerP2p,
-  gameMetadata: BfgGameEngineMetadata
-): GameTableEventWithTransition => {
-  const { event, outcome, nextGameWatcherState, stepIndex, createdAt } = playerEvent;
+// /**
+//  * Converts a player P2P event to a DB board event format.
+//  * This is useful for displaying player events in components that expect GameTableEventWithTransition.
+//  * 
+//  * Note: This conversion uses watcher state as host state, which may be lossy since watcher state
+//  * is a subset of host state. For a complete conversion back to host state, use the access level adapters.
+//  */
+// export const convertPlayerEventToBoardEvent = (
+//   playerEvent: GameTableEventForPlayerP2p,
+//   gameMetadata: BfgGameEngineMetadata
+// ): GameTableEventWithTransition => {
+//   const { event, outcome, stepIndex, createdAt } = playerEvent;
   
-  const { source, eventType } = mapActionSourceToDbFormat(event);
+//   const { source, eventType } = mapActionSourceToDbFormat(event);
   
-  // Create transition - using watcher state as host state (they're related types)
-  // The transition schema expects host state, but watcher state is derived from it
-  // We cast watcher state to host state type since they share the same structure
-  // Note: This is potentially lossy - watcher state is a subset of host state
-  const transition = {
-    event: event,
-    change: outcome,
-    nextBoardState: nextGameWatcherState as unknown as z.infer<typeof gameMetadata.schemas.hostGameStateSchema>,
-  };
+//   // Create transition - using watcher state as host state (they're related types)
+//   // The transition schema expects host state, but watcher state is derived from it
+//   // We cast watcher state to host state type since they share the same structure
+//   // Note: This is potentially lossy - watcher state is a subset of host state
+//   const transition = {
+//     event: event,
+//     change: outcome,
+//     nextBoardState: nextGameWatcherState as unknown as z.infer<typeof gameMetadata.schemas.hostGameStateSchema>,
+//   };
   
-  // Create GameTableEventWithTransition using the gameMetadata schemas
-  const GameTableEventWithTransitionSchema = createGameTableEventWithTransitionSchema(gameMetadata.schemas);
-  const boardEvent = {
-    stepIndex,
-    source,
-    eventType,
-    createdAt,
-    transitionForHost: transition,
-  };
+//   // Create GameTableEventWithTransition using the gameMetadata schemas
+//   const GameTableEventWithTransitionSchema = createGameTableEventWithTransitionSchema(gameMetadata.schemas);
+//   const boardEvent = {
+//     stepIndex,
+//     source,
+//     eventType,
+//     createdAt,
+//     transitionForHost: transition,
+//   };
   
-  return GameTableEventWithTransitionSchema.parse(boardEvent);
-};
+//   return GameTableEventWithTransitionSchema.parse(boardEvent);
+// };
 
 /**
  * Converts a host P2P event to a DB board event format.

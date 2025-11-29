@@ -7,15 +7,19 @@ import { GameRoomDbSchema } from '../models/tinybase/game-room-db';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
 import { useRow } from 'tinybase/ui-react';
 import { type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
-import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot-from-tb';
+import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot';
 import { getGameMetadata } from '../game-metadata/games-registry';
 import type { GameTableEventWithTransition } from '../models/game-table/game-table-event';
 import { TB_GAME_INSTANCES_TABLE_NAME, TB_GAME_ROOMS_TABLE_NAME, TB_GAME_EVENTS_TABLE_NAME } from './tb-constants';
-import { GameInstanceMappingsTinybaseTableColumnsSchema, getGameInstanceMapping, useLatestHostedGameIdentifiers, type GameInstanceMappingsTinybaseTableColumns } from './game-instance-store';
+import { GameInstanceMappingsTinybaseTableColumnsSchema, getGameInstanceMapping, GameInstanceMappingsForZodSchema, type GameInstanceMappingsTinybaseTableColumns } from './game-instance-store';
 import { createBoardTransitionsArraySchema } from '../models/tinybase/game-board-event';
 import { BfgSupportedGameTitleSchema } from '../models/game-box-definition';
 import { GameRoomSnapshotTbTableRowForZodSchema, GameSnapshotTinybaseTableColumnsSchema, type GameRoomSnapshotTbTableRow } from '../models/tinybase/game-snapshot';
 import { BfgStringifiedBoardTransitionsStrToolbox, } from '../models/types/bfg-branded-string-types';
+import type { PerfectInformationGameJournal } from '../models/perspective-oriented/perfect-information/game-log';
+import type { BfgGameRoomInstance, BfgGameRoomVersionIndex, BfgGameStep, BfgGameTableLog, BfgTimestamp } from '../models/types/bfg-versions';
+import { BfgGameStepIndexSchema, BfgTimestampSchema } from '../models/types/bfg-versions';
+import { createGameBoardEventForDbSchema } from '../models/game-table/game-table-event-db';
 // import { createGameRoomSnapshotForP2pSchema } from '../models/p2p/game-room-snapshot-p2p';
 
 
@@ -161,17 +165,30 @@ export const getAllHostedGames = (): GameRoomDb[] => {
 
 export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): HydratedLatestGameSnapshot | null => {
 
-  const gameIdentifiers = useLatestHostedGameIdentifiers(gameInstanceId);
+  // Check if game instance mapping exists in store first (for observers who don't have it yet)
+  const gameIdentifiersTbRow = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+  
+  // useRow returns an empty object {} when the row doesn't exist, not null
+  // Check if the object is empty or doesn't have required fields
+  if (!gameIdentifiersTbRow || Object.keys(gameIdentifiersTbRow).length === 0 || !gameIdentifiersTbRow.gameInstanceId) {
+    // Game instance mapping not found in local store - this is expected for observers
+    // They will get the game data via P2P instead
+    return null;
+  }
+
+  // Parse the mapping
+  const gameInstanceMappingParseResult = GameInstanceMappingsForZodSchema.safeParse(gameIdentifiersTbRow);
+  if (!gameInstanceMappingParseResult.success) {
+    console.error('Error parsing game instance mapping:', gameInstanceMappingParseResult.error);
+    return null;
+  }
+  const gameIdentifiers = gameInstanceMappingParseResult.data;
 
   const gameRoomId = gameIdentifiers.gameRoomId;
   const gameTableId = gameIdentifiers.gameTableId;
 
   const hostedGameRoomSnapshot = useRow(TB_GAME_ROOMS_TABLE_NAME, gameRoomId, gameArchivesStore);
   const hostedGameEvents = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
-
-  // if (!hostedGameRoomSnapshot) {
-  //   return null;
-  // }
 
   const gameRoomSnapshotParseResult = GameRoomSnapshotTbTableRowForZodSchema.safeParse(hostedGameRoomSnapshot);
   if (!gameRoomSnapshotParseResult.success) {
@@ -238,66 +255,86 @@ export const useLatestHostedGameSnapshot = (gameInstanceId: BfgGameInstanceId): 
 };
 
 
-export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEventForDb[] => {
-  // const gameIdentifers = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
+export const useLatestPerfectInformationGameJournal = (gameInstanceId: BfgGameInstanceId): PerfectInformationGameJournal | null => {
 
-  // if (!gameIdentifers) {
-  //   return [];
-  // }
+  const latestHostedGameSnapshot = useLatestHostedGameSnapshot(gameInstanceId);
+  if (!latestHostedGameSnapshot) {
+    return null;
+  }
 
-  const gameIdentifiers = useLatestHostedGameIdentifiers(gameInstanceId);
+  const gameRoomInstance: BfgGameRoomInstance = {
+    roomVersion: {
+      roomId: latestHostedGameSnapshot.gameRoom.id,
+      stepIndex: 0 as BfgGameRoomVersionIndex,
+    },
+    roomData: latestHostedGameSnapshot.gameRoom,
+  };
 
-  const { gameTableId, gameTitle } = gameIdentifiers;
+  const history: BfgGameStep[] = latestHostedGameSnapshot.boardEvents.map((boardEvent) => {
+    return {
+      stepIndex: boardEvent.stepIndex,
+      createdAt: boardEvent.createdAt,
+      event: boardEvent.transitionForHost.event,
+      outcome: boardEvent.transitionForHost.change,
+      nextBoardState: boardEvent.transitionForHost.nextBoardState,
+    };
+  });
 
-  // const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
+  const gameTableLog: BfgGameTableLog = {
+    gameTableId: latestHostedGameSnapshot.gameRoom.id,
+    gameTitle: latestHostedGameSnapshot.gameRoom.gameTitle,
+    history,
+  };
 
-  // Get the row for this gameTableId
-  const gameStepsRowTb = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
+  const perfectInformationGameJournal: PerfectInformationGameJournal = {
+    gameRoomLog: [gameRoomInstance],
+    gameTableLog,
+  };
+  return perfectInformationGameJournal;
+}
+
+
+// export const useGameHistory = (gameInstanceId: BfgGameInstanceId): GameBoardEventForDb[] => {
+
+//   const gameIdentifiers = useLatestHostedGameIdentifiers(gameInstanceId);
+
+//   const { gameTableId, gameTitle } = gameIdentifiers;
+
+//   // const gameTableId = gameIdentifers.gameTableId as BfgGameTableId;
+
+//   // Get the row for this gameTableId
+//   const gameStepsRowTb = useRow(TB_GAME_EVENTS_TABLE_NAME, gameTableId, gameArchivesStore);
   
-  if (!gameStepsRowTb) {
-    // return [];
-    console.error("No game steps row found for game table: " + gameTableId);
-    throw new Error("No game steps row found for game table: " + gameTableId);
-  }
+//   if (!gameStepsRowTb) {
+//     // return [];
+//     console.error("No game steps row found for game table: " + gameTableId);
+//     throw new Error("No game steps row found for game table: " + gameTableId);
+//   }
 
-  const parseResult = BoardTransitionTbTableRowForZodSchema.safeParse(gameStepsRowTb);
-  if (!parseResult.success) {
-    console.error('Error parsing game board transitions row:', parseResult.error);
-    // return [];
-    throw new Error("Error parsing game board transitions row: " + gameTableId);
-  }
+//   const parseResult = BoardTransitionTbTableRowForZodSchema.safeParse(gameStepsRowTb);
+//   if (!parseResult.success) {
+//     console.error('Error parsing game board transitions row:', parseResult.error);
+//     // return [];
+//     throw new Error("Error parsing game board transitions row: " + gameTableId);
+//   }
 
-  const gameHistoryTbRow = parseResult.data;
+//   const gameHistoryTbRow = parseResult.data;
 
-  const gameMetadata = getGameMetadata(gameTitle);
-  if (!gameMetadata) {
-    throw new Error("Game metadata not found for game title: " + gameTitle);
-  }
+//   const gameMetadata = getGameMetadata(gameTitle);
+//   if (!gameMetadata) {
+//     throw new Error("Game metadata not found for game title: " + gameTitle);
+//   }
 
-  const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
-  const boardTransitionsParseResult = BoardTransitionsArraySchema.safeParse(gameHistoryTbRow.stringifiedBoardTransitions);
-  if (!boardTransitionsParseResult.success) {
-    console.error('Error parsing board transitions array:', boardTransitionsParseResult.error);
-    throw new Error("Error parsing board transitions array: " + gameTableId);
-  }
-  const boardTransitions = boardTransitionsParseResult.data;
+//   const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+//   const boardTransitionsParseResult = BoardTransitionsArraySchema.safeParse(gameHistoryTbRow.stringifiedBoardTransitions);
+//   if (!boardTransitionsParseResult.success) {
+//     console.error('Error parsing board transitions array:', boardTransitionsParseResult.error);
+//     throw new Error("Error parsing board transitions array: " + gameTableId);
+//   }
+//   const boardTransitions = boardTransitionsParseResult.data;
 
-  return boardTransitions;
-
-  // try {
-  //   const parsedTransitions = JSON.parse(gameHistoryTbRow.stringifiedBoardTransitions);
-  //   if (!Array.isArray(parsedTransitions)) {
-  //     console.error('Parsed board transitions is not an array');
-  //     return [];
-  //   }
-  //   // TODO: Need to get game metadata to properly parse each transition
-  //   // For now, return the parsed array as-is
-  //   return parsedTransitions as GameBoardEventForDb[];
-  // } catch (error) {
-  //   console.error('Error parsing stringified board transitions:', error);
-  //   return [];
-  // }
-};
+//   return boardTransitions;
+// };
 
 
 export const updateHostedGameWithNewNextBoardState = (
@@ -541,7 +578,7 @@ export const saveNewHostedGame = async (
   initialGameTableEventWithTransition: GameTableEventWithTransition,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    const now = Date.now();
+    const now = Date.now() as BfgTimestamp;
     const stringifiedRoomState = JSON.stringify(gameRoom);
     // const latestStepIndex = 0;
     // const stringifiedLatestBoardTransition = JSON.stringify(initialGameTableEventWithTransition);
@@ -557,8 +594,22 @@ export const saveNewHostedGame = async (
       lastUpdatedAt: now,
     };
 
+    // Convert GameTableEventWithTransition to GameBoardEventForDb
+    // GameBoardEventForDb requires branded types for createdAt and stepIndex
+    const gameMetadata = getGameMetadata(gameRoom.gameTitle);
+    const GameBoardEventForDbSchema = createGameBoardEventForDbSchema(gameMetadata.schemas);
+    
+    const gameBoardEventForDb: GameBoardEventForDb = {
+      createdAt: BfgTimestampSchema.parse(initialGameTableEventWithTransition.createdAt),
+      stepIndex: BfgGameStepIndexSchema.parse(initialGameTableEventWithTransition.stepIndex),
+      transitionForHost: initialGameTableEventWithTransition.transitionForHost,
+    };
+    
+    // Validate the conversion
+    const validatedGameBoardEventForDb = GameBoardEventForDbSchema.parse(gameBoardEventForDb);
+    
     // Initialize with an array containing the initial transition
-    const initialBoardTransitions: GameBoardEventForDb[] = [initialGameTableEventWithTransition as GameBoardEventForDb];
+    const initialBoardTransitions: GameBoardEventForDb[] = [validatedGameBoardEventForDb];
     const stringifiedBoardTransitions = JSON.stringify(initialBoardTransitions);
 
     const newGameStepsRow: BoardTransitionTbTableRow = {

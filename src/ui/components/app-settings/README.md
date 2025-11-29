@@ -102,7 +102,6 @@ For custom layouts outside of `BfgGameScreenFrame`, you can manually pass game c
 ```typescript
 import { 
   UserProfileAccessComponent, 
-  createGameContext,
   EMPTY_GAME_CONTEXT,
   type OptionalGameContext 
 } from 'bfg-engine';
@@ -112,10 +111,11 @@ import { useBfgGameRoomForContextRole } from '@bfg-engine/hooks/p2p/game/use-bfg
 function GamePage() {
   const gameRoom = useBfgGameRoomForContextRole();
   const gameContext: OptionalGameContext = gameRoom?.publicGameDetails?.gameTable 
-    ? createGameContext(
-        gameRoom.publicGameDetails.gameTable.gameTitle,
-        gameRoom.gameTableId
-      )
+    ? {
+        gameTitle: gameRoom.publicGameDetails.gameTable.gameTitle,
+        gameTableId: gameRoom.gameTableId,
+        tableName: gameRoom.publicGameDetails.gameTable.currentStatusDescription
+      }
     : EMPTY_GAME_CONTEXT;
 
   return (
@@ -140,7 +140,11 @@ function GlobalNav() {
 
 // Example 3: Partial context (game lobby, no table yet)
 function GameLobby() {
-  const gameContext = createGameContext('Tic-Tac-Toe', null);
+  const gameContext: OptionalGameContext = {
+    gameTitle: 'Tic-Tac-Toe',
+    gameTableId: null,
+    tableName: null
+  };
   
   return (
     <UserProfileAccessComponent 

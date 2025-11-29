@@ -89,4 +89,4 @@ export { SharedSettingsFields } from './ui/components/app-settings/shared-settin
 
 // Game context utilities
 export type { OptionalGameContext } from './hooks/p2p/game/use-optional-game-context';
-export { createGameContext, EMPTY_GAME_CONTEXT } from './hooks/p2p/game/use-optional-game-context';
+export { EMPTY_GAME_CONTEXT } from './hooks/p2p/game/use-optional-game-context';

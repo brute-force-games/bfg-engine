@@ -16,25 +16,18 @@ export interface OptionalGameContext {
  * ```tsx
  * // In a game page component that has access to game room
  * const gameRoom = useBfgGameRoomForContextRole();
- * const gameContext = gameRoom?.publicGameDetails?.gameTable 
- *   ? createGameContext(
- *       gameRoom.publicGameDetails.gameTable.gameTitle,
- *       gameRoom.gameTableId,
- *       gameRoom.publicGameDetails.gameTable.currentStatusDescription
- *     )
+ * const gameContext: OptionalGameContext = gameRoom?.publicGameDetails?.gameTable 
+ *   ? {
+ *       gameTitle: gameRoom.publicGameDetails.gameTable.gameTitle,
+ *       gameTableId: gameRoom.gameTableId,
+ *       tableName: gameRoom.publicGameDetails.gameTable.currentStatusDescription
+ *     }
  *   : EMPTY_GAME_CONTEXT;
  * 
  * // Pass to components
  * <UserProfileAccessComponent gameContext={gameContext} />
  * ```
  */
-export const createGameContext = (
-  gameTitle: BfgSupportedGameTitle | null,
-  gameTableId: BfgGameTableId | null,
-  tableName: string | null = null
-): OptionalGameContext => {
-  return { gameTitle, gameTableId, tableName };
-};
 
 /**
  * Default empty game context for when not in a game

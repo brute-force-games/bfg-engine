@@ -55,26 +55,33 @@ export const getGameInstanceMapping = (gameInstanceId: BfgGameInstanceId): GameI
 };
 
 
-export const useLatestHostedGameIdentifiers = (gameInstanceId: BfgGameInstanceId): GameInstanceMappings => {
+// if there are no game instance mappings, the game isn't in our store, so we aren't hosting
+export const useLatestHostedGameIdentifiers = (gameInstanceId: BfgGameInstanceId): GameInstanceMappings | null => {
   const gameIdentifersTbRow = useRow(TB_GAME_INSTANCES_TABLE_NAME, gameInstanceId, gameArchivesStore);
 
-  // Check if row exists first
   if (!gameIdentifersTbRow) {
-    // Enhanced error message with debugging info
-    const allInstanceIds = gameArchivesStore.getRowIds(TB_GAME_INSTANCES_TABLE_NAME);
-    console.error('Game instance mapping not found:', {
-      requestedId: gameInstanceId,
-      availableIds: Array.from(allInstanceIds),
-      storeTable: TB_GAME_INSTANCES_TABLE_NAME,
-      file: 'game-instance-store.ts',
-      function: 'useLatestHostedGameIdentifiers',
-    });
-    throw new Error(
-      `No game instance mapping found for game instance: ${gameInstanceId}. ` +
-      `Available instances: ${Array.from(allInstanceIds).join(', ') || 'none'}. ` +
-      `File: modules/bfg-engine/src/tb-store/game-instance-store.ts:63`
-    );
+    return null;
   }
+
+
+  // // useRow returns an empty object {} when the row doesn't exist, not null
+  // // Check if the object is empty or doesn't have required fields
+  // if (!gameIdentifersTbRow || Object.keys(gameIdentifersTbRow).length === 0 || !gameIdentifersTbRow.gameInstanceId) {
+  //   // Enhanced error message with debugging info
+  //   const allInstanceIds = gameArchivesStore.getRowIds(TB_GAME_INSTANCES_TABLE_NAME);
+  //   console.error('Game instance mapping not found:', {
+  //     requestedId: gameInstanceId,
+  //     availableIds: Array.from(allInstanceIds),
+  //     storeTable: TB_GAME_INSTANCES_TABLE_NAME,
+  //     file: 'game-instance-store.ts',
+  //     function: 'useLatestHostedGameIdentifiers',
+  //   });
+  //   throw new Error(
+  //     `No game instance mapping found for game instance: ${gameInstanceId}. ` +
+  //     `Available instances: ${Array.from(allInstanceIds).join(', ') || 'none'}. ` +
+  //     `File: modules/bfg-engine/src/tb-store/game-instance-store.ts:63`
+  //   );
+  // }
 
   // Debug: log what we actually got from TinyBase
   console.log('Raw gameIdentifersTbRow from TinyBase:', gameIdentifersTbRow, 'for gameInstanceId:', gameInstanceId);

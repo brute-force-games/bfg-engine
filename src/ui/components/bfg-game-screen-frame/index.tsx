@@ -9,7 +9,7 @@ import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { GameLogPanel } from "../game-log-panel";
 import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { AppBarTabsConfig } from "../bfg-app-bar/tabs-config";
-import { createGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
+import { OptionalGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
 import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
 import { convertWatcherEventToBoardEvent } from "../../../models/game-table/game-table-event-converter";
@@ -92,11 +92,11 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
   const gameLogPanelLocation = tableSettings.gameLogPanelLocation ?? gameSettings.gameLogPanelLocation ?? appSettings.gameLogPanelLocation;
 
   // Create game context for the app bar
-  const gameContext = createGameContext(
-    gameRoom.gameTitle, 
-    gameRoom.id,
-    gameRoom.tableName
-  );
+  const gameContext: OptionalGameContext = {
+    gameTitle: gameRoom.gameTitle,
+    gameTableId: gameRoom.id,
+    tableName: gameRoom.tableName
+  };
 
   const { GameSpineComponent } = gameMetadata.components;
 

@@ -1,10 +1,10 @@
-import z from "zod";
+// import z from "zod";
 
 
-export const GameTableAccessRoleSchema = z.enum([
-  'host',
-  'play',
-  'watch',
-  // 'none',
-]);
-export type GameTableAccessRole = z.infer<typeof GameTableAccessRoleSchema>;
+// export const GameTableAccessLevelSchema = z.enum([
+//   'host',
+//   'play',
+//   'watch',
+//   // 'none',
+// ]);
+// export type GameTableAccessLevel = z.infer<typeof GameTableAccessLevelSchema>;

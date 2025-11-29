@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { BfgGameTableSeatIdToolbox, type GameTableSeatId } from "../types/bfg-branded-ids";
 import { BfgPlayerProfileIdToolbox } from "../types/bfg-branded-uuids";
+import { PublicPlayerProfileSchema } from "./player-profile/public-player-profile";
 
 
 
@@ -32,8 +33,9 @@ export type GameTableSeat = z.infer<typeof GameTableSeatSchema>;
 
 export const BfgPlayerSchema = z.object({
   role: GameTableSeatSchema,
-  playerName: z.string(),
+  // playerName: z.string(),
   playerProfileId: BfgPlayerProfileIdToolbox.idSchema,
+  playerProfile: PublicPlayerProfileSchema,
 });
 
 export type PlayerSeat = z.infer<typeof BfgPlayerSchema>;
