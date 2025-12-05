@@ -23,11 +23,15 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
 
 // Create the store
 export const appSettingsStore = createStore();
-const persister = createLocalPersister(appSettingsStore, TB_APP_SETTINGS_STORE_NAME);
 
-// Create persister for automatic localStorage persistence
-persister.startAutoLoad();
-persister.startAutoSave();
+// Only create persister if localStorage is available (browser environment)
+let persister: ReturnType<typeof createLocalPersister> | null = null;
+if (typeof localStorage !== 'undefined') {
+  persister = createLocalPersister(appSettingsStore, TB_APP_SETTINGS_STORE_NAME);
+  // Create persister for automatic localStorage persistence
+  persister.startAutoLoad();
+  persister.startAutoSave();
+}
 
 // Initialize with default settings if store is empty
 const existingSettings = appSettingsStore.getValues();

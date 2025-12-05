@@ -1,10 +1,12 @@
+import { z } from "zod";
 import { Box, PlayersRow, Stack } from "@bfg-engine/ui/bfg-ui";
 import { BfgBasicGameTitleBoxVertical } from "./BfgBasicGameTitleBoxVertical";
 import { BfgGameSpineProps } from "./types";
-import type { BfgGameStateForWatcher } from "../../../../game-metadata/metadata-types/game-state-types";
 
 
-export const VerticalBfgGameSpine = <GSW extends BfgGameStateForWatcher>(props: BfgGameSpineProps<GSW>) => {
+export const VerticalBfgGameSpine = <WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType>(
+  props: BfgGameSpineProps<WatcherGamePerspectiveSchema>
+) => {
   const { gameRoom, allPlayerProfiles, nextToActPlayers, gameState, playerDetailsLineFn } = props;
 
   return (

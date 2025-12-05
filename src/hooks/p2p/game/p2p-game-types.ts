@@ -2,15 +2,17 @@ import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/
 import { EmptyP2pDetails, PeerId } from "../p2p-types";
 import { ConnectionEvent } from "../p2p-types";
 import { PlayerProfileId, type BfgGameInstanceId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { GameTableAccessLevel, type GameTableAccessAction } from "@bfg-engine/models/internal/user-game-perspective";
+import { GameTableAccessLevel } from "../../../game-metadata/metadata-types";
 import { GameTableSeat } from "@bfg-engine/models/internal/game-room-base";
 import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { PrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
 import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../../../game-metadata/metadata-types/game-action-types";
 import type { GenericGameMetadata } from "../../../game-metadata/games-registry";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
 import type { IHostedGameRoomValue } from "./hosted-game-room-context";
 import type { IP2pRawRoomValue } from "./p2p-raw-room-context";
+import type { z } from "zod";
+// import type { BfgGameStep } from "../../../models/types/bfg-versions";
+import type { GameTableEventForDb } from "../../../game-metadata/metadata-types";
 
 
 
@@ -43,8 +45,8 @@ export interface IBfgGameTableForUserBase {
 export interface IBfgGameDetailsBase {
   gameMetadata: GenericGameMetadata;
   gameRoom: GameRoomP2p;
-  latestWatcherGameEvent: GameTableEventForWatcherP2p;
-  watcherGameEvents: GameTableEventForWatcherP2p[];
+  latestWatcherGameEvent: z.infer<GenericGameMetadata['schemas']['watcherPerspectiveForGameEventOutcomeSchema']>;
+  watcherGameEvents: z.infer<GenericGameMetadata['schemas']['watcherPerspectiveForGameEventOutcomeSchema']>[];
 }
 
 export interface IPublicBfgGameDetails extends IBfgGameDetailsBase {
@@ -55,15 +57,15 @@ export interface IPublicBfgGameDetails extends IBfgGameDetailsBase {
 export interface IPlayerBfgGameDetails extends IPublicBfgGameDetails {
   myPlayerProfile: PrivatePlayerProfile;
   myPlayerSeat: GameTableSeat;
-  latestPlayerGameEvent: GameTableEventForPlayerP2p;
-  playerGameEvents: GameTableEventForPlayerP2p[];
+  latestPlayerGameEvent: z.infer<GenericGameMetadata['schemas']['playerPerspectiveForGameEventOutcomeSchema']>;
+  playerGameEvents: z.infer<GenericGameMetadata['schemas']['playerPerspectiveForGameEventOutcomeSchema']>[];
   onPlayerAction: (playerAction: BfgGameActionByPlayer) => Promise<void>;
 }
 
 export interface IHostBfgGameDetails extends IBfgGameDetailsBase {
   myHostProfile: PrivatePlayerProfile;
-  latestHostGameEvent: GameTableEventForHostP2p;
-  hostGameEvents: GameTableEventForHostP2p[];
+  latestHostGameEvent: GameTableEventForDb;
+  hostGameEvents: GameTableEventForDb[];
   onHostAction: <HGA extends BfgGameActionByHost>(hostAction: HGA) => Promise<void>;
 }
 

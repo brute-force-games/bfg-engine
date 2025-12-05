@@ -1,17 +1,16 @@
+import { z } from 'zod';
 import { Card, Stack, Typography, Avatar } from '@bfg-engine/ui/bfg-ui';
 import { GameTableSeat, } from '@bfg-engine/models/internal/game-room-base';
 import { type GameRoomP2p } from '@bfg-engine/models/p2p/game-room-p2p';
 import styles from './PlayerBox.module.css';
 import { ArrowLeft } from '../../icons';
-import type { BfgGameStateForWatcher } from '../../../../game-metadata/metadata-types/game-state-types';
-// import { BfgPublicGameImplState } from '../../../../models/game-engine/bfg-game-engine-types';
 
 
-export interface PlayerBoxProps<GSW extends BfgGameStateForWatcher> {
+export interface PlayerBoxProps<WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType> {
   playerSeat: GameTableSeat;
   gameRoom: GameRoomP2p;
-  gameState: GSW;
-  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: GSW, playerSeat: GameTableSeat) => React.ReactNode;
+  gameState: z.infer<WatcherGamePerspectiveSchema>;
+  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: z.infer<WatcherGamePerspectiveSchema>, playerSeat: GameTableSeat) => React.ReactNode;
   // playerSymbol: string;
   // gameState: TGameState;
   playerName: string;
@@ -21,7 +20,7 @@ export interface PlayerBoxProps<GSW extends BfgGameStateForWatcher> {
   isGameOver: boolean;
 }
 
-export const PlayerBox = <GSW extends BfgGameStateForWatcher>({
+export const PlayerBox = <WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType>({
   playerSeat,
   gameRoom,
   gameState,
@@ -32,7 +31,7 @@ export const PlayerBox = <GSW extends BfgGameStateForWatcher>({
   playerAvatar,
   isMyPlayer,
   isGameOver,
-}: PlayerBoxProps<GSW>) => {
+}: PlayerBoxProps<WatcherGamePerspectiveSchema>) => {
 
   const playerDetailsLine = playerDetailsLineFn(gameRoom, gameState, playerSeat);
 

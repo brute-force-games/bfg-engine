@@ -1,7 +1,7 @@
 import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
 import { PublicPlayerProfile } from "../internal/player-profile/public-player-profile";
 import { PlayerProfileId } from "../types/bfg-branded-uuids";
-import { GameRoomDb } from "../tinybase/game-room-db";
+import { GameRoomPersist } from "../tinybase/game-room-persist";
 import { GameTableActionSource, HostActionSources, PlayerActionSources } from "./game-table-event";
 
 
@@ -13,7 +13,7 @@ export const isPlayerActionSource = (source: GameTableActionSource | undefined):
   return PlayerActionSources.includes(source as any);
 }
 
-export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, gameTable: GameRoomDb): boolean => {
+export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, gameTable: GameRoomPersist): boolean => {
   if (!playerId) {
     return false;
   }
@@ -32,7 +32,7 @@ export const isProfileIdOkForPlayerAccess = (playerId: PlayerProfileId | null, g
   // );
 }
 
-export const isProfileOkForHostAccess = (playerProfile: PublicPlayerProfile, gameTable: GameRoomDb): boolean => {
+export const isProfileOkForHostAccess = (playerProfile: PublicPlayerProfile, gameTable: GameRoomPersist): boolean => {
   return playerProfile.id === gameTable.gameHostPlayerProfileId;
 }
 

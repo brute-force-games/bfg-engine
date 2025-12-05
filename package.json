@@ -5,6 +5,12 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "imports": {
+    "#example-games/*": "./dist/example-games/*",
+    "#v2/*": "./dist/v2/*",
+    "@bfg-engine/example-games/*": "./dist/example-games/*",
+    "@bfg-engine/v2/*": "./dist/v2/*"
+  },
   "files": [
     "dist"
   ],
@@ -16,7 +22,8 @@
     "test": "vitest run",
     "clean": "rimraf dist",
     "routes:generate": "tsr generate",
-    "routes:watch": "tsr watch"
+    "routes:watch": "tsr watch",
+    "cli": "node dist/cli/cli.js"
   },
   "keywords": [
     "game-engine",
@@ -28,6 +35,7 @@
   "devDependencies": {
     "@types/node": "^20.10.5",
     "@types/qrcode": "^1.5.5",
+    "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^4.2.1",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
@@ -45,8 +53,13 @@
   "dependencies": {
     "@tanstack/react-form": "^1.23.5",
     "@tanstack/react-router": "^1.132.2",
+    "effect": "^3.19.8",
     "qrcode": "^1.5.4",
     "tinybase": "^6.7.0",
-    "trystero": "^0.22.0"
+    "trystero": "^0.22.0",
+    "yargs": "^17.7.2"
+  },
+  "bin": {
+    "bfg": "./dist/cli/cli.js"
   }
 }

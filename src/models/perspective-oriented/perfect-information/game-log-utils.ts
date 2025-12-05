@@ -3,7 +3,7 @@ import { useGameRegistry } from "../../../hooks/games-registry/games-registry-ho
 import { ALL_PLAYER_SEATS } from "../../internal/game-room-base";
 import { ROOM_PHASE_GAME_IN_PROGRESS } from "../../internal/table-phase";
 import type { GameLobby } from "../../p2p-lobby";
-import type { GameRoomDb } from "../../tinybase/game-room-db";
+import type { GameRoomPersist } from "../../tinybase/game-room-persist";
 import type { BfgGameRoomId, BfgGameTableId } from "../../types/bfg-branded-uuids";
 import type { BfgGameRoomInstance, BfgGameRoomVersionIndex, BfgGameStep, BfgGameStepIndex, BfgGameTableLog, BfgTimestamp } from "../../types/bfg-versions";
 import { type PerfectInformationGameJournal } from "./game-log";
@@ -14,7 +14,7 @@ const createNewGameRoomFromGameSpecificState = (
   lobbyState: GameLobby,
   newGameRoomId: BfgGameRoomId,
   newGameTableId: BfgGameTableId,
-): GameRoomDb => {
+): GameRoomPersist => {
 
   const gameTitle = lobbyState.gameTitle;
   if (!gameTitle) {
@@ -41,7 +41,7 @@ const createNewGameRoomFromGameSpecificState = (
 
   const playerCount = playerPool.length;
 
-  const retVal: GameRoomDb = {
+  const retVal: GameRoomPersist = {
     id: newGameRoomId,
     gameTableId: newGameTableId,
 

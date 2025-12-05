@@ -101,13 +101,7 @@ export const UnknownSourceGameRoomProvider = ({
 
   return (
     <UnknownSourceGameRoomContext.Provider value={retVal}>
-      {/* <HostedGameRoomContextProvider
-        gameInstanceId={gameInstanceId}
-        requestedRole="observer"
-        hostMode="host+p2p"
-      > */}
-        {children}
-      {/* </HostedGameRoomContextProvider> */}
+      {children}
     </UnknownSourceGameRoomContext.Provider>
   )
 }

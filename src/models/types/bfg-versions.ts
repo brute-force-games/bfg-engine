@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BfgGameRoomIdToolbox, BfgGameTableIdToolbox } from "./bfg-branded-uuids";
-import { GameRoomDbSchema } from "../tinybase/game-room-db";
-import type { GenericGameMetadata } from "../../game-metadata/games-registry";
+import { GameRoomPersistSchema } from "../tinybase/game-room-persist";
+// import type { GenericGameMetadata } from "../../game-metadata/games-registry";
 import { BfgSupportedGameTitleSchema } from "../game-box-definition";
 
 
@@ -30,32 +30,43 @@ export type BfgGameTableVersion = z.infer<typeof BfgGameTableVersionSchema>;
 
 export const BfgGameRoomInstanceSchema = z.object({
   roomVersion: BfgGameRoomVersionSchema,
-  roomData: GameRoomDbSchema,
+  roomData: GameRoomPersistSchema,
 }).describe("BfgGameRoomInstance");
 export type BfgGameRoomInstance = z.infer<typeof BfgGameRoomInstanceSchema>;
 
 
-export const createBfgGameStepSchema = (gameMetadata: GenericGameMetadata) => {
-  const schemas = gameMetadata.schemas;
-  const { gameEventSchema, gameEventOutcomeSchema, hostGameStateSchema } = schemas;
+export const createBfgGameStepSchema = <
+  HostGameStateSchema extends z.ZodType,
+  HostGameEventSchema extends z.ZodType,
+  HostGameEventOutcomeSchema extends z.ZodType
+>(schemas: {
+  hostGameStateSchema: HostGameStateSchema;
+  hostGameEventSchema: HostGameEventSchema;
+  hostGameEventOutcomeSchema: HostGameEventOutcomeSchema;
+}) => {
+  const { hostGameEventSchema, hostGameEventOutcomeSchema, hostGameStateSchema } = schemas;
 
   return z.object({
     stepIndex: BfgGameStepIndexSchema,
     createdAt: BfgTimestampSchema,
-    event: gameEventSchema,
-    outcome: gameEventOutcomeSchema,
+    event: hostGameEventSchema,
+    outcome: hostGameEventOutcomeSchema,
     nextBoardState: hostGameStateSchema,
-  }).describe("BfgGameStep");
+  }).describe(`BfgGameStep`);
 }
 export type BfgGameStep = z.infer<ReturnType<typeof createBfgGameStepSchema>>;
 
 
-export const createBfgGameTableLogSchema = (gameMetadata: GenericGameMetadata) => {
-  const BfgGameStepSchema = createBfgGameStepSchema(gameMetadata);
+export const createBfgGameTableLogSchema = <
+  GameTableEventSchema extends z.ZodType
+>(schemas: {
+  gameTableEventSchema: GameTableEventSchema;
+}) => {
+  // const BfgGameStepSchema = createBfgGameStepSchema(schemas);
   return z.object({
     gameTableId: BfgGameTableIdToolbox.idSchema,
     gameTitle: BfgSupportedGameTitleSchema,
-    history: z.array(BfgGameStepSchema),
+    history: z.array(schemas.gameTableEventSchema),
   }).describe("BfgGameTableLog");
 };
-export type BfgGameTableLog = z.infer<ReturnType<typeof createBfgGameTableLogSchema>>;
+export type BfgGameTableLog<GameTableEventSchema extends z.ZodType> = z.infer<ReturnType<typeof createBfgGameTableLogSchema<GameTableEventSchema>>>;

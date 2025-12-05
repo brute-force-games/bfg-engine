@@ -1,55 +1,60 @@
 import { z } from "zod";
 import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
-import { BfgGameStepIndexSchema, BfgTimestampSchema } from "../types/bfg-versions";
+// import { BfgGameStepIndexSchema, BfgTimestampSchema } from "../types/bfg-versions";
+// import { GameTableActionSourceSchema, GameTableEventTypeSchema } from "../game-table/game-table-event";
+
 
 // Consolidated transition schema - structure is identical for DB and P2P
 // though they have different security profiles and serialization paths
-export const createGameStateTransitionSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
-  const { gameEventSchema, gameEventOutcomeSchema, hostGameStateSchema } = schemas;
+// export const createGameStateTransitionSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+//   const { hostGameEventSchema, hostGameEventOutcomeSchema, hostGameStateSchema } = schemas;
 
-  const GameStateTransitionSchema = z.object({
-    event: gameEventSchema,
-    change: gameEventOutcomeSchema,
-    nextBoardState: hostGameStateSchema,
-  });
+//   const GameStateTransitionSchema = z.object({
+//     event: hostGameEventSchema,
+//     change: hostGameEventOutcomeSchema,
+//     nextBoardState: hostGameStateSchema,
+//   });
 
-  return GameStateTransitionSchema;
-}
+//   return GameStateTransitionSchema;
+// }
 
-export type GameStateTransition = z.infer<ReturnType<typeof createGameStateTransitionSchema>>;
+// export type GameStateTransition = z.infer<ReturnType<typeof createGameStateTransitionSchema>>;
 
-// Type aliases for context clarity (DB vs P2P) - same structure, different usage contexts
-export type GameStateTransitionForDb = GameStateTransition;
+// // Type aliases for context clarity (DB vs P2P) - same structure, different usage contexts
+// export type GameStateTransitionForDb = GameStateTransition;
 // export type GameStateTransitionForP2p = GameStateTransition; // Unused - P2P code uses DB functions directly
 
 
-// Consolidated board event schema - structure is identical for DB and P2P
-// though they have different security profiles and serialization paths
-export const createGameBoardEventSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
-  const transitionSchema = createGameStateTransitionSchema(schemas);
+// // Consolidated board event schema - structure is identical for DB and P2P
+// // though they have different security profiles and serialization paths
+// export const createGameTableEventSchema = <GameStepSchema extends z.ZodType>(gameStepSchema: GameStepSchema) => {
+//   // const transitionSchema = createGameStateTransitionSchema(schemas);
+//   // const gameStepSchema = createBfgGameStepSchema(schemas);
   
-  const GameBoardEventSchema = z.object({
-    // gameStateId: BfgGameStateIdToolbox.idSchema,
-    // gameRoomId: BfgGameRoomIdToolbox.idSchema,
-    createdAt: BfgTimestampSchema,
-    stepIndex: BfgGameStepIndexSchema,
+//   const GameTableEventSchema = z.object({
+//     createdAt: BfgTimestampSchema,
+//     stepIndex: BfgGameStepIndexSchema,
+//     source: GameTableActionSourceSchema,
+//     eventType: GameTableEventTypeSchema,
   
-    transitionForHost: transitionSchema,
-  });
+//     gameStep: gameStepSchema,
+//   });
 
-  return GameBoardEventSchema;
-}
+//   // return GameBoardEventSchema;
+//   return GameTableEventSchema;
+// }
 
-export type GameBoardEvent = z.infer<ReturnType<typeof createGameBoardEventSchema>>;
+// export type GameTableEvent = z.infer<ReturnType<typeof createGameTableEventSchema>>;
 
 // Type aliases for context clarity (DB vs P2P) - same structure, different usage contexts
-export type GameBoardEventForDb = GameBoardEvent;
+// export type GameTableEventForDb = GameTableEvent;
 // export type GameBoardTransitionForP2p = GameBoardEvent; // Unused - P2P code uses DB functions directly
 
-export const createBoardTransitionsArraySchema = (schemas: BfgGenericEngineMetadataSchemas) => {
-  return z.array(createGameBoardEventSchema(schemas));
+export const createTableTransitionsArraySchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+  // return z.array(createGameTableEventSchema(schemas.gameStepSchema));
+  return z.array(schemas.gameTableEventSchema);
 }
-export type BoardTransitionsArray = z.infer<ReturnType<typeof createBoardTransitionsArraySchema>>;
+export type TableTransitionsArray = z.infer<ReturnType<typeof createTableTransitionsArraySchema>>;
 
 
 

@@ -8,6 +8,10 @@ const testsRoot = __dirname;
 
 const TEST_FILE_PATTERN = /\.(test|spec)\.(c|m)?[tj]sx?$/;
 const EXCLUDED_TEST_RELATIVE_PATHS = new Set<string>(["structure"]);
+const EXCLUDED_TEST_DIRECTORIES = new Set<string>([
+  "v2/game-guess-number",
+  "v2/lifecycle-test",
+]);
 
 const listFiles = (root: string): string[] => {
   const entries = fs.readdirSync(root, { withFileTypes: true });
@@ -63,6 +67,14 @@ describe("test directory mirrors src structure", () => {
           return undefined;
         }
 
+        // Check if this test is in an excluded directory
+        const isInExcludedDir = Array.from(EXCLUDED_TEST_DIRECTORIES).some((excludedDir) =>
+          relative.startsWith(excludedDir)
+        );
+        if (isInExcludedDir) {
+          return undefined;
+        }
+
         const srcCandidateExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
 
         const hasSourceMatch = srcCandidateExtensions.some((extension) => {
@@ -82,6 +94,14 @@ describe("test directory mirrors src structure", () => {
     const testDirectories = collectDirectories(testsRoot, testsRoot);
 
     const unmatched = Array.from(testDirectories).filter((relativeDirectory) => {
+      // Skip excluded test-only directories
+      const isExcluded = Array.from(EXCLUDED_TEST_DIRECTORIES).some((excludedDir) =>
+        relativeDirectory.startsWith(excludedDir) || excludedDir.startsWith(relativeDirectory)
+      );
+      if (isExcluded) {
+        return false;
+      }
+
       const sourceDirectory = path.join(srcRoot, relativeDirectory);
 
       return !fs.existsSync(sourceDirectory);

@@ -22,11 +22,15 @@ export const DEFAULT_PROFILE_ID_VALUE = '';
 
 // Create the store
 export const playerProfileStore = createStore();
-const persister = createLocalPersister(playerProfileStore, 'tinybase_player_profiles');
 
-// Create persister for automatic localStorage persistence
-persister.startAutoLoad();
-persister.startAutoSave();
+// Only create persister if localStorage is available (browser environment)
+let persister: ReturnType<typeof createLocalPersister> | null = null;
+if (typeof localStorage !== 'undefined') {
+  persister = createLocalPersister(playerProfileStore, 'tinybase_player_profiles');
+  // Create persister for automatic localStorage persistence
+  persister.startAutoLoad();
+  persister.startAutoSave();
+}
 
 // Set initial values only if store is empty (no existing data)
 const hasExistingData = playerProfileStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY) && 

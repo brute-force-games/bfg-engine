@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useGameRegistry } from "@bfg-engine/hooks/games-registry/games-registry-hook";
-import { GameRoomDb } from "@bfg-engine/models/tinybase/game-room-db";
+import { GameRoomPersist } from "@bfg-engine/models/tinybase/game-room-persist";
 import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { convertPrivateToPublicProfile } from "@bfg-engine/models/internal/player-profile/utils";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
@@ -38,7 +38,7 @@ export const adaptToGameRoomAsP2pPlayer = (
   });
   
   const [allPlayerProfiles, setAllPlayerProfiles] = useState<Map<PlayerProfileId, PublicPlayerProfile>>(new Map());
-  const [gameTable, _setGameTable] = useState<GameRoomDb | null>(null);
+  const [gameTable, _setGameTable] = useState<GameRoomPersist | null>(null);
   const [watcherGameEvents, _setWatcherGameEvents] = useState<GameTableEventForWatcherP2p[]>([]);
   const [myPlayerGameEvents, _setMyPlayerGameEvents] = useState<GameTableEventForPlayerP2p[]>([]);
 

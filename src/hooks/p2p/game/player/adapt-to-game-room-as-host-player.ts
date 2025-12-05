@@ -11,12 +11,6 @@ export const adaptToGameRoomAsHostPlayer = (
 
   const adaptedToHost = adaptToHostedGameRoom(gameRoomUnknown);
 
-  // const myPlayerProfile = useMyDefaultPlayerProfile();
-  // if (!myPlayerProfile) {
-  //   console.error('❌ My player profile not found');
-  //   return null;
-  // }
-
   const playerGameDetails = adaptedToHost?.playerGameDetails;
   if (!playerGameDetails) {
     console.error('❌ Player game details not found');

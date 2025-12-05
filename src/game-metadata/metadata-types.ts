@@ -1,364 +1,573 @@
 import { z } from "zod";
-// import type { BfgDataEncoderFormat, IBfgDataEncoder } from "./encoders";
-import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "./metadata-types/game-state-types";
 import type { BfgSupportedGameTitle, GameDefinition } from "../models/game-box-definition";
-// import type { CompleteGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameMetadataType } from "./metadata-defs";
-import type { BfgGameEngineAccessLevelAdapters, IBfgGameProcessor } from "./factories/complete-game-processor-factory";
+import type { IBfgGameProcessor } from "./factories/complete-game-processor-factory";
 import type { BfgGameEngineComponents } from "./ui/bfg-game-components";
-import type { BfgGameEvent, BfgGameEventOutcome } from "./metadata-types/game-action-types";
-// import type { IBfgGameEngineAccessLevelConverters } from "./ui/bfg-game-components";
+import type { 
+  BfgGameStatePerspectiveAdapters,
+  BfgGameEventOutcomePerspectiveAdapters
+} from "./factories/game-access-level-adapter-factory";
+import { createUserGameRoomDataForPlayerSchema, createUserGameRoomDataForWatcherSchema, createUserGameRoomDataForPerspectiveSchema } from "../hooks/p2p/game/user-game-room-data";
+import { BfgGameStepIndexSchema, BfgTimestampSchema } from "../models/types/bfg-versions";
+import { GameTableActionSourceSchema, GameTableEventTypeSchema } from "../models/game-table/game-table-event";
+import { GameTableSeatSchema, type GameTableSeat } from "../models/internal/game-room-base";
+import { PerfectInformationGameEventSummaryStrToolbox, PlayerInformationGameEventSummaryStrToolbox, WatcherInformationGameEventSummaryStrToolbox } from "../models/types/bfg-branded-string-types";
 
 
 
+export const GTAL_NONE = 'none' as const;
+export const GTAL_HOST = 'host' as const;
+export const GTAL_PLAYER = 'player' as const;
+export const GTAL_OBSERVER = 'observer' as const;
 
-// export type BfgGameKnowledgeType = 'public-knowledge' | 'private-player-knowledge';
-// export type BfgGameMetadataType = 'public-knowledge-game' | 'private-player-knowledge-game';
+export const GameTableAccessLevelSchema = z.enum([
+  GTAL_HOST,
+  GTAL_PLAYER,
+  GTAL_OBSERVER,
+  GTAL_NONE,
+]);
+export type GameTableAccessLevel = z.infer<typeof GameTableAccessLevelSchema>;
 
-
-/**
- * Utility type that forces a type T to extend from base interface TBase.
- * This ensures type safety by requiring T to have all properties of TBase.
- */
-// export type Extends<T, TBase> = T extends TBase ? T : never;
-
-/**
- * Utility type that creates a new type that must extend the base interface
- * and can optionally add additional properties.
- */
-// export type ForceExtend<TBase> = TBase & Record<string, unknown>;
-
-
-// export type GSH = ForceExtend<z.ZodSchema<BfgGameStateForHost>>;
-// export type GSP = ForceExtend<z.ZodSchema<BfgGameStateForPlayer>>;
-// export type GSW = ForceExtend<z.ZodSchema<BfgGameStateForWatcher>>;
-
-// export type GSHExt = ReturnType<typeof BfgGameStateForHostSchema.extend>;
-// export type GSPExt = ReturnType<typeof BfgGameStateForPlayerSchema.extend>;
-// export type GSWExt = ReturnType<typeof BfgGameStateForWatcherSchema.extend>;
-
-// export type GSHExt = Extends<BfgGameStateForHost, typeof BfgGameStateForHostSchema>;
-// export type GSPExt = Extends<BfgGameStateForPlayer, typeof BfgGameStateForPlayerSchema>;
-// export type GSWExt = Extends<BfgGameStateForWatcher, typeof BfgGameStateForWatcherSchema>;
-
-// export type HGAExt = ReturnType<typeof BfgGameActionByHostSchema.extend>;
-// export type PGAExt = ReturnType<typeof BfgGameActionByPlayerSchema.extend>;
-// export type HGAExt = Extends<BfgGameActionByHost, typeof BfgGameActionByHostSchema>;
-// export type PGAExt = Extends<BfgGameActionByPlayer, typeof BfgGameActionByPlayerSchema>;
-
-// export type AllPGAExt = z.ZodDiscriminatedUnion<readonly z.ZodTypeAny[], 'actionType'>;
-
-// export type GAPOExt = ReturnType<typeof BfgGameSpecificPlayerActionOutcomeSchema.extend>;
-// export type GAHOExt = ReturnType<typeof BfgGameSpecificHostActionOutcomeSchema.extend>;
-
-// export type GAHOExt = BfgGameSpecificHostActionOutcome;
-// export type GAPOExt = BfgGameSpecificPlayerActionOutcome;
+export const GameTableAccessActionSchema = z.enum([
+  'watch',
+  'play',
+  'host',
+]);
+export type GameTableAccessAction = z.infer<typeof GameTableAccessActionSchema>;
 
 
-export interface ICompleteTypesForGameMetadata <
-  GSH extends BfgGameStateForHost,
-  GSP extends BfgGameStateForPlayer,
-  GSW extends BfgGameStateForWatcher,
-  // PGA extends BfgGameActionByPlayer,
-  // HGA extends BfgGameActionByHost,
+// export const UserGameRoleEnumSchema = z.enum(['host', 'player', 'watcher']);
+// export type UserGameRole = z.infer<typeof UserGameRoleEnumSchema>;
+
+
+export const UserGameRoleBaseSchema = z.object({
+  accessLevel: GameTableAccessLevelSchema,
+});
+export type UserGameRoleBase = z.infer<typeof UserGameRoleBaseSchema>;
+
+
+export const UserGameRoleForHostSchema = UserGameRoleBaseSchema.extend({
+  accessLevel: z.literal('host'),
+});
+export type UserGameRoleForHost = z.infer<typeof UserGameRoleForHostSchema>;
+
+export const UserGameRoleForPlayerSchema = UserGameRoleBaseSchema.extend({
+  accessLevel: z.literal('player'),
+  playerSeat: GameTableSeatSchema,
+});
+export type UserGameRoleForPlayer = z.infer<typeof UserGameRoleForPlayerSchema>;
+
+export const UserGameRoleForWatcherSchema = UserGameRoleBaseSchema.extend({
+  accessLevel: z.literal('observer'),
+});
+export type UserGameRoleForWatcher = z.infer<typeof UserGameRoleForWatcherSchema>;
+
+
+export const UserGameRoleSchema = z.discriminatedUnion('accessLevel', [
+  UserGameRoleForHostSchema,
+  UserGameRoleForPlayerSchema,
+  UserGameRoleForWatcherSchema,
+]);
+export type UserGameRole = z.infer<typeof UserGameRoleSchema>;
+
+
+
+export const GameActionSourceSchema = z.enum(['other', 'host', 'player']).describe(`GameActionSource`);
+export type GameActionSource = z.infer<typeof GameActionSourceSchema>;
+
+
+export const PerfectInformationGameStateSchema = z.object({}).describe(`PerfectInformationGameState`);
+export const PlayerRoleGameStateSchema = z.object({}).describe(`PlayerInformationGameState`);
+export const WatcherRoleGameStateSchema = z.object({}).describe(`WatcherInformationGameState`);
+
+
+// export const PerfectInformationGameEventSchema = z.object({}).describe(`PerfectInformationGameEvent`);
+// export const PlayerRolePerspectiveGameEventSchema = z.object({}).describe(`PlayerRolePerspectiveGameEvent`);
+// export const WatcherRolePerspectiveGameEventSchema = z.object({}).describe(`WatcherRolePerspectiveGameEvent`);
+
+
+// export const GameActionBaseSchema = z.object({
+//   source: GameActionSourceSchema,
+//   action: z.object({}).describe(`GameAction`),
+// }).describe(`GameActionBase`);
+
+// export const OtherSourcedGameActionSchema = GameActionBaseSchema.extend({
+//   source: z.literal('other'),
+// }).describe(`OtherSourcedGameAction`);
+// export const OtherSourcedGameActionOutcomeSchema = z.object({}).describe(`OtherSourcedGameActionOutcome`);
+
+// export const HostSourcedGameActionSchema = GameActionBaseSchema.extend({
+//   source: z.literal('host'),
+// }).describe(`HostSourcedGameAction`);
+// export const HostSourcedGameActionOutcomeSchema = z.object({}).describe(`HostSourcedGameActionOutcome`);
+
+// export const PlayerSourcedGameActionSchema = GameActionBaseSchema.extend({
+//   source: z.literal('player'),
+// }).describe(`PlayerSourcedGameAction`);
+// export const PlayerSourcedGameActionOutcomeSchema = z.object({}).describe(`PlayerSourcedGameActionOutcome`);
+
+// export const GameActionSchema = z.discriminatedUnion('source', [
+//   OtherSourcedGameActionSchema,
+//   HostSourcedGameActionSchema,
+//   PlayerSourcedGameActionSchema,
+// ]).describe(`GameAction`);
+
+
+
+const GameActionBaseSchema = z.object({
+  source: GameActionSourceSchema,
+  actionType: z.string(),
+  actionData: z.object({}).describe(`GameAction`),
+}).describe(`GameActionBase`);
+
+// const GameActionTypeAndDataSchema = z.object({
+//   actionType: z.string(),
+//   actionData: z.object({}).describe(`GameActionData`).optional(),
+// }).describe(`GameActionTypeAndData`);
+
+
+
+export const PerfectInformationGameActionOutcomeSchema = z.object({}).describe(`PerfectInformationGameActionOutcome`);
+
+export const PerfectInformationGameEventSchema = z.object({
+  gameAction: GameActionBaseSchema,
+  actionOutcome: PerfectInformationGameActionOutcomeSchema,
+  nextGameState: PerfectInformationGameStateSchema,
+}).describe(`PerfectInformationGameActionOutcome`);
+
+
+export const PerfectInformationPerspectiveGameStepSchema = z.object({
+  role: UserGameRoleForHostSchema,
+  gameEventSummary: PerfectInformationGameEventSummaryStrToolbox.schema,
+  nextGameState: PerfectInformationGameStateSchema.loose(),
+}).describe(`PerfectInformationRolePerspectiveForGameEvent`);
+export type PerfectInformationPerspectiveGameStep = z.infer<typeof PerfectInformationPerspectiveGameStepSchema>;
+
+export const PlayerInformationPerspectiveGameStepSchema = z.object({
+  role: UserGameRoleForPlayerSchema,
+  gameEventSummary: PlayerInformationGameEventSummaryStrToolbox.schema,
+  nextGameState: PlayerRoleGameStateSchema.loose(),
+}).describe(`PlayerRolePerspectiveForGameEvent`);
+export type PlayerInformationPerspectiveGameStep = z.infer<typeof PlayerInformationPerspectiveGameStepSchema>;
+
+export const WatcherInformationPerspectiveGameStepSchema = z.object({
+  role: UserGameRoleForWatcherSchema,
+  gameEventSummary: WatcherInformationGameEventSummaryStrToolbox.schema,
+  nextGameState: WatcherRoleGameStateSchema.loose(),
+}).describe(`WatcherRolePerspectiveForGameEvent`);
+export type WatcherInformationPerspectiveGameStep = z.infer<typeof WatcherInformationPerspectiveGameStepSchema>;
+
+export const RoleBasedPerspectiveForGameStepSchema = z.discriminatedUnion('role', [
+  PerfectInformationPerspectiveGameStepSchema,
+  PlayerInformationPerspectiveGameStepSchema,
+  WatcherInformationPerspectiveGameStepSchema,
+]).describe(`RoleBasedPerspectiveGameEventSummary`);
+
+export type RoleBasedPerspectiveGameEventSummary = z.infer<typeof RoleBasedPerspectiveForGameStepSchema>;
+
+// export const xxx = z.ZodSchema<RoleBasedPerspectiveGameEventSummary>().describe(`xxx`);
+
+
+
+export interface IRoleBasedGamePerspectiveSchemas <
+  PerfectInformationPerspectiveGameStateSchema extends z.ZodType,
+  PerfectInformationGameStepSummarySchema extends z.ZodType,
+
+  PlayerInformationPerspectiveGameStateSchema extends z.ZodType,
+  PlayerInformationGameStepSummarySchema extends z.ZodType,
+
+  WatcherInformationPerspectiveGameStateSchema extends z.ZodType,
+  WatcherInformationGameStepSummarySchema extends z.ZodType
 > {
-  hostGameStateSchema: GSH;
-  playerGameStateSchema: GSP;
-  watcherGameStateSchema: GSW;
+  perfectInformationPerspectiveGameStateSchema: PerfectInformationPerspectiveGameStateSchema;
+  perfectInformationGameStepSummarySchema: PerfectInformationGameStepSummarySchema;
 
-  // playerActionSchema: PGA;
-  // hostActionSchema: HGA;
+  playerInformationPerspectiveGameStateSchema: PlayerInformationPerspectiveGameStateSchema;
+  playerInformationGameStepSummarySchema: PlayerInformationGameStepSummarySchema;
 
-  // playerActionOutcomeSchema: GAPOExt;
-  // hostActionOutcomeSchema: GAHOExt;
+  watcherInformationPerspectiveGameStateSchema: WatcherInformationPerspectiveGameStateSchema;
+  watcherInformationGameStepSummarySchema: WatcherInformationGameStepSummarySchema;
 }
 
 
+// const createRoleBasedPerspectiveForGameStepSchemas = (
+//   perfectInformationPerspectiveGameStepSchema: z.ZodType,
+//   perfectInformationGameEventSummarySchema: z.ZodType,
 
+//   playerInformationPerspectiveGameStepSchema: z.ZodType,
+//   playerInformationGameEventSummarySchema: z.ZodType,
 
-
-
-
-
-// export type DataRoleSchemaAndEncoder<TSchema extends z.ZodTypeAny> = {
-//   schema: TSchema;
-//   encoder: IBfgDataEncoder<BfgDataEncoderFormat, z.infer<TSchema>>;
-// }
-
-
-// export const createBfgMetadataGameStateAccessTypes = <
-//   HostGameStateSchema extends GSHExt,
-//   PlayerGameStateSchema extends GSPExt,
-//   WatcherGameStateSchema extends GSWExt
-// >(
-//   hostGameStateSchema: HostGameStateSchema,
-//   playerGameStateSchema: PlayerGameStateSchema,
-//   watcherGameStateSchema: WatcherGameStateSchema,
+//   watcherInformationPerspectiveGameStepSchema: z.ZodType,
+//   watcherInformationGameEventSummarySchema: z.ZodType,
 // ) => {
-//   const retVal = {
-//     hostGameStateSchema,
-//     playerGameStateSchema,
-//     watcherGameStateSchema,
-//   };
-
-//   return retVal;
-// }
-
-// export type CompleteTypesForBf  gGameMetadata = ReturnType<typeof createBfgMetadataGameStateAccessTypes>;
-// export type BfgMetadataGameStateAccessTypes = ReturnType<typeof createBfgMetadataGameStateAccessTypes>;
-
-
-// export type BfgEngineMetadataSchemas<
-//   GSH extends z.ZodType<BfgGameStateForHost>,
-//   GSP extends z.ZodType<BfgGameStateForPlayer>,
-//   GSW extends z.ZodType<BfgGameStateForWatcher>,
-//   GEV extends z.ZodType<BfgGameEvent>,
-//   GEVO extends z.ZodType<BfgGameEventOutcome>,
-// > = {
-//   // hostGameStateSchema: z.ZodObject<{ hostGameState: GSH }>;
-//   // playerGameStateSchema: z.ZodObject<{ playerGameState: GSP }>;
-//   // watcherGameStateSchema: z.ZodObject<{ watcherGameState: GSW }>;
-//   // gameEventSchema: z.ZodObject<{ gameEvent: GESchema }>;
-//   // gameEventOutcomeSchema: z.ZodObject<{ gameEventOutcome: GEOSchema }>;
-//   hostGameStateSchema: GSH;
-//   playerGameStateSchema: GSP;
-//   watcherGameStateSchema: GSW;
-//   gameEventSchema: GEV;
-//   gameEventOutcomeSchema: GEVO;
+// //   const perfectInformationRoleBasedPerspectiveForGameStepSchema = PerfectInformationGameStateSchema.extend({
+// //   role: z.literal('host'),
+// // });
 // };
 
 
-// export const createBfgEngineMetadataSchemas = <
-//   GSH extends z.ZodType<BfgGameStateForHost>,
-//   GSP extends z.ZodType<BfgGameStateForPlayer>,
-//   GSW extends z.ZodType<BfgGameStateForWatcher>,
-//   // GEV extends z.ZodType<BfgGameEvent>,
-//   // GEVO extends z.ZodType<BfgGameEventOutcome>,
-//   // HGA extends z.ZodType<BfgGameActionByHost>,
-//   // PGA extends z.ZodType<BfgGameActionByPlayer>,
-// >({
-//   hostGameStateSchema,
-//   playerGameStateSchema,
-//   watcherGameStateSchema,
-//   // gameEventSchema,
-//   // gameEventOutcomeSchema,
-//   // hostActionSchema,
-//   // playerActionSchema,
-// }: {
-//   hostGameStateSchema: GSH;
-//   playerGameStateSchema: GSP;
-//   watcherGameStateSchema: GSW;
-//   // gameEventSchema: GEV;
-//   // gameEventOutcomeSchema: GEVO;
-//   // hostActionSchema: HGA;
-//   // playerActionSchema: PGA;
-// }) => {
+
+const OtherSourcedGameActionSchema = GameActionBaseSchema.extend({
+  source: z.literal('other'),
+  actionType: z.string().readonly(),
+  actionData: z.object({}).loose().nullable(),
+}).describe(`OtherSourcedGameAction`);
+// export const OtherSourcedGameActionOutcomeSchema = z.object({}).describe(`OtherSourcedGameActionOutcome`);
+
+const HostSourcedGameActionSchema = GameActionBaseSchema.extend({
+  source: z.literal('host'),
+  actionType: z.string(),
+  actionData: z.object({}).loose().nullable(),
+}).describe(`HostSourcedGameAction`);
+export const HostSourcedGameActionOutcomeSchema = z.object({}).describe(`HostSourcedGameActionOutcome`);
+
+const PlayerSourcedGameActionSchema = GameActionBaseSchema.extend({
+  source: z.literal('player'),
+  playerSeat: GameTableSeatSchema,
+  actionType: z.string(),
+  actionData: z.object({}).loose().nullable(),
+}).describe(`PlayerSourcedGameAction`);
+// export const PlayerSourcedGameActionOutcomeSchema = z.object({}).describe(`PlayerSourcedGameActionOutcome`);
+
+const GameActionSchema = z.discriminatedUnion('source', [
+  OtherSourcedGameActionSchema,
+  HostSourcedGameActionSchema,
+  PlayerSourcedGameActionSchema,
+]).describe(`GameAction`);
+export type GameAction = z.infer<typeof GameActionSchema>;
+
+
+type HostSourcedGameActionWithData<
+  GameActionType extends string,
+  GameActionDataSchema extends z.ZodType,
+> = {
+  source: 'host';
+  actionType: GameActionType;
+  actionData: z.infer<GameActionDataSchema>;
+};
+
+const createHostSourcedGameStepActionSchema = <
+  // GameStepActionSource extends GameActionSource,
+  GameActionType extends string,
+  GameActionDataSchema extends z.ZodType,
+  // GameActionOutcomeSchema extends z.ZodType,
+  
+  PerfectInformationGameStateSchema extends z.ZodType,
+  // PlayerRoleGameStateSchema extends z.ZodType,
+  // WatcherRoleGameStateSchema extends z.ZodType,
+
+  PerfectInformationPerspectiveGameStepSchema extends z.ZodType,
+  PlayerInformationPerspectiveGameStepSchema extends z.ZodType,
+  WatcherInformationPerspectiveGameStepSchema extends z.ZodType,
+>(
+  gameActionType: GameActionType,
+  gameActionDataSchema: GameActionDataSchema,
+  gameActionOutcomeSchema: PerfectInformationPerspectiveGameStepSchema,
+
+  createOutcome: (
+    // actionType: GameActionType,
+    // gameActionData: z.infer<GameActionDataSchema>
+    gameAction: HostSourcedGameActionWithData<GameActionType, GameActionDataSchema>,
+  ) => z.infer<PerfectInformationPerspectiveGameStepSchema>,
+
+  createNextGameState: (
+    gameAction: HostSourcedGameActionWithData<GameActionType, GameActionDataSchema>,
+    actionOutcome: z.infer<PerfectInformationPerspectiveGameStepSchema>,
+    currentGameState: z.infer<PerfectInformationGameStateSchema>,
+  ) => z.infer<PerfectInformationGameStateSchema>,
+
+  adaptToPlayerRolePerspectiveGameStep: (
+    playerSeat: GameTableSeat,
+    gameAction: HostSourcedGameActionWithData<GameActionType, GameActionDataSchema>,
+    nextGameState: z.infer<PerfectInformationGameStateSchema>,
+  ) => z.infer<PlayerInformationPerspectiveGameStepSchema>,
+
+  adaptToWatcherRolePerspectiveGameStep: (
+    gameAction: HostSourcedGameActionWithData<GameActionType, GameActionDataSchema>,
+    nextGameState: z.infer<PerfectInformationGameStateSchema>,
+  ) => z.infer<WatcherInformationPerspectiveGameStepSchema>,
+) => {
+
+  const hostSourcedGameActionSchema = GameActionBaseSchema.extend({
+    source: z.literal('host'),
+    actionType: z.literal(gameActionType),
+    actionData: gameActionDataSchema,
+    actionOutcome: gameActionOutcomeSchema,
+  }).describe(`HostSourcedGameAction`);
+
+  return hostSourcedGameActionSchema;
+}
+export type HostSourcedGameStepActionSchema = ReturnType<typeof createHostSourcedGameStepActionSchema>;
+
+
+
+type GameActionHandler = <T extends typeof GameActionSchema>(gameAction: T) => {
+  gameActionSchema: T;
+  handle: (gameAction: T) => Promise<PerfectInformationPerspectiveGameStep>;
+  createPlayerRolePerspectiveGameStep: (gameAction: T) => PlayerInformationPerspectiveGameStep;
+  createWatcherRolePerspectiveGameStep: (gameAction: T) => WatcherInformationPerspectiveGameStep;
+}
+
+// const createHostSourcedGameActionHandler = <
+//   // GameActionType extends string,
+//   GameActionDataSchema extends z.ZodType,
+//   PerfectInformationPerspectiveGameStepSchema extends z.ZodType,
+//   PlayerRolePerspectiveGameStepSchema extends z.ZodType,
+//   WatcherRolePerspectiveGameStepSchema extends z.ZodType,
+// >(
+//   gameActionType: string,
+//   gameActionDataSchema: GameActionDataSchema,
+//   handle: (gameAction: z.infer<typeof HostSourcedGameActionSchema<GameActionDataSchema>>) => PerfectInformationPerspectiveGameStepSchema,
+//   createPlayerRolePerspectiveGameStep: (gameAction: z.infer<typeof HostSourcedGameActionSchema<GameActionDataSchema>>) => PlayerRolePerspectiveGameStepSchema,
+//   createWatcherRolePerspectiveGameStep: (gameAction: z.infer<typeof HostSourcedGameActionSchema<GameActionDataSchema>>) => WatcherRolePerspectiveGameStepSchema,
+// ) => {
+
+//   const gameActionSchema = HostSourcedGameActionSchema.extend({
+//     actionType: z.literal(gameActionType),
+//     actionData: gameActionDataSchema,
+//   });
+
 //   return {
-//     hostGameStateSchema,
-//     playerGameStateSchema,
-//     watcherGameStateSchema,
-//     // gameEventSchema,
-//     // gameEventOutcomeSchema,
-//     // hostActionSchema,
-//     // playerActionSchema,
+//     gameActionSchema,
+//     handle: (gameAction: z.infer<typeof gameActionSchema>) => Promise.resolve(createPlayerRolePerspectiveGameStep(gameAction)),
+//     createPlayerRolePerspectiveGameStep: (gameAction: z.infer<typeof gameActionSchema>) => createPlayerRolePerspectiveGameStep(gameAction),
+//     createWatcherRolePerspectiveGameStep: (gameAction: z.infer<typeof gameActionSchema>) => createWatcherRolePerspectiveGameStep(gameAction),
 //   };
 // };
 
-// export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createBfgEngineMetadataSchemas>;
+// export const WatcherPerspectiveForGameEventOutcomeSchema = z.object({}).describe(`WatcherPerspectiveForGameEventOutcome`);
 
 
-export const createBfgEngineMetadataSchemas = <
-  GSH extends z.ZodType<BfgGameStateForHost>,
-  GSP extends z.ZodType<BfgGameStateForPlayer>,
-  GSW extends z.ZodType<BfgGameStateForWatcher>,
-  GEv extends z.ZodType<BfgGameEvent>,
-  GEvO extends z.ZodType<BfgGameEventOutcome>,
-  // HGA extends z.ZodType<BfgGameActionByHost>,
-  // PGA extends z.ZodType<BfgGameActionByPlayer>,
+// export const PerfectInformationRoleEventSchemaBase = z.object({
+//   infoRole: z.literal('host'),
+//   gameAction: GameActionSchema,
+//   actionOutcome: PerfectInformationGameActionOutcomeSchema,
+//   nextGameState: PerfectInformationGameStateSchema,
+// }).describe(`InfoRoleEventSchemaBase`);
+
+// export const InfoRoleEventSchemaBase = z.object({
+//   infoRole: 
+// }).describe(`PerfectInformationRoleEvent`);
+
+
+
+// export const createRoleBasedPerspectiveGameEventOutcomeSchema = <
+//   EventSourceSchema extends z.ZodType<typeof GameActionSourceSchema>,
+//   EventOutcomeSchema extends z.ZodType,
+//   RoleSchema extends z.ZodType<z.infer<typeof GameActionSourceSchema>>,
+// >(
+//   eventSourceSchema: EventSourceSchema,
+//   eventOutcomeSchema: EventOutcomeSchema,
+//   roleSchema: RoleSchema,
+// ) => {
+//   return z.object({
+//     eventSource: eventSourceSchema,
+//     eventOutcome: eventOutcomeSchema,
+//     role: roleSchema,
+//   }).describe(`RoleBasedPerspectiveGameEventOutcome`);
+// };
+
+
+export interface IBfgEngineMetadataSchemas <
+  HostGameStateSchema extends z.ZodType,
+  PlayerGameStatePerspectiveSchema extends z.ZodType,
+  WatcherGameStatePerspectiveSchema extends z.ZodType,
+  
+  HostSourcedGameEventSchema extends z.ZodType,
+  HostSourcedGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerSourcedGameEventSchema extends z.ZodType,
+  PlayerSourcedGameEventOutcomeSchema extends z.ZodType,
+
+  PlayerPerspectiveForGameEventOutcomeSchema extends z.ZodType,
+  WatcherPerspectiveForGameEventOutcomeSchema extends z.ZodType,
+> {
+  hostGameStateSchema: HostGameStateSchema;
+  playerGameStatePerspectiveSchema: PlayerGameStatePerspectiveSchema;
+  watcherGameStatePerspectiveSchema: WatcherGameStatePerspectiveSchema;
+  
+  hostSourcedGameEventSchema: HostSourcedGameEventSchema;
+  hostSourcedGameEventOutcomeSchema: HostSourcedGameEventOutcomeSchema;
+  
+  playerSourcedGameEventSchema: PlayerSourcedGameEventSchema;
+  playerSourcedGameEventOutcomeSchema: PlayerSourcedGameEventOutcomeSchema;
+  
+  playerPerspectiveForGameEventOutcomeSchema: PlayerPerspectiveForGameEventOutcomeSchema;
+  watcherPerspectiveForGameEventOutcomeSchema: WatcherPerspectiveForGameEventOutcomeSchema;
+}
+
+
+export interface ICompleteBfgEngineMetadataSchemas <
+  HostGameStateSchema extends z.ZodType,
+  PlayerGameStatePerspectiveSchema extends z.ZodType,
+  WatcherGameStatePerspectiveSchema extends z.ZodType,
+
+  HostSourcedGameEventSchema extends z.ZodType,
+  HostSourcedGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerSourcedGameEventSchema extends z.ZodType,
+  PlayerSourcedGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerPerspectiveForGameEventOutcomeSchema extends z.ZodType,
+  WatcherPerspectiveForGameEventOutcomeSchema extends z.ZodType,
+
+  UserGameRoomDataForPlayerSchema extends z.ZodType,
+  UserGameRoomDataForWatcherSchema extends z.ZodType,
+> {
+  hostGameStateSchema: HostGameStateSchema;
+  playerGameStatePerspectiveSchema: PlayerGameStatePerspectiveSchema;
+  watcherGameStatePerspectiveSchema: WatcherGameStatePerspectiveSchema;
+
+  hostSourcedGameEventSchema: HostSourcedGameEventSchema;
+  hostSourcedGameEventOutcomeSchema: HostSourcedGameEventOutcomeSchema;
+
+  playerSourcedGameEventSchema: PlayerSourcedGameEventSchema;
+  playerSourcedGameEventOutcomeSchema: PlayerSourcedGameEventOutcomeSchema;
+
+  playerPerspectiveForGameEventOutcomeSchema: PlayerPerspectiveForGameEventOutcomeSchema;
+  watcherPerspectiveForGameEventOutcomeSchema: WatcherPerspectiveForGameEventOutcomeSchema;
+
+  userGameRoomDataForPlayerSchema: UserGameRoomDataForPlayerSchema;
+  userGameRoomDataForWatcherSchema: UserGameRoomDataForWatcherSchema;
+}
+
+
+export const createCompleteBfgEngineMetadataSchemas = <
+  HostGameStateSchema extends z.ZodType,
+  PlayerGameStatePerspectiveSchema extends z.ZodType,
+  WatcherGameStatePerspectiveSchema extends z.ZodType,
+
+  HostSourcedGameEventSchema extends z.ZodType,
+  HostSourcedGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerSourcedGameEventSchema extends z.ZodType,
+  PlayerSourcedGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerPerspectiveForGameEventOutcomeSchema extends z.ZodType,
+  WatcherPerspectiveForGameEventOutcomeSchema extends z.ZodType,
 >({
-  hostGameStateSchema,
-  playerGameStateSchema,
-  watcherGameStateSchema,
-  gameEventSchema,
-  gameEventOutcomeSchema,
-  // hostActionSchema,
-  // playerActionSchema,
+  schemas,
 }: {
-  hostGameStateSchema: GSH;
-  playerGameStateSchema: GSP;
-  watcherGameStateSchema: GSW;
-  gameEventSchema: GEv;
-  gameEventOutcomeSchema: GEvO;
-  // hostActionSchema: HGA;
-  // playerActionSchema: PGA;
-}) => {
-  return {
-    hostGameStateSchema,
-    playerGameStateSchema,
-    watcherGameStateSchema,
+  schemas: IBfgEngineMetadataSchemas<
+    HostGameStateSchema,
+    PlayerGameStatePerspectiveSchema,
+    WatcherGameStatePerspectiveSchema,
 
-    gameEventSchema,
-    gameEventOutcomeSchema,
-    // hostActionSchema,
-    // playerActionSchema,
+    HostSourcedGameEventSchema,
+    HostSourcedGameEventOutcomeSchema,
+
+    PlayerSourcedGameEventSchema,
+    PlayerSourcedGameEventOutcomeSchema,
+
+    PlayerPerspectiveForGameEventOutcomeSchema,
+    WatcherPerspectiveForGameEventOutcomeSchema
+  >;
+// })
+// : ICompleteBfgEngineMetadataSchemas<HostGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema, GameEventSchema, HostGameEventOutcomeSchema, PlayerGameEventPerspectiveSchema, WatcherGameEventPerspectiveSchema> 
+}) => {
+  
+  const userGameRoomDataForPlayerSchema = createUserGameRoomDataForPlayerSchema(
+    schemas.playerPerspectiveForGameEventOutcomeSchema, schemas.playerGameStatePerspectiveSchema);
+  
+  const userGameRoomDataForWatcherSchema = createUserGameRoomDataForWatcherSchema(
+    schemas.watcherPerspectiveForGameEventOutcomeSchema, schemas.watcherGameStatePerspectiveSchema);
+
+  const userGameRoomDataForPerspectiveSchema = createUserGameRoomDataForPerspectiveSchema(
+    userGameRoomDataForPlayerSchema,
+    userGameRoomDataForWatcherSchema
+  );
+
+  const hostSourcedGameEventSchema = z.object({
+    source: z.literal('host'),
+    action: schemas.hostSourcedGameEventSchema,
+    outcome: schemas.hostSourcedGameEventOutcomeSchema,
+  }).describe(`HostSourcedGameEventSchema`);
+
+  const playerSourcedGameEventSchema = z.object({
+    source: z.literal('player'),
+    action: schemas.playerSourcedGameEventSchema,
+    outcome: schemas.playerSourcedGameEventOutcomeSchema,
+  }).describe(`PlayerSourcedGameEventSchema`);
+
+  const gameStepSchema = z.discriminatedUnion('source', [
+    hostSourcedGameEventSchema,
+    playerSourcedGameEventSchema,
+  ]).describe(`GameStep`);
+
+  const gameTableEventSchema = z.object({
+    createdAt: BfgTimestampSchema,
+    stepIndex: BfgGameStepIndexSchema,
+    source: GameTableActionSourceSchema,
+    eventType: GameTableEventTypeSchema,
+  
+    event: gameStepSchema,
+    nextBoardState: schemas.hostGameStateSchema,
+  }).describe(`BfgGameTableEvent`);
+
+  return {
+    ...schemas,
+
+    gameStepSchema,
+    gameTableEventSchema,
+    
+    userGameRoomDataForPlayerSchema,
+    userGameRoomDataForWatcherSchema,
+    userGameRoomDataForPerspectiveSchema,
   };
 };
-export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createBfgEngineMetadataSchemas>;
+
+export type BfgGenericEngineMetadataSchemas = ReturnType<typeof createCompleteBfgEngineMetadataSchemas>;
+
+export type GameTableEventForDb = z.infer<ReturnType<typeof createCompleteBfgEngineMetadataSchemas>['gameTableEventSchema']>;
+export type BfgGameStep = z.infer<ReturnType<typeof createCompleteBfgEngineMetadataSchemas>['gameStepSchema']>;
 
 
+// Type constraint that matches the structure of BfgGenericEngineMetadataSchemas
+// This includes all the base schemas plus the user game room data schemas and game step schema
+export type BfgCompleteEngineMetadataSchemasConstraint = {
+  hostGameStateSchema: z.ZodType;
+  playerGameStatePerspectiveSchema: z.ZodType;
+  watcherGameStatePerspectiveSchema: z.ZodType;
 
+  hostSourcedGameEventSchema: z.ZodType;
+  hostSourcedGameEventOutcomeSchema: z.ZodType;
 
-export interface IBfgGenericEngineMetadataSchemas <
-  GSH extends z.ZodType<BfgGameStateForHost>,
-  GSP extends z.ZodType<BfgGameStateForPlayer>,
-  GSW extends z.ZodType<BfgGameStateForWatcher>
-> {
-  hostGameStateSchema: GSH;
-  playerGameStateSchema: GSP;
-  watcherGameStateSchema: GSW;
-}
+  playerSourcedGameEventSchema: z.ZodType;
+  playerSourcedGameEventOutcomeSchema: z.ZodType;
 
-
-// export type BfgGenericEngineMetadataSchemas <
-//   GSH extends z.ZodType<BfgGameStateForHost>,
-//   GSP extends BfgGameStateForPlayer,
-//   GSW extends BfgGameStateForWatcher
-// > = {
-//   // schemas: {
-//     hostGameStateSchema: GSH
-//     playerGameStateSchema: GSP;
-//     watcherGameStateSchema: GSW;
-//     // watcherGameStateSchema: GSW;
-//   // };
-// };
-
-
-// export type BfgGenericEngineMetadataSchemas <
-//   GSH extends z.ZodType<BfgGameStateForHost>,
-//   GSP extends z.ZodType<BfgGameStateForPlayer>,
-//   GSW extends z.ZodType<BfgGameStateForWatcher>,
-//   GEV extends z.ZodType<BfgGameEvent>,
-//   GEVO extends z.ZodType<BfgGameEventOutcome>,
-//   HGA extends z.ZodType<BfgGameActionByHost>,
-//   PGA extends z.ZodType<BfgGameActionByPlayer>,
-// >
-// = {
-//   hostGameStateSchema: GSH,
-//   playerGameStateSchema: GSP,
-//   watcherGameStateSchema: GSW,
-//   gameEventSchema: GEV,
-//   gameEventOutcomeSchema: GEVO,
-//   hostActionSchema: HGA,
-//   playerActionSchema: PGA,
-// }
-
-
-// export type BfgGenericEngineMetadataSchemas = {
-//   hostGameStateSchema: z.ZodType<BfgGameStateForHost>;
-//   playerGameStateSchema: z.ZodType<BfgGameStateForPlayer>;
-//   watcherGameStateSchema: z.ZodType<BfgGameStateForWatcher>;
-//   gameEventSchema: z.ZodType<BfgGameEvent>;
-//   gameEventOutcomeSchema: z.ZodType<BfgGameEventOutcome>;
-// };
-
-// export interface IBfgEngineMetadataStringifiers<
-//   GSH extends BfgGameStateForHost,
-//   GSP extends BfgGameStateForPlayer,
-//   GSW extends BfgGameStateForWatcher,
-//   GSE extends BfgGameEvent,
-//   GSEO extends BfgGameEventOutcome,
-//   // PGA extends BfgGameActionByPlayer,
-//   // HGA extends BfgGameActionByHost,
-// > {
-//   gameEventStringifier: StringifiedZod<z.ZodSchema<GSE>, 'gameEvent'>;
-//   gameEventOutcomeStringifier: StringifiedZod<z.ZodSchema<GSEO>, 'gameEventOutcome'>;
-//   // gameStateStringifier: StringifiedZod<z.ZodSchema<GSS>, 'gameState'>;
+  playerPerspectiveForGameEventOutcomeSchema: z.ZodType;
+  watcherPerspectiveForGameEventOutcomeSchema: z.ZodType;
   
-//   hostGameStateStringifier: StringifiedZod<z.ZodSchema<GSH>, 'hostGameState'>;
-//   playerGameStateStringifier: StringifiedZod<z.ZodSchema<GSP>, 'playerGameState'>;
-//   watcherGameStateStringifier: StringifiedZod<z.ZodSchema<GSW>, 'watcherGameState'>;
-//   // hostActionStringifier: StringifiedZod<z.ZodSchema<HGA>, 'hostAction'>;
-//   // playerActionStringifier: StringifiedZod<z.ZodSchema<PGA>, 'playerAction'>;
-//   // hostActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GHAO>, 'hostActionOutcome'>;
-//   // playerActionOutcomeStringifier: StringifiedZod<z.ZodSchema<GAPO>, 'playerActionOutcome'>;
-//   // watcherGameStateStringifier: StringifiedZod<GSW, 'watcherGameState'>;
-//   // hostActionStringifier: StringifiedZod<HGA, 'hostAction'>;
-//   // playerActionStringifier: StringifiedZod<PGA, 'playerAction'>;
-//   // hostActionOutcomeStringifier: StringifiedZod<GHAO, 'hostActionOutcome'>;
-//   // playerActionOutcomeStringifier: StringifiedZod<GAPO, 'playerActionOutcome'>;
-// }
+  gameStepSchema: z.ZodType;
+  gameTableEventSchema: z.ZodType;
+  
+  userGameRoomDataForPlayerSchema: z.ZodType;
+  userGameRoomDataForWatcherSchema: z.ZodType;
+  userGameRoomDataForPerspectiveSchema: z.ZodType;
+};
 
 
-// export interface IBfgEngineMetadataEncoders<
-//   GSH extends BfgGameStateForHost,
-//   GSP extends BfgGameStateForPlayer,
-//   GSW extends BfgGameStateForWatcher,
-//   GSE extends BfgGameEvent,
-//   GSEO extends BfgGameEventOutcome,
-//   // PGA extends BfgGameActionByPlayer,
-//   // HGA extends BfgGameActionByHost,
-//   // AllPGA extends z.ZodTypeAny | null = null,
-// > {
-//   hostGameStateEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSH>;
-//   hostActionOutcomeEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSH>;
-//   playerGameStateEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSP>;
-//   watcherGameStateEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSW>;
-
-//   gameEventEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSE>;
-//   gameEventOutcomeEncoder: IBfgDataEncoder<BfgDataEncoderFormat, GSEO>;
-//   // hostActionEncoder: IBfgDataEncoder<BfgDataEncoderFormat, HGA>;
-//   // playerActionEncoder: IBfgDataEncoder<BfgDataEncoderFormat, PGA>;
-//   // playerActionsUnionEncoder?: AllPGA extends z.ZodTypeAny
-//   //   ? IBfgDataEncoder<BfgDataEncoderFormat, z.infer<AllPGA>>
-//   //   : undefined;
-// }
-
-
-// export interface IBfgGameCompleteMetadata 
-// // <
-// //   GSHSchema extends z.ZodType<BfgGameStateForHost>,
-// //   GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
-// //   GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
-// //   GEVSchema extends z.ZodType<BfgGameEvent>,
-// //   GEOVSchema extends z.ZodType<BfgGameEventOutcome>,
-// //   // PGA extends BfgGameActionByPlayer,
-// //   // HGA extends BfgGameActionByHost
-// //   // AllPGA extends AllPGAExt,
-// // > 
-// {
-//   metadataType: BfgGameMetadataType;
-//   gameTitle: BfgSupportedGameTitle;
-//   definition: GameDefinition;
-//   // gameStateAccessTypes: ICompleteTypesForGameMetadata<GSH, GSP, GSW>;
-
-//   schemas: BfgGenericEngineMetadataSchemas;
-//   // encoders: IBfgEngineMetadataEncoders<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
-//   // stringifiers: IBfgEngineMetadataStringifiers<GSHSchema, GSPSchema, GSWSchema, GESchema, GEOSchema>;
-//   // accessLevelConverters: IBfgGameEngineAccessLevelConverters<GSH, GSP, GSW>;
-
-//   gameProcessor: IBfgGameProcessor;
-//   // components: IBfgGameEngineComponents<GSH, GSP, GSW, PGA, HGA>;
-// }
-
-// export type BfgGameEngineMetadata <
-//   GSH extends BfgGameStateForHost,
-//   GSP extends BfgGameStateForPlayer,
-//   GSW extends BfgGameStateForWatcher,
-//   PGA extends BfgGameActionByPlayer,
-//   HGA extends BfgGameActionByHost,
-//   // AllPGA extends AllPGAExt,
-// > = IBfgGameCompleteMetadata<GSH, GSP, GSW, PGA, HGA>;
-
-
-export type BfgGameEngineMetadata = {
+export interface BfgGameEngineMetadata<BfgGameSchemas extends BfgCompleteEngineMetadataSchemasConstraint = BfgGenericEngineMetadataSchemas> {
   metadataType: BfgGameMetadataType;
   gameTitle: BfgSupportedGameTitle;
   definition: GameDefinition;
 
-  schemas: BfgGenericEngineMetadataSchemas;
-  components: BfgGameEngineComponents;
+  schemas: BfgGameSchemas;
+  components: BfgGameEngineComponents<
+    BfgGameSchemas['watcherGameStatePerspectiveSchema'],
+    BfgGameSchemas['playerGameStatePerspectiveSchema'],
+    BfgGameSchemas['hostGameStateSchema'],
+    BfgGameSchemas['watcherPerspectiveForGameEventOutcomeSchema'],
+    BfgGameSchemas['playerPerspectiveForGameEventOutcomeSchema']
+  >;
 
-  gameProcessor: IBfgGameProcessor;
-  accessLevelAdapters: BfgGameEngineAccessLevelAdapters;
-
+  gameProcessor: IBfgGameProcessor<
+    BfgGameSchemas['hostGameStateSchema'],
+    BfgGameSchemas['hostSourcedGameEventSchema'],
+    BfgGameSchemas['playerSourcedGameEventSchema'],
+    BfgGameSchemas['hostSourcedGameEventOutcomeSchema'],
+    BfgGameSchemas['playerPerspectiveForGameEventOutcomeSchema']
+  >;
+  gameStatePerspectiveAdapters: BfgGameStatePerspectiveAdapters;
+  gameEventOutcomePerspectiveAdapters: BfgGameEventOutcomePerspectiveAdapters;
 }

@@ -1,5 +1,5 @@
+import type { z } from "zod";
 import type { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
-import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { BruteForceGamesAppBar } from "../bfg-app-bar/app-bar";
 import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
@@ -8,15 +8,17 @@ import { BfgGameSpine } from "@bfg-engine/ui/bfg-ui";
 import { OptionalGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
 
 
-interface BfgGameSpineNavBarProps {
-  gameMetadata: BfgGameEngineMetadata;
+interface BfgGameSpineNavBarProps<TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata> {
+  gameMetadata: TGameMetadata;
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  gameState: BfgGameStateForWatcher;
+  gameState: z.infer<TGameMetadata['schemas']['watcherGamePerspectiveSchema']>;
   gameContext?: OptionalGameContext;
 }
 
-export const BfgGameSpineNavBar = (props: BfgGameSpineNavBarProps) => {
+export const BfgGameSpineNavBar = <TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata>(
+  props: BfgGameSpineNavBarProps<TGameMetadata>
+) => {
   const { gameMetadata, gameRoom, allPlayerProfiles, gameState, gameContext } = props;
 
   // const gameSpineComponent = gameMetadata.components.GameSpineComponent?.({

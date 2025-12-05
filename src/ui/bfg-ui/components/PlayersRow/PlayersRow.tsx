@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 import { PlayerBox } from '../PlayerBox';
 import { GameTableSeat, } from '@bfg-engine/models/internal/game-room-base';
@@ -7,26 +8,25 @@ import { PlayerProfileId } from '@bfg-engine/models/types/bfg-branded-uuids';
 import { useMyDefaultPublicPlayerProfile } from '@bfg-engine/hooks/stores/use-my-player-profiles-store';
 import styles from './PlayersRow.module.css';
 import { isGameOver } from '../../../../models/internal/table-phase';
-import { BfgGameStateForWatcher } from '@bfg-engine/game-metadata/metadata-types/game-state-types';
 import { useMemo } from 'react';
 import { getActivePlayerSeatsForGameTable } from '../../../../ops/game-table-ops/player-seat-utils';
 
 
-export interface PlayersRowProps<GSW extends BfgGameStateForWatcher> {
+export interface PlayersRowProps<WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType> {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   nextToActPlayers: GameTableSeat[];
-  gameState: GSW;
-  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: GSW, playerSeat: GameTableSeat) => React.ReactNode;
+  gameState: z.infer<WatcherGamePerspectiveSchema>;
+  playerDetailsLineFn: (gameRoom: GameRoomP2p, gameState: z.infer<WatcherGamePerspectiveSchema>, playerSeat: GameTableSeat) => React.ReactNode;
 }
 
-export const PlayersRow = <GSW extends BfgGameStateForWatcher>({
+export const PlayersRow = <WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType>({
   gameRoom,
   allPlayerProfiles,
   nextToActPlayers,
   gameState,
   playerDetailsLineFn,
-}: PlayersRowProps<GSW>) => {
+}: PlayersRowProps<WatcherGamePerspectiveSchema>) => {
 
   // Get all active players from the game table
   // const activePlayers: GameTableSeat[] = [];

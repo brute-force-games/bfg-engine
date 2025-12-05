@@ -49,7 +49,7 @@ export const createPerfectInformationGameJournalSchema = (
   gameMetadata: GenericGameMetadata,
 ) => {
   const gameTitle = gameMetadata.gameTitle;
-  const GameTableLogSchema = createBfgGameTableLogSchema(gameMetadata);
+  const GameTableLogSchema = createBfgGameTableLogSchema(gameMetadata.schemas);
 
   return z.object({
     gameRoomLog: z.array(BfgGameRoomInstanceSchema),

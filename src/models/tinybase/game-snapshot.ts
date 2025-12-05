@@ -10,9 +10,7 @@ export const GameSnapshotTinybaseTableColumnsSchema = {
   gameTableId: { type: 'string' as const },
 
   stringifiedRoomState: { type: 'string' as const },
-  // stringifiedLatestBoardTransition: { type: 'string' as const },
   
-  // latestStepIndex: { type: 'number' as const },
   createdAt: { type: 'number' as const },
   lastUpdatedAt: { type: 'number' as const },
 } as const satisfies TinybaseTableSchema;

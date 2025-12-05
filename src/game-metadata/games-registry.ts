@@ -4,14 +4,6 @@ import type { BfgGameEngineMetadata } from "./metadata-types";
 
 export const GamesRegistry = new Map<BfgSupportedGameTitle, GameDefinition>();
 
-// export type GenericGameMetadata = BfgGameEngineMetadata<
-//   BfgGameStateForHost,
-//   BfgGameStateForPlayer,
-//   BfgGameStateForWatcher,
-//   BfgGameActionByPlayer,
-//   BfgGameActionByHost
-// >;
-
 export type GenericGameMetadata = BfgGameEngineMetadata;
 
 export const GamesMetadataRegistry = new Map<BfgSupportedGameTitle, GenericGameMetadata>();

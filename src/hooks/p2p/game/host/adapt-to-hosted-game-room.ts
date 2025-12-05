@@ -17,5 +17,16 @@ export const adaptToHostedGameRoom = (gameRoomUnknown: IBfgGameTableForUnknown):
     return adaptedForHost;
   }
 
+  // For 'p2p-only' mode, there's no hosted game room available
+  // The user is only accessing via P2P without hosting locally
+  if (mode === 'p2p-only') {
+    return null;
+  }
+
+  // For 'unavailable' mode, also return null
+  if (mode === 'unavailable') {
+    return null;
+  }
+
   throw new Error(`Unknown game room mode for hosting: ${mode}`);
 }

@@ -1,26 +1,26 @@
-import { z } from "zod";
-import { GameTableSeatSchema } from "../../models/internal/game-room-base";
+// import { z } from "zod";
+// import { GameTableSeatSchema } from "../../models/internal/game-room-base";
 
 
-export const BfgGameStateBaseSchema = z.object({}).catchall(z.unknown());
-export type BfgGameStateBase = z.infer<typeof BfgGameStateBaseSchema>;
+// export const BfgGameStateBaseSchema = z.object({}).catchall(z.unknown());
+// export type BfgGameStateBase = z.infer<typeof BfgGameStateBaseSchema>;
 
-export const BfgGameStateForHostSchema = BfgGameStateBaseSchema.extend({});
-export type BfgGameStateForHost = z.infer<typeof BfgGameStateForHostSchema>;
+// export const BfgGameStateForHostSchema = BfgGameStateBaseSchema.extend({});
+// export type BfgGameStateForHost = z.infer<typeof BfgGameStateForHostSchema>;
 
-export const BfgGameStateForPlayerSchema = BfgGameStateBaseSchema.extend({});
-export type BfgGameStateForPlayer = z.infer<typeof BfgGameStateForPlayerSchema>;
+// export const BfgGameStateForPlayerSchema = BfgGameStateBaseSchema.extend({});
+// export type BfgGameStateForPlayer = z.infer<typeof BfgGameStateForPlayerSchema>;
 
-export const AssignedBfgGameStateForPlayerSchema = BfgGameStateForPlayerSchema.extend({
-  playerSeat: GameTableSeatSchema,
-});
-export type AssignedBfgGameStateForPlayer = z.infer<typeof AssignedBfgGameStateForPlayerSchema>;
+// export const AssignedBfgGameStateForPlayerSchema = BfgGameStateForPlayerSchema.extend({
+//   playerSeat: GameTableSeatSchema,
+// });
+// export type AssignedBfgGameStateForPlayer = z.infer<typeof AssignedBfgGameStateForPlayerSchema>;
 
-export const AllAssignedBfgGameStateForPlayersSchema = z.array(AssignedBfgGameStateForPlayerSchema);
-export type AllAssignedBfgGameStateForPlayers = z.infer<typeof AllAssignedBfgGameStateForPlayersSchema>;
+// export const AllAssignedBfgGameStateForPlayersSchema = z.array(AssignedBfgGameStateForPlayerSchema);
+// export type AllAssignedBfgGameStateForPlayers = z.infer<typeof AllAssignedBfgGameStateForPlayersSchema>;
 
-export const BfgGameStateForWatcherSchema = BfgGameStateBaseSchema.extend({});
-export type BfgGameStateForWatcher = z.infer<typeof BfgGameStateForWatcherSchema>;
+// export const BfgGameStateForWatcherSchema = BfgGameStateBaseSchema.extend({});
+// export type BfgGameStateForWatcher = z.infer<typeof BfgGameStateForWatcherSchema>;
 
 
 

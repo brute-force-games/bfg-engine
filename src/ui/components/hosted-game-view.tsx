@@ -1,10 +1,9 @@
-import { z } from "zod";
 import { Typography, Stack, Box } from "../bfg-ui";
 // import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 // import { BfgEncodedString } from "@bfg-engine/game-metadata/encoders";
 // import type { IBfgJsonZodObjectDataEncoder } from "@bfg-engine/game-metadata/encoders";
 import { IBfgGameTableForHost } from "@bfg-engine/hooks/p2p/game/p2p-game-types";
-import { GameHostComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
+import { GameHostScreenComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { useGameMetadata } from "../../hooks/games-registry/use-game-metadata";
 // import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../../game-metadata/metadata-types/game-state-types";
 
@@ -76,18 +75,17 @@ export const HostedGameView = (props: IBfgGameTableForHost) => {
   // }
 
   const { hostGameStateSchema } = gameMetadata.schemas;
-  type HostGameState = z.infer<typeof hostGameStateSchema>;
   
   // Validate the gameState to ensure all required properties are present
-  const gameStateParseResult = hostGameStateSchema.safeParse(latestEvent.nextGameHostState);
+  const gameStateParseResult = hostGameStateSchema.safeParse(latestEvent.nextBoardState);
   if (!gameStateParseResult.success) {
     console.error('❌ Game state validation failed:', gameStateParseResult.error);
-    console.error('❌ Raw game state:', latestEvent.nextGameHostState);
+    console.error('❌ Raw game state:', latestEvent.nextBoardState);
     throw new Error('Game state validation failed: ' + gameStateParseResult.error.message);
   }
   const gameState = gameStateParseResult.data;
   
-  const hostComponentProps: GameHostComponentProps<HostGameState> = {
+  const hostComponentProps: GameHostScreenComponentProps<typeof hostGameStateSchema> = {
     gameState,
     gameRoom,
     allPlayerProfiles,
@@ -99,7 +97,7 @@ export const HostedGameView = (props: IBfgGameTableForHost) => {
     onHostAction,
   };
 
-  const hostRepresentation = gameMetadata.components.HostComponent(hostComponentProps);
+  const hostRepresentation = gameMetadata.components.HostScreenComponent(hostComponentProps);
 
 
   return (

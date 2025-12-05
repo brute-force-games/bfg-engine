@@ -5,21 +5,24 @@ import { Typography } from '../bfg-ui/components/Typography';
 import { Checkbox } from '../bfg-ui/components/Checkbox';
 import { ActionTypeChip, SourceChip } from './game-action-formatters';
 import { BfgGameEngineMetadata } from '@bfg-engine/game-metadata/metadata-types';
-import type { GameTableEventWithTransition } from '../../models/game-table/game-table-event';
+import type { GameTableEventForGameStep } from '../../models/game-table/game-table-event';
 
 
-interface IGameActionHistoryComponentProps {
-  gameMetadata: BfgGameEngineMetadata;
-  gameActions: GameTableEventWithTransition[];
+interface IGameActionHistoryComponentProps<TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata> {
+  gameMetadata: TGameMetadata;
+  gameActions: GameTableEventForGameStep[];
 }
 
-export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameActionHistoryComponentProps) => {
+export const GameActionHistoryComponent = <TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata>({
+  gameMetadata,
+  gameActions
+}: IGameActionHistoryComponentProps<TGameMetadata>) => {
   const [showActionDetailsColumn, setShowActionDetailsColumn] = useState(false);
 
   const gameProcessor = gameMetadata.gameProcessor;
   const summarizeGameEvent = gameProcessor.summarizeGameEvent;
 
-  const coreColumns: TableColumn<GameTableEventWithTransition>[] = [
+  const coreColumns: TableColumn<GameTableEventForGameStep>[] = [
     {
       key: 'createdAt',
       label: 'Timestamp',
@@ -45,20 +48,24 @@ export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameA
     {
       key: 'source',
       label: 'Source',
-      sortable: true,
+      sortable: false,
       width: '100px',
-      render: (source) => <SourceChip source={source} />
+      render: (source) => {
+        return <SourceChip source={source} />;
+      }
     },
     {
       key: 'eventType',
       label: 'Action Type',
-      sortable: true,
+      sortable: false,
       width: '150px',
-      render: (eventType) => eventType ? <ActionTypeChip actionType={eventType} /> : null
+      render: (eventType) => {
+        return eventType ? <ActionTypeChip actionType={eventType} /> : null;
+      }
     }
   ];
 
-  const actionSummaryColumn: TableColumn<GameTableEventWithTransition> = {
+  const actionSummaryColumn: TableColumn<GameTableEventForGameStep> = {
     key: 'stepIndex', // Use an existing property for the key, but we'll use the row in render
     label: 'Action Summary',
     sortable: false,
@@ -81,14 +88,14 @@ export const GameActionHistoryComponent = ({ gameMetadata, gameActions }: IGameA
     }
   };
 
-  const actionDetailsColumn: TableColumn<GameTableEventWithTransition> = {
+  const actionDetailsColumn: TableColumn<GameTableEventForGameStep> = {
     key: 'stepIndex', // Use an existing property for the key, but we'll use the row in render
     label: 'Action Details',
     sortable: false,
     width: '250px',
     render: (_value, row) => {
-      // Show the raw event data as JSON
-      const eventData = JSON.stringify(row.transitionForHost.event, null, 2);
+      // Show the raw gameStep data as JSON
+      const eventData = JSON.stringify(row.gameStep, null, 2);
       
       return (
         <Typography

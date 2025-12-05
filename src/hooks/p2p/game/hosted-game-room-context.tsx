@@ -2,14 +2,16 @@ import { createContext, useContext } from "react";
 import { type BfgGameInstanceId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { GameTableAccessLevel } from "@bfg-engine/models/internal/user-game-perspective";
 import { useLatestHostedGameSnapshot, useLatestPerfectInformationGameJournal } from "../../../tb-store/games-archives-store";
-import type { GameRoomDb } from "../../../models/tinybase/game-room-db";
-import type { GameBoardEventForDb } from "../../../models/tinybase/game-board-event";
+import type { GameRoomPersist } from "../../../models/tinybase/game-room-persist";
+// import type { GameTableEvent, GameTableEventForDb } from "../../../models/tinybase/game-board-event";
 import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../../../game-metadata/metadata-types/game-action-types";
-import type { AllAssignedBfgGameStateForPlayers } from "../../../game-metadata/metadata-types/game-state-types";
-import type { UserGameRoomDataForHost, UserGameRoomDataForWatcher } from "./user-game-room-data";
-import { createAllPlayersGameRoomData, createHostGameRoomData, createWatcherGameRoomData } from "./hosted-game-room-context-utils";
+// import type { AllAssignedBfgGameStateForPlayers } from "../../../game-metadata/metadata-types/game-state-types";
+import type { UserGameRoomDataForWatcher } from "./user-game-room-data";
+import { createAllPlayersGameRoomData, createHostGameRoomData, createWatcherGameRoomData, type AllAssignedBfgGameStateForPlayers, type UserGameRoomDataForHost } from "./hosted-game-room-context-utils";
 import type { GameHostMode } from "./p2p-game-types";
 import type { PerfectInformationGameJournal } from "../../../models/perspective-oriented/perfect-information/game-log";
+import type { BfgGameStepIndex } from "../../../models/types/bfg-versions";
+import type { GameTableEventForDb } from "../../../game-metadata/metadata-types";
 
 
 export interface IHostedGameRoomValue {
@@ -17,11 +19,11 @@ export interface IHostedGameRoomValue {
   requestedRole: GameTableAccessLevel;
   hostMode: GameHostMode;
 
-  hostedGame: GameRoomDb;
-  hostedGameBoardEvents: GameBoardEventForDb[];
+  hostedGame: GameRoomPersist;
+  hostedGameTableEvents: GameTableEventForDb[];
   
-  latestStepIndex: number;
-  latestBoardEvent: GameBoardEventForDb;
+  latestStepIndex: BfgGameStepIndex;
+  latestTableEvent: GameTableEventForDb;
 
   perfectInformationGameJournal: PerfectInformationGameJournal;
   hostGameData: UserGameRoomDataForHost;
@@ -77,12 +79,12 @@ export const HostedGameRoomContextProvider = ({
   const hostedGame = hostedGameSnapshot.gameRoom;
   const hostedGameBoardEvents = hostedGameSnapshot.boardEvents;
 
-  const latestStepIndex = hostedGameBoardEvents.length - 1;
-  const latestBoardEvent = hostedGameBoardEvents[latestStepIndex];
+  const latestStepIndex = hostedGameBoardEvents.length - 1 as BfgGameStepIndex;
+  const latestTableEvent = hostedGameBoardEvents[latestStepIndex];
 
-  const hostGameData = createHostGameRoomData(gameInstanceId, hostedGame, hostedGameBoardEvents);
-  const allPlayersGameData = createAllPlayersGameRoomData(gameInstanceId, hostedGame, hostedGameBoardEvents);
-  const watcherGameData = createWatcherGameRoomData(gameInstanceId, hostedGame, hostedGameBoardEvents);
+  const hostGameData = createHostGameRoomData(hostedGame, hostedGameBoardEvents);
+  const allPlayersGameData = createAllPlayersGameRoomData(hostedGame, hostedGameBoardEvents);
+  const watcherGameData = createWatcherGameRoomData(hostedGame, hostedGameBoardEvents);
 
 
   const retVal: IHostedGameRoomValue = {
@@ -91,9 +93,9 @@ export const HostedGameRoomContextProvider = ({
     hostMode,
 
     hostedGame,
-    hostedGameBoardEvents,
+    hostedGameTableEvents: hostedGameBoardEvents,
     latestStepIndex,
-    latestBoardEvent,
+    latestTableEvent,
 
     perfectInformationGameJournal,
     hostGameData,

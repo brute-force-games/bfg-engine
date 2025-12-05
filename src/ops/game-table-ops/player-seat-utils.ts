@@ -1,14 +1,14 @@
 import { GameTableActionSource } from "../../models/game-table/game-table-event";
 import { PlayerProfileId } from "../../models/types/bfg-branded-uuids";
 import { ALL_PLAYER_SEATS, PlayerSeat1, PlayerSeat2, PlayerSeat3, PlayerSeat4, PlayerSeat5, PlayerSeat6, PlayerSeat7, PlayerSeat8, } from "../../models/internal/game-room-base";
-import { GameRoomDb } from "../../models/tinybase/game-room-db";
+import { GameRoomPersist } from "../../models/tinybase/game-room-persist";
 import { type GameRoomP2p } from "../../models/p2p/game-room-p2p";
 import { GameTableSeat } from "../../models/internal/game-room-base";
 import { PeerId } from "@bfg-engine/hooks/p2p/p2p-types";
 
 
 export const getPlayerActionSource = (
-  gameTable: GameRoomDb,
+  gameTable: GameRoomPersist,
   playerId: PlayerProfileId
 ): GameTableActionSource => {
 
@@ -71,7 +71,7 @@ export const getPlayerSeatForActionSource = (actionSource: GameTableActionSource
 }
 
 
-export const isActionForMyPlayer = (actionSource: GameTableActionSource, playerId: PlayerProfileId, gameTable: GameRoomDb): boolean => {
+export const isActionForMyPlayer = (actionSource: GameTableActionSource, playerId: PlayerProfileId, gameTable: GameRoomPersist): boolean => {
   const playerSeat = gameTable.players.find(player => player.playerProfileId === playerId);
   if (!playerSeat) {
     return false;
@@ -102,7 +102,7 @@ export const isActionForMyPlayer = (actionSource: GameTableActionSource, playerI
 }
 
 
-export const isPlayerSeatedAtGameTable = (playerId: PlayerProfileId, gameTable: GameRoomDb): boolean => {
+export const isPlayerSeatedAtGameTable = (playerId: PlayerProfileId, gameTable: GameRoomPersist): boolean => {
   return gameTable.players.some(player => player.playerProfileId === playerId);
   // return gameTable.p1 === playerId ||
   //   gameTable.p2 === playerId ||
@@ -115,12 +115,12 @@ export const isPlayerSeatedAtGameTable = (playerId: PlayerProfileId, gameTable: 
 }
 
 
-export const isPlayerAtGameTable = (playerId: PlayerProfileId, gameTable: GameRoomDb | null): boolean => {
+export const isPlayerAtGameTable = (playerId: PlayerProfileId, gameTable: GameRoomPersist | null): boolean => {
   return matchPlayerToSeat(playerId, gameTable) !== null;
 }
 
 
-export const matchPlayerToSeat = (playerId: PlayerProfileId | null, gameTable: GameRoomDb | null): GameTableSeat | null => {
+export const matchPlayerToSeat = (playerId: PlayerProfileId | null, gameTable: GameRoomPersist | null): GameTableSeat | null => {
   if (!gameTable) {
     return null;
   }
@@ -171,7 +171,7 @@ export const convertPlayerPoolToPlayerSeats = (playerPool: PlayerProfileId[]): G
 }
 
 
-export const getPlayerIdForPlayerSeat = (playerSeat: GameTableSeat, gameTable: GameRoomDb): PlayerProfileId | null => {
+export const getPlayerIdForPlayerSeat = (playerSeat: GameTableSeat, gameTable: GameRoomPersist): PlayerProfileId | null => {
   const player = gameTable.players.find(player => player.role === playerSeat);
   if (!player) {
     return null;
@@ -189,7 +189,7 @@ export const getPlayerIdForPlayerSeat = (playerSeat: GameTableSeat, gameTable: G
 
 export const getPeerIdForPlayerSeat = (
   playerSeat: GameTableSeat,
-  gameTable: GameRoomDb,
+  gameTable: GameRoomPersist,
   peerPlayerIds: Map<PeerId, PlayerProfileId>
 ): PeerId | null => {
 

@@ -21,7 +21,6 @@ export type InvalidLobbyReason = z.infer<typeof InvalidLobbyReasonSchema>;
 
 export const GameLobbySchema = z.object({
   id: BfgGameLobbyIdToolbox.idSchema,
-  // gameTableId: BfgGameTableIdToolbox.idSchema.optional(),
   gameInstanceId: BfgGameInstanceIdToolbox.idSchema.optional(),
 
   gameHostPlayerProfile: PublicPlayerProfileSchema,

@@ -6,12 +6,14 @@ import { IBfgGameTableForHost, IHostBfgGameDetails, IP2pDetails, IPlayerBfgGameD
 import { matchPlayerToSeat } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 import type { BfgGameActionByHost, BfgGameActionByPlayer } from "../../../../game-metadata/metadata-types/game-action-types";
 import { updateHostedGameWithNewNextBoardState, useLatestHostedGameSnapshot, useLatestPerfectInformationGameJournal } from "../../../../tb-store/games-archives-store";
-import type { GameTableEventWithTransition } from "../../../../models/game-table/game-table-event";
-import type { GameStateTransitionForDb } from "../../../../models/game-table/game-table-event-db";
+// import type { GameTableEventForGameStep } from "../../../../models/game-table/game-table-event";
 import type { GameTableActionSource } from "../../../../models/game-table/game-table-event";
 import type { GameRoomModeHostOnlyAccess } from "../p2p-game-types";
 import { useGameInstanceUserDetails } from "../use-bfg-game-instance";
-import { GTAL_PLAYER } from "../../../../models/internal/user-game-perspective";
+import { GTAL_PLAYER } from "../../../../game-metadata/metadata-types";
+// import type { GameTableEventForDb } from "../../../../models/tinybase/game-board-event";
+import type { BfgGameStepIndex, BfgTimestamp } from "../../../../models/types/bfg-versions";
+import type { GameTableEventForDb } from "../../../../game-metadata/metadata-types";
 
 
 // type P2pPlayerGameRoomData = {
@@ -38,64 +40,11 @@ export const adaptToHostedGameRoomNoP2p = (
 
   const gameInstanceUserDetails = useGameInstanceUserDetails(hostedRoom.gameInstanceId, 'host');
 
-  const { hostedGame, hostedGameBoardEvents, latestStepIndex, latestBoardEvent } = hostedGameRoomContext;
-
-  // const myPlayerProfile = gameInstanceUserDetails.myPlayerProfile;
-
-  // const createPlayerGameRoomData = (playerProfile: PublicPlayerProfile, peerId: PeerId): PlayerGameRoomData | null => {
-  //   const gameSeat = matchPlayerToSeat(playerProfile.id, hostedGame);
-  //   if (!gameSeat) {
-  //     console.error('❌ Player seat not found');
-  //     console.error('❌ Player profile:', myPlayerProfile);
-  //     console.error('❌ Hosted game:', hostedGame);
-  //     return null;
-  //   }
-
-  //   const playerGameRoomData: PlayerGameRoomData = {
-  //     type: 'p2p',
-  //     peerId,
-  //     playerProfile,
-  //     gameSeat,
-  //   };  
-  //   return playerGameRoomData;
-  // }
-
-  // const createPlayerGameRoomDataForHost = (playerProfile: PublicPlayerProfile): PlayerGameRoomData | null => {
-  //   const gameSeat = matchPlayerToSeat(playerProfile.id, hostedGame);
-  //   if (gameSeat === null) {
-  //     return null;
-  //   }
-
-  //   const myPlayerGameRoomData: PlayerGameRoomData = {
-  //     type: 'host',
-  //     playerProfile,
-  //     gameSeat,
-  //   };  
-  //   return myPlayerGameRoomData;
-  // }
-
-
-  // const [peers, setPeers] = useState<PeerId[]>([]);
-  // const [peerIdsToPlayerIds, setPeerIdsToPlayerIds] = useState<Map<PeerId, PlayerProfileId>>(() => {
-  //   const map = new Map<PeerId, PlayerProfileId>();
-  //   if (myPlayerProfile) {
-  //     const selfPeerId = PeerIdSchema.parse(selfId);
-  //     map.set(selfPeerId, myPlayerProfile.id);
-  //   }
-  //   return map;
-  // });
-  // const [allPlayerGameRoomData, setAllPlayerGameRoomData] = useState<Map<PlayerProfileId, PlayerGameRoomData>>(() => {
-  //   const profiles = new Map<PlayerProfileId, PlayerGameRoomData>();
-  //   if (myPlayerProfile) {
-  //     const myPlayerGameRoomData = createPlayerGameRoomDataForHost(myPlayerProfile);
-  //     if (myPlayerGameRoomData !== null) {
-  //       profiles.set(myPlayerProfile.id, myPlayerGameRoomData);
-  //     }
-  //   }
-  //   return profiles;
-  // });
+  const { hostedGame, hostedGameTableEvents, latestStepIndex, latestTableEvent } = hostedGameRoomContext;
 
   const gameRegistry = useGameRegistry();
+  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+
   const hostedGameSnapshot = useLatestHostedGameSnapshot(hostedRoom.gameInstanceId);
   if (!hostedGameSnapshot) {
     console.error('❌ Hosted game room snapshot not found');
@@ -115,12 +64,13 @@ export const adaptToHostedGameRoomNoP2p = (
 
   // Debug: log when board events change
   useEffect(() => {
-    console.log('🎮 Board events updated, count:', hostedGameBoardEvents.length);
-    if (hostedGameBoardEvents.length > 0) {
-      const latestEvent = hostedGameBoardEvents[hostedGameBoardEvents.length - 1];
-      console.log('🎮 Latest event stepIndex:', latestEvent.stepIndex, 'source:', latestEvent.transitionForHost.event.source);
+    console.log('🎮 Board events updated, count:', hostedGameTableEvents.length);
+    if (hostedGameTableEvents.length > 0) {
+      const latestEvent = hostedGameTableEvents[hostedGameTableEvents.length - 1];
+      // console.log('🎮 Latest event stepIndex:', latestEvent.stepIndex, 'source:', latestEvent.event.source);
+      console.log('🎮 Latest event stepIndex:', latestEvent.stepIndex);
     }
-  }, [hostedGameBoardEvents.length, hostedGameBoardEvents]);
+  }, [hostedGameTableEvents.length, hostedGameTableEvents]);
 
   // 
   // const latestStepIndex = hostedGameBoardEvents.length - 1;
@@ -128,7 +78,9 @@ export const adaptToHostedGameRoomNoP2p = (
   // if (!latestBoardEvent) {
   //   throw new Error('No board events found - cannot apply player action');
   // }
-  const latestGameState = latestBoardEvent.transitionForHost.nextBoardState;
+
+  // const gameStepSchema = gameMetadata.schemas.gameStepSchema;
+  const latestGameState = gameMetadata.schemas.hostGameStateSchema.parse(latestTableEvent.nextBoardState);
   
   // Debug: log when latest game state changes
   useEffect(() => {
@@ -403,7 +355,7 @@ export const adaptToHostedGameRoomNoP2p = (
   // Call doSendGameUpdates when game actions actually change (new moves applied)
   useEffect(() => {
     console.warn("Implement me - game actions???");
-    console.warn(hostedGameBoardEvents.length);
+    console.warn(hostedGameTableEvents.length);
     // if (gameActions && gameActions.length > 0) {
     //   const latestAction = gameActions[gameActions.length - 1];
     //   const latestActionTimestamp = latestAction?.createdAt.toString();
@@ -441,7 +393,7 @@ export const adaptToHostedGameRoomNoP2p = (
   //   return null;
   // }
 
-  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+  // const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
 
   const onPlayerAction = useCallback(async (playerAction: BfgGameActionByPlayer) => {
     console.log('🎮 Host received player action:', playerAction);
@@ -478,26 +430,33 @@ export const adaptToHostedGameRoomNoP2p = (
     // const updatedNextGameState = moveResult.updatedNextGameState;
     const { updatedGameState, playerActionOutcome } = moveResult;
 
-    const now = Date.now();
-    const nextStepIndex = latestStepIndex + 1;
+    const now = Date.now() as BfgTimestamp;
+    const nextStepIndex = latestStepIndex + 1 as BfgGameStepIndex;
 
     // Get player action source from playerSeat
     const playerActionSource: GameTableActionSource = `game-table-action-source-player-${playerAction.playerSeat}` as GameTableActionSource;
 
-    // Create the transition
-    const transition: GameStateTransitionForDb = {
+    // Create the game step
+    const gameStep = {
+      stepIndex: nextStepIndex,
+      createdAt: now,
       event: playerAction,
-      change: playerActionOutcome,
+      outcome: playerActionOutcome,
       nextBoardState: updatedGameState,
     };
 
-    // Create the game event with transition
-    const playerActionEvent: GameTableEventWithTransition = {
-      createdAt: now,
-      stepIndex: nextStepIndex,
+    // Create the game event with transition (nested structure)
+    const playerActionEvent: GameTableEventForDb = {
+      stepIndex: gameStep.stepIndex,
+      createdAt: gameStep.createdAt,
       source: playerActionSource,
       eventType: 'game-table-action-player-action',
-      transitionForHost: transition,
+      event: {
+        source: 'player',
+        action: playerAction,
+        outcome: playerActionOutcome,
+      },
+      nextBoardState: updatedGameState,
     };
 
     // addGameBoardTransition(p2pGameRoom.gameInstanceId, playerActionEvent);
@@ -536,23 +495,30 @@ export const adaptToHostedGameRoomNoP2p = (
 
     const { updatedGameState, hostActionOutcome } = moveResult;
 
-    const now = Date.now();
-    const nextStepIndex = latestStepIndex + 1;
+    const now = Date.now() as BfgTimestamp;
+    const nextStepIndex = latestStepIndex + 1 as BfgGameStepIndex;
 
-    // Create the transition
-    const transition: GameStateTransitionForDb = {
-      event: hostAction,
-      change: hostActionOutcome,
-      nextBoardState: updatedGameState,
-    };
+    // // Create the game step
+    // const gameStep = {
+    //   stepIndex: nextStepIndex,
+    //   createdAt: now,
+    //   event: hostAction,
+    //   outcome: hostActionOutcome,
+    //   nextBoardState: updatedGameState,
+    // };
 
-    // Create the game event with transition
-    const hostActionEvent: GameTableEventWithTransition = {
-      createdAt: now,
+    // Create the game event with transition (nested structure)
+    const hostActionEvent: GameTableEventForDb = {
       stepIndex: nextStepIndex,
+      createdAt: now,
       source: 'game-table-action-source-host',
       eventType: 'game-table-action-host-action',
-      transitionForHost: transition,
+      event: {
+        source: 'host',
+        action: hostAction,
+        outcome: hostActionOutcome,
+      },
+      nextBoardState: updatedGameState,
     };
 
     updateHostedGameWithNewNextBoardState(hostedRoom.gameInstanceId, nextStepIndex, hostActionEvent);
@@ -567,8 +533,8 @@ export const adaptToHostedGameRoomNoP2p = (
   const watcherGame = hostedGame;
 
   const myPlayerGameEvents = myPlayerSeat ? 
-    hostedGameBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
-      .hostEventTransitionToPlayerAccessLevelAdapter(myPlayerSeat, boardEvent)) :
+    hostedGameTableEvents.map(boardEvent => gameMetadata.gameEventOutcomePerspectiveAdapters
+      .hostGameTableEventToPlayerPerspectiveAdapter(myPlayerSeat, boardEvent)) :
     [];
 
   const latestMyPlayerGameEvent = myPlayerSeat ? 
@@ -580,24 +546,25 @@ export const adaptToHostedGameRoomNoP2p = (
     if (myPlayerSeat) {
       console.log('🎮 Player game events updated, count:', myPlayerGameEvents.length);
       if (latestMyPlayerGameEvent) {
-        console.log('🎮 Latest player game event stepIndex:', latestMyPlayerGameEvent.stepIndex);
+        console.log('🎮 Latest player game event stepIndex:', myPlayerGameEvents.length - 1);
       }
     }
   }, [myPlayerGameEvents.length, latestMyPlayerGameEvent, myPlayerSeat]);
 
-  const watcherGameEvents = hostedGameBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
-    .hostEventTransitionToWatcherAccessLevelAdapter(boardEvent));
+  const toWatcherGameEventsFn = gameMetadata.gameEventOutcomePerspectiveAdapters.hostEventTransitionToWatcherAccessLevelAdapter;
+
+  const watcherGameEvents = hostedGameTableEvents.map(boardEvent => {
+    const perspective = toWatcherGameEventsFn(boardEvent.event.outcome, boardEvent.nextBoardState);
+    return {
+      stepIndex: boardEvent.stepIndex,
+      createdAt: boardEvent.createdAt,
+      ...(perspective as object),
+    };
+  });
 
   const latestWatcherGameEvent = watcherGameEvents[watcherGameEvents.length - 1];
 
-    // const latestGameEventForPlayer = gameMetadata.accessLevelAdapters
-  //   .hostEventTransitionToPlayerAccessLevelAdapter(hostedGameSnapshot);
-
-  // const latestGameEventForHost = gameMetadata.accessLevelAdapters
-  //   .hostEventTransitionFromHostEventTransitionDb(hostedGameSnapshot.transitionForHost);
-
-  const hostGameEvents = hostedGameBoardEvents.map(boardEvent => gameMetadata.accessLevelAdapters
-    .hostEventTransitionFromHostEventTransitionDb(boardEvent));
+  const hostGameEvents = hostedGameTableEvents;
 
   const latestHostGameEvent = hostGameEvents[hostGameEvents.length - 1];
 
@@ -616,8 +583,6 @@ export const adaptToHostedGameRoomNoP2p = (
     latestWatcherGameEvent,
     allPlayerProfiles,
   };
-
-  // const myHostProfile = gameInstanceUserDetails.myHostProfile;
 
   const hostGameDetails: IHostBfgGameDetails | null = {
     gameMetadata,

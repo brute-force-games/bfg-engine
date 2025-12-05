@@ -1,16 +1,25 @@
+import type { z } from "zod";
+import type { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
 import { Container, Box, Typography, Select, Option } from "../bfg-ui"
 import { ContentLoading } from "../bfg-ui/components/ContentLoading/ContentLoading"
 import { useState } from "react"
 import { GameTableSeat } from "../../models/internal/game-room-base"
-import { IPublicBfgGameDetails } from "@bfg-engine/hooks/p2p/game/p2p-game-types"
+import type { GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
+import type { PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import type { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 
 
-// // TODO: Delete this component; convert to context somehow... see HostObserverP2pGameComponent
-// interface IObserverP2pGameComponentProps {
-//   gameTableId: BfgGameTableId
-// }
+interface ObserverP2pGameComponentProps<TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata> {
+  gameMetadata: TGameMetadata;
+  gameRoom: GameRoomP2p;
+  latestWatcherGameEvent: z.infer<TGameMetadata['schemas']['watcherGameEventPerspectiveSchema']> & { stepIndex: number; createdAt: number };
+  watcherGameEvents: (z.infer<TGameMetadata['schemas']['watcherGameEventPerspectiveSchema']> & { stepIndex: number; createdAt: number })[];
+  allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
+}
 
-export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
+export const ObserverP2pGameComponent = <TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata>(
+  props: ObserverP2pGameComponentProps<TGameMetadata>
+) => {
 
   // const p2pGame = useP2pGameRoomAsObserver();
   const { gameRoom, latestWatcherGameEvent, watcherGameEvents, gameMetadata, allPlayerProfiles } = props;
@@ -51,10 +60,7 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
   // const gameRegistry = useGameRegistry();
   // const gameMetadata = gameRegistry.getGameMetadata(gameTable.gameTitle);
 
-  const latestAction = latestWatcherGameEvent;
-  
-  // const latestAction = gameActions[gameActions.length - 1];
-  if (!latestAction) {
+  if (!latestWatcherGameEvent) {
     return (
       <Container maxWidth={false} style={{ padding: '24px 16px', width: '100%' }}>
         <Typography variant="body1">No game actions yet...</Typography>
@@ -62,18 +68,22 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
     );
   }
 
-  // const gameSpecificStateEncoder = gameMetadata.encoders.publicGameStateEncoder;
-  // if (gameSpecificStateEncoder.format !== 'json-zod-object-string') {
-  //   throw new Error('Game specific state encoder format is not json-zod-object-string');
-  // }
-
-  // const zodGameSpecificStateEncoder = gameSpecificStateEncoder as IBfgJsonZodObjectDataEncoder<any>;
-  // const zodGameSpecificStateSchema = zodGameSpecificStateEncoder.schema as z.ZodTypeAny;
-
-  // const nextGameStateStr: BfgEncodedString = latestAction.nextGameStateStr as unknown as BfgEncodedString;
-  // const gameSpecificState = gameSpecificStateEncoder.decode(nextGameStateStr) as z.infer<typeof zodGameSpecificStateSchema> | null;
-
-  const gameSpecificState = latestAction.nextGameWatcherState;
+  // Extract the game state from the watcher event perspective
+  // The watcher event perspective contains the game state information
+  // Different games structure this differently:
+  // - Some games (e.g. RPS) have the event as an outcome object with an 'updatedGameState' property
+  // - Some games (e.g. Flip-A-Coin) have the event BE the game state directly
+  // We use a typed accessor that checks for common patterns
+  const latestEventRecord = latestWatcherGameEvent as z.infer<TGameMetadata['schemas']['watcherGameEventPerspectiveSchema']>;
+  const eventAsRecord = latestEventRecord as Record<string, unknown>;
+  
+  // Try to extract state from common property names, fall back to using the event itself as state
+  const gameSpecificState = (
+    eventAsRecord.updatedGameState || 
+    eventAsRecord.nextBoardState ||
+    eventAsRecord.nextGameWatcherState ||
+    latestEventRecord
+  ) as z.infer<TGameMetadata['schemas']['watcherGamePerspectiveSchema']>;
 
   if (!gameSpecificState) {
     return (
@@ -86,7 +96,7 @@ export const ObserverP2pGameComponent = (props: IPublicBfgGameDetails) => {
     )
   }
 
-  const gameRepresentation = gameMetadata.components.ObserverComponent({
+  const gameRepresentation = gameMetadata.components.ObserverScreenComponent({
     gameState: gameSpecificState,
     gameRoom,
     allPlayerProfiles,

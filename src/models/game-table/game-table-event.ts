@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { BfgGameTableIdToolbox } from "../types/bfg-branded-uuids";
-import { BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
-import { BfgGameActionOutcomeSchema, BfgGameEventSchema } from "../../game-metadata/metadata-types/game-action-types";
-import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
-import { createGameStateTransitionForDbSchema } from "./game-table-event-db";
+// import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
+// import { BfgGameTableIdToolbox } from "../types/bfg-branded-uuids";
+// import { BfgGameStateForHostSchema, BfgGameStateForWatcherSchema } from "../../game-metadata/metadata-types/game-state-types";
+// import { BfgGameActionOutcomeSchema, BfgGameEventSchema } from "../../game-metadata/metadata-types/game-action-types";
+// import type { BfgGenericEngineMetadataSchemas } from "../../game-metadata/metadata-types";
+// import { createGameStateTransitionForDbSchema } from "./game-table-event-db";
 
 
 export const HostActionSources = [
@@ -19,6 +20,10 @@ export const PlayerActionSources = [
   'game-table-action-source-player-p6',
   'game-table-action-source-player-p7',
   'game-table-action-source-player-p8',
+] as const;
+
+export const OtherActionSources = [
+  'game-table-action-source-other',
 ] as const;
 
 
@@ -44,6 +49,7 @@ export const PlayerActionTypes = [
 export const GameTableActionSourceSchema = z.enum([
   ...HostActionSources,
   ...PlayerActionSources,
+  ...OtherActionSources,
 ] as const);
 
 export type GameTableActionSource = z.infer<typeof GameTableActionSourceSchema>;
@@ -56,28 +62,36 @@ export const GameTableEventTypeSchema = z.enum([
 
 
 
-export const GameTableEventDataSchema = z.object({
-  stepIndex: z.number(),
+// export const GameTableEventDataSchema = z.object({
+//   stepIndex: z.number(),
   
-  source: GameTableActionSourceSchema,
-  eventType: GameTableEventTypeSchema,
-  createdAt: z.number(),
-});
-export type GameTableEventData = z.infer<typeof GameTableEventDataSchema>;
+//   source: GameTableActionSourceSchema,
+//   eventType: GameTableEventTypeSchema,
+//   createdAt: z.number(),
+// });
+// export type GameTableEventData = z.infer<typeof GameTableEventDataSchema>;
 
 
-export const createGameTableEventWithTransitionSchema = (schemas: BfgGenericEngineMetadataSchemas) => {
+// export const createGameTableEventForGameStepSchema = <TGameStepSchema extends z.ZodType = z.ZodType>(
+//   gameStepSchema: TGameStepSchema
+// ) => {
+//   // GameStep already has stepIndex, createdAt, event, outcome, nextBoardState
+//   // GameTableEventData adds source and eventType
+//   // We merge these together to create a flat structure
+//   const GameStepSchema = gameStepSchema;
 
-  const GameStateTransitionSchema = createGameStateTransitionForDbSchema(schemas);
+//   const GameTableStepSchema = GameTableEventDataSchema.extend({
+//     gameStep: GameStepSchema,
+//   });
 
-  const GameTableStepSchema = GameTableEventDataSchema.extend({
-    transitionForHost: GameStateTransitionSchema,
-  });
+//   return GameTableStepSchema;
+// };
 
-  return GameTableStepSchema;
-};
+// export type GameTableEventForGameStep<TGameStepSchema extends z.ZodType = z.ZodType> = 
+//   z.infer<ReturnType<typeof createGameTableEventForGameStepSchema<TGameStepSchema>>>;
 
-export type GameTableEventWithTransition = z.infer<ReturnType<typeof createGameTableEventWithTransitionSchema>>;
+// // Helper type to extract gameStep from a GameTableEventForGameStep
+// export type ExtractGameStep<T> = T extends { gameStep: infer GS } ? GS : never;
 
 
 
@@ -265,19 +279,19 @@ export type GameTableEventWithTransition = z.infer<ReturnType<typeof createGameT
 
 
 
-export const GameTableStepHostP2pSchema = z.object({
-  gameTableId: BfgGameTableIdToolbox.idSchema,
-  createdAt: z.number(),
-  stepIndex: z.number(),
+// export const GameTableStepHostP2pSchema = z.object({
+//   gameTableId: BfgGameTableIdToolbox.idSchema,
+//   createdAt: z.number(),
+//   stepIndex: z.number(),
 
-  event: BfgGameEventSchema,
-  outcome: BfgGameActionOutcomeSchema,
-  nextGameHostState: BfgGameStateForHostSchema,
-  // nextGamePlayerStates: BfgGameStateForPlayerSchema,
-  nextGameWatcherState: BfgGameStateForWatcherSchema
-});
+//   event: BfgGameEventSchema,
+//   outcome: BfgGameActionOutcomeSchema,
+//   nextGameHostState: BfgGameStateForHostSchema,
+//   // nextGamePlayerStates: BfgGameStateForPlayerSchema,
+//   nextGameWatcherState: BfgGameStateForWatcherSchema
+// });
 
-export type GameTableStepHostP2p = z.infer<typeof GameTableStepHostP2pSchema>;
+// export type GameTableStepHostP2p = z.infer<typeof GameTableStepHostP2pSchema>;
 
 
 // export const LatestWatcherAccessLevelGameStepP2pSchema = z.object({

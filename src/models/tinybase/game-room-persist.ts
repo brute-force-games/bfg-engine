@@ -4,10 +4,9 @@ import { BfgSupportedGameTitleSchema } from "../game-box-definition";
 import { BfgPlayerProfileIdToolbox } from "../types/bfg-branded-uuids";
 import { BfgPlayersSchema } from "../internal/game-room-base";
 import { RoomPhaseEnumSchema } from "../internal/table-phase";
-import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
 
 
-export const GameRoomDbSchema = z.object({
+export const GameRoomPersistSchema = z.object({
   id: BfgGameRoomIdToolbox.idSchema,
   gameTableId: BfgGameTableIdToolbox.idSchema,
 
@@ -29,12 +28,12 @@ export const GameRoomDbSchema = z.object({
 });
 
 
-export type GameRoomDbFields = z.infer<typeof GameRoomDbSchema>;
+export type GameRoomPersistFields = z.infer<typeof GameRoomPersistSchema>;
 
-export type GameRoomDb = GameRoomDbFields;
+export type GameRoomPersist = GameRoomPersistFields;
 
 
-export interface UpdatedGameRoom {
-  gameRoom: GameRoomDb;
-  gameState: BfgGameStateForHost;
+export interface UpdatedGameTable<HostGameStateSchema extends z.ZodType = z.ZodType> {
+  gameRoom: GameRoomPersist;
+  gameState: z.infer<HostGameStateSchema>;
 }

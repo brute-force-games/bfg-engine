@@ -20,11 +20,15 @@ export const TB_USER_GAME_TABLE_SETTINGS_TABLE_KEY = 'userGameTableSettings';
 
 // Create the store
 export const userGameTableSettingsStore = createStore();
-const persister = createLocalPersister(userGameTableSettingsStore, TB_USER_GAME_TABLE_SETTINGS_STORE_NAME);
 
-// Create persister for automatic localStorage persistence
-persister.startAutoLoad();
-persister.startAutoSave();
+// Only create persister if localStorage is available (browser environment)
+let persister: ReturnType<typeof createLocalPersister> | null = null;
+if (typeof localStorage !== 'undefined') {
+  persister = createLocalPersister(userGameTableSettingsStore, TB_USER_GAME_TABLE_SETTINGS_STORE_NAME);
+  // Create persister for automatic localStorage persistence
+  persister.startAutoLoad();
+  persister.startAutoSave();
+}
 
 /**
  * Safely parse user game table settings from TinyBase store

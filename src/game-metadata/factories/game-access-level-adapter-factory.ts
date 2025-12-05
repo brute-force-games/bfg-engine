@@ -1,183 +1,441 @@
 import { z } from "zod";
-import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
-import type { BfgGameEvent, BfgGameEventOutcome } from "../metadata-types/game-action-types";
-import type { GameBoardEventForDb } from "../../models/game-table/game-table-event-db";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
 import type { GameTableSeat } from "../../models/internal/game-room-base";
+import type { GameTableEventForDb } from "../metadata-types";
 
 
-export interface IMyGameAccessLevelAdapterFactory<
-  GSHSchema extends z.ZodType<BfgGameStateForHost>,
-  GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
-  GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
-  GEvSchema extends z.ZodType<BfgGameEvent>,
-  GEvOSchema extends z.ZodType<BfgGameEventOutcome>,
-> {
+// export interface IMyGameAccessLevelAdapterFactory<
+//   GSHSchema extends z.ZodType<BfgGameStateForHost>,
+//   GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
+//   GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
+//   GEvSchema extends z.ZodType<BfgGameEvent>,
+//   GEvOSchema extends z.ZodType<BfgGameEventOutcome>,
+// > {
+//   schemas: {
+//     hostGameStateSchema: GSHSchema;
+//     playerGameStateSchema: GSPSchema;
+//     watcherGameStateSchema: GSWSchema;
+//     gameEventSchema: GEvSchema;
+//     gameEventOutcomeSchema: GEvOSchema;
+//   },
+//   adapters: {
+//     myHostGameStateToPlayerAccessLevelAdapter: (hostState: z.infer<GSHSchema>) => z.infer<GSPSchema>;
+//     myHostGameStateToWatcherAccessLevelAdapter: (hostState: z.infer<GSHSchema>) => z.infer<GSWSchema>;
+//     myHostEventTransitionFromHostEventTransitionDb: (hostEventTransition: z.infer<GEvSchema>) => z.infer<GEvSchema>;
+//   },
+// };
+
+
+export type BfgGameEngineMetadataSchemas = {
+  hostGameStateSchema: z.ZodType;
+  playerGameStatePerspectiveSchema: z.ZodType;
+  watcherGameStatePerspectiveSchema: z.ZodType;
+
+  hostSourcedGameEventSchema: z.ZodType;
+  hostSourcedGameEventOutcomeSchema: z.ZodType;
+
+  playerSourcedGameEventSchema: z.ZodType;
+  playerSourcedGameEventOutcomeSchema: z.ZodType;
+
+  playerPerspectiveForGameEventOutcomeSchema: z.ZodType;
+  watcherPerspectiveForGameEventOutcomeSchema: z.ZodType;
+};
+
+
+// export interface IMyGameAccessLevelAdapterFactory <
+//   HostGameStateSchema extends z.ZodType,
+//   PlayerGamePerspectiveSchema extends z.ZodType,
+//   WatcherGamePerspectiveSchema extends z.ZodType,
+//   GameEventSchema extends z.ZodType,
+//   HostGameEventOutcomeSchema extends z.ZodType,
+//   PlayerGameEventPerspectiveSchema extends z.ZodType,
+//   WatcherGameEventPerspectiveSchema extends z.ZodType,
+// >{
+//   schemas: {
+//     hostGameStateSchema: HostGameStateSchema;
+//     playerGamePerspectiveSchema: PlayerGamePerspectiveSchema;
+//     watcherGamePerspectiveSchema: WatcherGamePerspectiveSchema;
+//     gameEventSchema: GameEventSchema;
+//     hostGameEventOutcomeSchema: HostGameEventOutcomeSchema;
+//     playerGameEventPerspectiveSchema: PlayerGameEventPerspectiveSchema;
+//     watcherGameEventPerspectiveSchema: WatcherGameEventPerspectiveSchema;
+//   },
+//   adapters: {
+//     myHostGameStateToPlayerPerspectiveAdapter: (
+//       playerSeat: GameTableSeat,
+//       hostState: z.infer<HostGameStateSchema>
+//     ) => z.infer<PlayerGamePerspectiveSchema>;
+//     myHostGameStateToWatcherPerspectiveAdapter: (
+//       hostState: z.infer<HostGameStateSchema>
+//     ) => z.infer<WatcherGamePerspectiveSchema>;
+//     // myHostEventTransitionFromHostEventTransitionDb: (
+//     //   hostEventTransition: z.infer<GameEventSchema>
+//     // ) => z.infer<GameEventSchema>;
+
+//     myHostEventOutcomeToPlayerPerspectiveAdapter: (
+//       playerSeat: GameTableSeat,
+//       hostEventOutcome: z.infer<HostGameEventOutcomeSchema>
+//     ) => z.infer<PlayerGameEventPerspectiveSchema>;
+//     myHostEventOutcomeToWatcherPerspectiveAdapter: (
+//       hostEventOutcome: z.infer<HostGameEventOutcomeSchema>
+//     ) => z.infer<WatcherGameEventPerspectiveSchema>;
+//   },
+// };
+
+
+
+export interface IMyGameStatePerspectiveAdaptersFactory <
+  HostGameStateSchema extends z.ZodType,
+  PlayerGamePerspectiveSchema extends z.ZodType,
+  WatcherGamePerspectiveSchema extends z.ZodType,
+>{
   schemas: {
-    hostGameStateSchema: GSHSchema;
-    playerGameStateSchema: GSPSchema;
-    watcherGameStateSchema: GSWSchema;
-    gameEventSchema: GEvSchema;
-    gameEventOutcomeSchema: GEvOSchema;
+    hostGameStateSchema: HostGameStateSchema;
+    playerGamePerspectiveSchema: PlayerGamePerspectiveSchema;
+    watcherGamePerspectiveSchema: WatcherGamePerspectiveSchema;
   },
-  adapters: {
-    myHostGameStateToPlayerAccessLevelAdapter: (hostState: z.infer<GSHSchema>) => z.infer<GSPSchema>;
-    myHostGameStateToWatcherAccessLevelAdapter: (hostState: z.infer<GSHSchema>) => z.infer<GSWSchema>;
-    myHostEventTransitionFromHostEventTransitionDb: (hostEventTransition: z.infer<GEvSchema>) => z.infer<GEvSchema>;
-    // myHostEventTransitionToPlayerAccessLevelAdapter: (playerSeat: GameTableSeat, hostEventTransitionDb: GameBoardEventForDb) => GameTableEventForPlayerP2p;
-    // myHostEventTransitionToWatcherAccessLevelAdapter: (hostEventTransition: GameBoardEventForDb) => GameTableEventForWatcherP2p;
-  },
-  // hostEventTransitionFromHostEventTransitionDb: (hostEventTransitionDb: GameBoardEventForDb) => {
-  //   return {
-  //     ...hostEventTransitionDb,
-  //     p1Choice: hostEventTransitionDb.p1Choice,
-  //     p2Choice: hostEventTransitionDb.p2Choice,
-  //   };
-  // },
-  // hostEventTransitionToPlayerAccessLevelAdapter: (playerSeat: GameTableSeat, hostEventTransitionDb: GameBoardEventForDb) => {
-  //   return {
-  //     ...hostEventTransitionDb,
-  //     p1Choice: hostEventTransitionDb.p1Choice,
-  //     p2Choice: hostEventTransitionDb.p2Choice,
-  //   };
-  // },
-  // hostEventTransitionToWatcherAccessLevelAdapter: (hostEventTransition: GameBoardEventForDb) => {
-  //   return {
-  //     ...hostEventTransition,
-  //     p1Choice: hostEventTransition.p1Choice,
-  //     p2Choice: hostEventTransition.p2Choice,
-  //   };
+  // adapters: {
+    myHostGameStateToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      hostState: z.infer<HostGameStateSchema>
+    ) => z.infer<PlayerGamePerspectiveSchema>;
+    
+    myHostGameStateToWatcherPerspectiveAdapter: (
+      hostState: z.infer<HostGameStateSchema>
+    ) => z.infer<WatcherGamePerspectiveSchema>;
   // },
 };
 
 
 
+export interface IMyGameEventOutcomePerspectiveAdaptersFactory <
+  HostGameStateSchema extends z.ZodType,
+  HostGameEventSchema extends z.ZodType,
+  HostGameEventOutcomeSchema extends z.ZodType,
+  PlayerGameEventSchema extends z.ZodType,
+  PlayerGameEventOutcomeSchema extends z.ZodType,
+  PlayerGameEventPerspectiveSchema extends z.ZodType,
+  WatcherGameEventPerspectiveSchema extends z.ZodType,
+>{
+  schemas: {
+    hostGameEventSchema: HostGameEventSchema;
+    hostGameEventOutcomeSchema: HostGameEventOutcomeSchema;
+    hostGameStateSchema: HostGameStateSchema;
+    playerGameEventPerspectiveSchema: PlayerGameEventPerspectiveSchema;
+    watcherGameEventPerspectiveSchema: WatcherGameEventPerspectiveSchema;
+  },
+  myHostEventOutcomeToPlayerPerspectiveAdapter: (
+    playerSeat: GameTableSeat,
+    hostEvent: z.infer<HostGameEventSchema>,
+    hostEventOutcome: z.infer<HostGameEventOutcomeSchema>,
+    hostGameState: z.infer<HostGameStateSchema>
+  ) => z.infer<PlayerGameEventPerspectiveSchema>;
 
-export const createBfgGameEngineAccessLevelAdapters = <
-  GSHSchema extends z.ZodType<BfgGameStateForHost>,
-  GSPSchema extends z.ZodType<BfgGameStateForPlayer>,
-  GSWSchema extends z.ZodType<BfgGameStateForWatcher>,
-  GEvSchema extends z.ZodType<BfgGameEvent>,
-  GEvOSchema extends z.ZodType<BfgGameEventOutcome>,
->(myGameAccessLevelAdapterFactory: IMyGameAccessLevelAdapterFactory<GSHSchema, GSPSchema, GSWSchema, GEvSchema, GEvOSchema>) => {
-  const { schemas, adapters } = myGameAccessLevelAdapterFactory;
+  myHostEventOutcomeToWatcherPerspectiveAdapter: (
+    hostEvent: z.infer<HostGameEventSchema>,
+    hostEventOutcome: z.infer<HostGameEventOutcomeSchema>,
+    hostGameState: z.infer<HostGameStateSchema>
+  ) => z.infer<WatcherGameEventPerspectiveSchema>;
+
+  myPlayerEventOutcomeToPlayerPerspectiveAdapter: (
+    playerSeat: GameTableSeat,
+    playerEvent: z.infer<PlayerGameEventSchema>,
+    playerEventOutcome: z.infer<PlayerGameEventOutcomeSchema>,
+    playerGameState: z.infer<HostGameStateSchema>
+  ) => z.infer<PlayerGameEventPerspectiveSchema>;
   
-  const hostGameStateSchema = schemas.hostGameStateSchema;
-  const gameEventSchema = schemas.gameEventSchema;
+  myPlayerEventOutcomeToWatcherPerspectiveAdapter: (
+    playerEvent: z.infer<PlayerGameEventSchema>,
+    playerEventOutcome: z.infer<PlayerGameEventOutcomeSchema>,
+    playerGameState: z.infer<HostGameStateSchema>
+  ) => z.infer<WatcherGameEventPerspectiveSchema>;
+};
 
-  type InferredGSH = z.infer<typeof hostGameStateSchema>;
-  type InferredGEv = z.infer<typeof gameEventSchema>;
+
+
+
+
+
+// export const createBfgGameEnginePerspectiveAdapters = <
+//   PerfectInformationGameStateSchema extends z.ZodType,
+//   PlayerGamePerspectiveSchema extends z.ZodType,
+//   WatcherGamePerspectiveSchema extends z.ZodType,
+//   GameEventSchema extends z.ZodType,
+//   PerfectInformationGameEventOutcomeSchema extends z.ZodType,
+//   PlayerGameEventPerspectiveSchema extends z.ZodType,
+//   WatcherGameEventPerspectiveSchema extends z.ZodType,
+// // >(myGameAccessLevelAdapterFactory: IMyGameAccessLevelAdapterFactory<PerfectInformationGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema, GameEventSchema, PerfectInformationGameEventOutcomeSchema, PlayerGameEventPerspectiveSchema, WatcherGameEventPerspectiveSchema>) => {
+// >(myGameAccessLevelAdapterFactory: IMyGameAccessLevelAdapterFactory<PerfectInformationGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema, GameEventSchema, PerfectInformationGameEventOutcomeSchema, PlayerGameEventPerspectiveSchema, WatcherGameEventPerspectiveSchema>) => {
+
+export const createBfgGameStatePerspectiveAdapters = <
+  HostGameStateSchema extends z.ZodType,
+  PlayerGamePerspectiveSchema extends z.ZodType,
+  WatcherGamePerspectiveSchema extends z.ZodType,
+  // GameEventSchema extends z.ZodType,
+  // HostGameEventOutcomeSchema extends z.ZodType,
+  // PlayerGameEventPerspectiveSchema extends z.ZodType,
+  // WatcherGameEventPerspectiveSchema extends z.ZodType,
+>({
+  schemas,
+  myHostGameStateToPlayerPerspectiveAdapter,
+  myHostGameStateToWatcherPerspectiveAdapter,
+}: IMyGameStatePerspectiveAdaptersFactory<HostGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema>) => {
+// >({
+//   schemas,
+//   adapters
+// }: {
+//   // gameMetadata: GenericGameMetadata;
+//   schemas: IBfgEngineMetadataSchemas<HostGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema, GameEventSchema, HostGameEventOutcomeSchema, PlayerGameEventPerspectiveSchema, WatcherGameEventPerspectiveSchema>;
+//   adapters: IMyGameStatePerspectiveAdaptersFactory<HostGameStateSchema, PlayerGamePerspectiveSchema, WatcherGamePerspectiveSchema>;
+// }) => {
+    // const { schemas, adapters } = myGameAccessLevelAdapterFactory;
+
+  // const schemas = gameMetadata.schemas;
+  // const adapterMethods = adapters.adapters;
+
+  const { 
+    hostGameStateSchema,
+    playerGamePerspectiveSchema,
+    watcherGamePerspectiveSchema,
+    // gameEventSchema,
+    // hostGameEventOutcomeSchema,
+    // playerGameEventPerspectiveSchema,
+    // watcherGameEventPerspectiveSchema,
+  } = schemas;
+
+  type InferredPerfectInformationGameState = z.infer<typeof hostGameStateSchema>;
+  type InferredPlayerGamePerspective = z.infer<typeof playerGamePerspectiveSchema>;
+  type InferredWatcherGamePerspective = z.infer<typeof watcherGamePerspectiveSchema>;
+  // type InferredPerfectInformationGameEvent = z.infer<typeof gameEventSchema>;
+  // // type InferredPerfectInformationGameEvent = z.infer<GameEventSchema>;
+  // type InferredPerfectInformationGameEventOutcome = z.infer<typeof hostGameEventOutcomeSchema>;
+  // type InferredPlayerGameEventPerspective = z.infer<PlayerGameEventPerspectiveSchema>;
+  // type InferredWatcherGameEventPerspective = z.infer<WatcherGameEventPerspectiveSchema>;
+  // type InferredPerfectInformationPlayerGameEventPerspective = z.infer<typeof playerGameEventPerspectiveSchema>;
+  // type InferredPerfectInformationWatcherGameEventPerspective = z.infer<typeof watcherGameEventPerspectiveSchema>;
+
+  // const BfgGameStepSchema = createBfgGameStepSchema(schemas);
+  // type InferredBfgGameStep = z.infer<typeof BfgGameStepSchema>;
+
+  // const createBfgGameStep = (
+  //   createdAt: BfgTimestamp,
+  //   stepIndex: BfgGameStepIndex,
+  //   event: InferredPerfectInformationGameEvent,
+  //   outcome: InferredPerfectInformationGameEventOutcome,
+  //   nextBoardState: InferredPerfectInformationGameState,
+  // ): InferredBfgGameStep => {
+
+  //   const retVal: InferredBfgGameStep = {
+  //     createdAt,
+  //     stepIndex,
+  //     event,
+  //     outcome,
+  //     nextBoardState,
+  //   };
+
+  //   return retVal;
+  // };
+
 
   return {
-    hostGameStateToPlayerAccessLevelAdapter: <
-      GSH extends BfgGameStateForHost,
-      GSP extends BfgGameStateForPlayer,
-    >(hostState: GSH): GSP => {
-      // Converting from generic GSH to specific InferredGSH for the adapter call
-      // This is safe because the function is only called with the specific types at runtime
-      const typedHostState = hostState as unknown as InferredGSH;
-      const result = adapters.myHostGameStateToPlayerAccessLevelAdapter(typedHostState);
-
-      // Converting from specific InferredGSP to generic GSP
-      // This is safe because the function is only called with the specific types at runtime
-      return result as unknown as GSP;
+    myHostGameStateToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      hostState: InferredPerfectInformationGameState
+    ): InferredPlayerGamePerspective => {
+      const result = myHostGameStateToPlayerPerspectiveAdapter(playerSeat, hostState);
+      return result;
     },
 
-    hostGameStateToWatcherAccessLevelAdapter: <
-      GSH extends BfgGameStateForHost,
-      GSW extends BfgGameStateForWatcher,
-    >(hostState: GSH): GSW => {
-      // Converting from generic GSH to specific InferredGSH for the adapter call
-      // This is safe because the function is only called with the specific types at runtime
-      const typedHostState = hostState as unknown as InferredGSH;
-      const result = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
-
-      // Converting from specific InferredGSW to generic GSW
-      // This is safe because the function is only called with the specific types at runtime
-      return result as unknown as GSW;
-    },
-
-    hostEventTransitionFromHostEventTransitionDb: <
-      GTDb extends GameBoardEventForDb,
-      GTH extends GameTableEventForHostP2p,
-    >(hostEventTransitionDb: GTDb): GTH => {
-      const typedEvent = hostEventTransitionDb.transitionForHost.event as unknown as InferredGEv;
-      const adaptedEvent = adapters.myHostEventTransitionFromHostEventTransitionDb(typedEvent);
-      
-      const typedHostState = hostEventTransitionDb.transitionForHost.nextBoardState as unknown as InferredGSH;
-      // const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
-
-      // Converting from GameBoardEventForDb structure to GameTableEventForHostP2p structure
-      // Note: nextGamePlayerStates is an empty array because we don't have player seat information
-      // in GameBoardEventForDb. This should be populated by the caller if needed.
-      const result = {
-        // gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTH['gameTableId'],
-        createdAt: hostEventTransitionDb.createdAt,
-        stepIndex: hostEventTransitionDb.stepIndex,
-        event: adaptedEvent as unknown as GTH['event'],
-        outcome: hostEventTransitionDb.transitionForHost.change as unknown as GTH['outcome'],
-        nextGameHostState: typedHostState as unknown as GTH['nextGameHostState'],
-        // nextGamePlayerStates: [] as unknown as GTH['nextGamePlayerStates'],
-        // nextGameWatcherState: adaptedWatcherState as unknown as GTH['nextGameWatcherState'],
-      };
-
-      return result as unknown as GTH;
-    },
-
-    hostEventTransitionToPlayerAccessLevelAdapter: <
-      GTH extends GameBoardEventForDb,
-      GTP extends GameTableEventForPlayerP2p,
-    >(playerSeat: GameTableSeat, hostEventTransitionDb: GTH): GTP => {
-      const typedEvent = hostEventTransitionDb.transitionForHost.event as unknown as InferredGEv;
-      const adaptedEvent = adapters.myHostEventTransitionFromHostEventTransitionDb(typedEvent);
-      
-      const typedHostState = hostEventTransitionDb.transitionForHost.nextBoardState as unknown as InferredGSH;
-      const adaptedPlayerState = adapters.myHostGameStateToPlayerAccessLevelAdapter(typedHostState);
-      // const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
-
-      // Converting from GameBoardEventForDb structure to GameTableEventForPlayerP2p structure
-      // AssignedBfgGameStateForPlayer extends the player state schema and adds playerSeat
-      // So we need to spread the adaptedPlayerState and add playerSeat
-      const result = {
-        // gameTableId: hostEventTransitionDb.gameRoomId as unknown as GTP['gameTableId'],
-        createdAt: hostEventTransitionDb.createdAt,
-        stepIndex: hostEventTransitionDb.stepIndex,
-        event: adaptedEvent as unknown as GTP['event'],
-        outcome: hostEventTransitionDb.transitionForHost.change as unknown as GTP['outcome'],
-        nextGamePlayerState: {
-          ...adaptedPlayerState,
-          playerSeat: playerSeat,
-        } as unknown as GTP['nextGamePlayerState'],
-        // nextGameWatcherState: adaptedWatcherState as unknown as GTP['nextGameWatcherState'],
-      };
-
-      return result as unknown as GTP;
-    },
-    
-    hostEventTransitionToWatcherAccessLevelAdapter: <
-      GTH extends GameBoardEventForDb,
-      GTW extends GameTableEventForWatcherP2p,
-    >(hostEventTransition: GTH): GTW => {
-      const typedEvent = hostEventTransition.transitionForHost.event as unknown as InferredGEv;
-      const adaptedEvent = adapters.myHostEventTransitionFromHostEventTransitionDb(typedEvent);
-      
-      const typedHostState = hostEventTransition.transitionForHost.nextBoardState as unknown as InferredGSH;
-      const adaptedWatcherState = adapters.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
-
-      // Converting from GameBoardEventForDb structure to GameTableEventForWatcherP2p structure
-      const result = {
-        // gameTableId: hostEventTransition.gameRoomId as unknown as GTW['gameTableId'],
-        createdAt: hostEventTransition.createdAt,
-        stepIndex: hostEventTransition.stepIndex,
-        event: adaptedEvent as unknown as GTW['event'],
-        outcome: hostEventTransition.transitionForHost.change as unknown as GTW['outcome'],
-        nextGameWatcherState: adaptedWatcherState as unknown as GTW['nextGameWatcherState'],
-      };
-
-      return result as unknown as GTW;
+    myHostGameStateToWatcherPerspectiveAdapter: (
+      hostState: InferredPerfectInformationGameState
+    ): InferredWatcherGamePerspective => {
+      const result = myHostGameStateToWatcherPerspectiveAdapter(hostState);
+      return result;
     },
   };
 };
+
+export type BfgGameStatePerspectiveAdapters = ReturnType<typeof createBfgGameStatePerspectiveAdapters>;
+
+
+
+// Reusable constraint for complete game schemas objects
+export type BfgCompleteGameSchemas = {
+  hostGameStateSchema: z.ZodType;
+  playerGameStatePerspectiveSchema: z.ZodType;
+  watcherGameStatePerspectiveSchema: z.ZodType;
+
+  hostSourcedGameEventSchema: z.ZodType;
+  hostSourcedGameEventOutcomeSchema: z.ZodType;
+
+  playerSourcedGameEventSchema: z.ZodType;
+  playerSourcedGameEventOutcomeSchema: z.ZodType;
+  
+  playerPerspectiveForGameEventOutcomeSchema: z.ZodType;
+  watcherPerspectiveForGameEventOutcomeSchema: z.ZodType;
+};
+
+// Type-safe wrapper that infers all generic types from the schema types object
+export const createBfgGameEventOutcomePerspectiveAdaptersTyped = <
+  const TSchemasObject extends BfgCompleteGameSchemas
+>(
+  config: {
+    schemas: TSchemasObject;
+
+    myHostEventOutcomeToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      hostEvent: z.infer<TSchemasObject['hostSourcedGameEventSchema']>,
+      hostEventOutcome: z.infer<TSchemasObject['hostSourcedGameEventOutcomeSchema']>,
+      hostGameState: z.infer<TSchemasObject['hostGameStateSchema']>
+    ) => z.infer<TSchemasObject['playerPerspectiveForGameEventOutcomeSchema']>;
+
+    myHostEventOutcomeToWatcherPerspectiveAdapter: (
+      hostEvent: z.infer<TSchemasObject['hostSourcedGameEventSchema']>,
+      hostEventOutcome: z.infer<TSchemasObject['hostSourcedGameEventOutcomeSchema']>,
+      hostGameState: z.infer<TSchemasObject['hostGameStateSchema']>
+    ) => z.infer<TSchemasObject['watcherPerspectiveForGameEventOutcomeSchema']>;
+
+    myPlayerEventOutcomeToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      playerEvent: z.infer<TSchemasObject['playerSourcedGameEventSchema']>,
+      playerEventOutcome: z.infer<TSchemasObject['playerSourcedGameEventOutcomeSchema']>,
+      playerGameState: z.infer<TSchemasObject['hostGameStateSchema']>
+    ) => z.infer<TSchemasObject['playerPerspectiveForGameEventOutcomeSchema']>;
+    
+    myPlayerEventOutcomeToWatcherPerspectiveAdapter: (
+      playerEvent: z.infer<TSchemasObject['playerSourcedGameEventSchema']>,
+      playerEventOutcome: z.infer<TSchemasObject['playerSourcedGameEventOutcomeSchema']>,
+      playerGameState: z.infer<TSchemasObject['hostGameStateSchema']>
+    ) => z.infer<TSchemasObject['watcherPerspectiveForGameEventOutcomeSchema']>;
+  }
+) => {
+  // Schemas parameter is kept in this wrapper for API consistency, 
+  // but not passed to the core function since type information is sufficient
+  return createBfgGameEventOutcomePerspectiveAdapters<
+    TSchemasObject['hostGameStateSchema'],
+    TSchemasObject['hostSourcedGameEventSchema'],
+    TSchemasObject['hostSourcedGameEventOutcomeSchema'],
+    TSchemasObject['playerSourcedGameEventSchema'],
+    TSchemasObject['playerSourcedGameEventOutcomeSchema'],
+    TSchemasObject['playerPerspectiveForGameEventOutcomeSchema'],
+    TSchemasObject['watcherPerspectiveForGameEventOutcomeSchema']
+  >({
+    schemas: {
+      hostGameStateSchema: config.schemas.hostGameStateSchema,
+      hostGameEventSchema: config.schemas.hostSourcedGameEventSchema,
+      hostGameEventOutcomeSchema: config.schemas.hostSourcedGameEventOutcomeSchema,
+      playerGameEventPerspectiveSchema: config.schemas.playerPerspectiveForGameEventOutcomeSchema,
+      watcherGameEventPerspectiveSchema: config.schemas.watcherPerspectiveForGameEventOutcomeSchema,
+    },
+    myHostEventOutcomeToPlayerPerspectiveAdapter: config.myHostEventOutcomeToPlayerPerspectiveAdapter,
+    myHostEventOutcomeToWatcherPerspectiveAdapter: config.myHostEventOutcomeToWatcherPerspectiveAdapter,
+    myPlayerEventOutcomeToPlayerPerspectiveAdapter: config.myPlayerEventOutcomeToPlayerPerspectiveAdapter,
+    myPlayerEventOutcomeToWatcherPerspectiveAdapter: config.myPlayerEventOutcomeToWatcherPerspectiveAdapter,
+  });
+};
+
+export const createBfgGameEventOutcomePerspectiveAdapters = 
+<
+  HostGameStateSchema extends z.ZodType,
+  HostGameEventSchema extends z.ZodType,
+  HostGameEventOutcomeSchema extends z.ZodType,
+  
+  PlayerGameEventSchema extends z.ZodType,
+  PlayerGameEventOutcomeSchema extends z.ZodType,
+
+  PlayerGameEventPerspectiveSchema extends z.ZodType,
+  WatcherGameEventPerspectiveSchema extends z.ZodType,
+>
+({
+  schemas,
+  myHostEventOutcomeToPlayerPerspectiveAdapter,
+  myHostEventOutcomeToWatcherPerspectiveAdapter,
+}: IMyGameEventOutcomePerspectiveAdaptersFactory<
+  HostGameStateSchema,
+  HostGameEventSchema,
+  HostGameEventOutcomeSchema,
+  PlayerGameEventSchema,
+  PlayerGameEventOutcomeSchema,
+  PlayerGameEventPerspectiveSchema,
+  WatcherGameEventPerspectiveSchema
+>) => {
+    // const { schemas, adapters } = myGameAccessLevelAdapterFactory;
+
+  // const { 
+  //   hostGameStateSchema,
+  //   playerGamePerspectiveSchema,
+  //   watcherGamePerspectiveSchema,
+  //   gameEventSchema,
+  //   hostGameEventOutcomeSchema,
+  //   playerGameEventPerspectiveSchema,
+  //   watcherGameEventPerspectiveSchema,
+  // } = schemas;
+
+  type InferredPerfectInformationGameState = z.infer<HostGameStateSchema>;
+  type InferredPerfectInformationGameEvent = z.infer<HostGameEventSchema>;
+  type InferredPerfectInformationGameEventOutcome = z.infer<HostGameEventOutcomeSchema>;
+  type InferredPlayerGameEventPerspective = z.infer<PlayerGameEventPerspectiveSchema>;
+  type InferredWatcherGameEventPerspective = z.infer<WatcherGameEventPerspectiveSchema>;
+
+  // Create the GameBoardEventForDb type structure based on the game-board-event.ts schema
+  // This matches the actual structure: { stepIndex, createdAt, event, outcome, nextBoardState }
+  // GameBoardEventForDb is just a BfgGameStep with properties at the top level
+  // type InferredGameBoardEventForDb = {
+  //   stepIndex: z.infer<typeof BfgGameStepIndexSchema>;
+  //   createdAt: z.infer<typeof BfgTimestampSchema>;
+  //   event: z.infer<HostGameEventSchema>;
+  //   outcome: z.infer<HostGameEventOutcomeSchema>;
+  //   nextBoardState: z.infer<HostGameStateSchema>;
+  // };
+
+  return {
+  
+    hostGameTableEventToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      gameTableEvent: GameTableEventForDb
+    ): InferredPlayerGameEventPerspective => {
+      const hostAction = gameTableEvent.event.action;
+      const hostEventOutcome = gameTableEvent.event.outcome;
+      const hostGameState = gameTableEvent.nextBoardState;
+
+      const validatedHostEvent = schemas.hostGameEventSchema.parse(hostAction);
+      const validatedHostEventOutcome = schemas.hostGameEventOutcomeSchema.parse(hostEventOutcome);
+      const validatedHostGameState = schemas.hostGameStateSchema.parse(hostGameState);
+
+      const adaptedPlayerState = myHostEventOutcomeToPlayerPerspectiveAdapter(
+        playerSeat, 
+        validatedHostEvent, 
+        validatedHostEventOutcome, 
+        validatedHostGameState
+      );
+
+      return adaptedPlayerState;
+    },
+    
+    myHostEventTransitionToPlayerPerspectiveAdapter: (
+      playerSeat: GameTableSeat,
+      gameEvent: InferredPerfectInformationGameEventOutcome,
+      hostGameState: InferredPerfectInformationGameState
+    ): InferredPlayerGameEventPerspective => {
+      // Event parameter not available in this context, passing null placeholder
+      const adaptedPlayerState = myHostEventOutcomeToPlayerPerspectiveAdapter(playerSeat, null as InferredPerfectInformationGameEvent, gameEvent, hostGameState);
+      // const adaptedWatcherState = adapterMethods.myHostGameStateToWatcherAccessLevelAdapter(typedHostState);
+
+      return adaptedPlayerState;
+    },
+    
+    hostEventTransitionToWatcherAccessLevelAdapter: (
+      hostEventOutcome: InferredPerfectInformationGameEventOutcome,
+      hostGameState: InferredPerfectInformationGameState
+    ): InferredWatcherGameEventPerspective => {
+      // Event parameter not available in this context, passing null placeholder
+      const adaptedWatcherState = myHostEventOutcomeToWatcherPerspectiveAdapter(null as InferredPerfectInformationGameEvent, hostEventOutcome, hostGameState);
+
+      return adaptedWatcherState;
+    },
+  };
+};
+
+export type BfgGameEventOutcomePerspectiveAdapters = ReturnType<typeof createBfgGameEventOutcomePerspectiveAdapters>;
 
 
 

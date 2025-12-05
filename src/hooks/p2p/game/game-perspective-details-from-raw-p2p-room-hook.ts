@@ -1,5 +1,6 @@
 import type { IP2pRawRoomValue } from "./p2p-raw-room-context";
-import { createUserGameRoomDataForNoAccess, UserGameRoomDataForPerspectiveSchema, type UserGameRoomDataForPerspective } from "./user-game-room-data";
+import { createUserGameRoomDataForNoAccess, type UserGameRoomDataForPerspective } from "./user-game-room-data";
+import { getGameMetadata } from "../../../game-metadata/games-registry";
 
 
 export const useGamePerspectiveDetailsFromRawP2pRoom = (
@@ -12,8 +13,24 @@ export const useGamePerspectiveDetailsFromRawP2pRoom = (
     return createUserGameRoomDataForNoAccess(gameInstanceId);
   }
 
-  const userGameRoomDataForPerspectiveParseResult = UserGameRoomDataForPerspectiveSchema
-    .safeParse(userGameRoomPerspectiveStr);
+  const userGameRoomJson = JSON.parse(userGameRoomPerspectiveStr);
+  
+  // First, extract the game title to get the appropriate metadata
+  const gameTitle = userGameRoomJson?.gameRoom?.gameTitle;
+  if (!gameTitle) {
+    console.error('No game title found in user game room perspective');
+    return createUserGameRoomDataForNoAccess(gameInstanceId);
+  }
+
+  const gameMetadata = getGameMetadata(gameTitle);
+  if (!gameMetadata) {
+    console.error('Game metadata not found for game title:', gameTitle);
+    return createUserGameRoomDataForNoAccess(gameInstanceId);
+  }
+
+  // Use the game's schema for user game room perspective
+  const userGameRoomDataForPerspectiveParseResult = gameMetadata.schemas.userGameRoomDataForPerspectiveSchema
+    .safeParse(userGameRoomJson);
 
   if (!userGameRoomDataForPerspectiveParseResult.success) {
     console.error('Error parsing user game room perspective:', userGameRoomDataForPerspectiveParseResult.error);

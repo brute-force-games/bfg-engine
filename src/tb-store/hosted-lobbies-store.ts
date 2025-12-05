@@ -27,11 +27,15 @@ export const TB_HOSTED_LOBBIES_TABLE_KEY = 'hostedLobbies';
 
 // Create the store
 export const hostedLobbiesStore = createStore();
-const persister = createLocalPersister(hostedLobbiesStore, TB_HOSTED_LOBBIES_STORE_NAME);
 
-// Create persister for automatic localStorage persistence
-persister.startAutoLoad();
-persister.startAutoSave();
+// Only create persister if localStorage is available (browser environment)
+let persister: ReturnType<typeof createLocalPersister> | null = null;
+if (typeof localStorage !== 'undefined') {
+  persister = createLocalPersister(hostedLobbiesStore, TB_HOSTED_LOBBIES_STORE_NAME);
+  // Create persister for automatic localStorage persistence
+  persister.startAutoLoad();
+  persister.startAutoSave();
+}
 
 export type GameLobbyUpdateFields = Partial<Omit<GameLobby, 'id' | 'createdAt'>>;
 

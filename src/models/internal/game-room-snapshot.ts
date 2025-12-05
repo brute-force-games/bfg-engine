@@ -1,7 +1,7 @@
-import { GameRoomDbSchema } from "../tinybase/game-room-db";
+import { GameRoomPersistSchema } from "../tinybase/game-room-persist";
 import { getGameMetadata } from "../../game-metadata/games-registry";
 import type { BfgStringifiedBoardTransitionsStr, BfgStringifiedRoomStateStr } from "../types/bfg-branded-string-types";
-import { createBoardTransitionsArraySchema } from "../tinybase/game-board-event";
+import { createTableTransitionsArraySchema } from "../tinybase/game-board-event";
 
 
 export const createHydratedLatestGameSnapshotFromStringifiedData = (
@@ -10,7 +10,7 @@ export const createHydratedLatestGameSnapshotFromStringifiedData = (
 ) => {
   
   const unstringifiedGameRoomState = JSON.parse(stringifiedGameRoomState);
-  const hydratedGameRoomState = GameRoomDbSchema.parse(unstringifiedGameRoomState);
+  const hydratedGameRoomState = GameRoomPersistSchema.parse(unstringifiedGameRoomState);
 
   const gameTitle = hydratedGameRoomState.gameTitle;
   const gameMetadata = getGameMetadata(gameTitle);
@@ -19,7 +19,7 @@ export const createHydratedLatestGameSnapshotFromStringifiedData = (
   }
 
   const unstringifiedBoardEvents = JSON.parse(stringifiedBoardEvents);
-  const BoardTransitionsArraySchema = createBoardTransitionsArraySchema(gameMetadata.schemas);
+  const BoardTransitionsArraySchema = createTableTransitionsArraySchema(gameMetadata.schemas);
 
   const hydratedBoardEventsParseResult = BoardTransitionsArraySchema.safeParse(unstringifiedBoardEvents);
   if (!hydratedBoardEventsParseResult.success) {

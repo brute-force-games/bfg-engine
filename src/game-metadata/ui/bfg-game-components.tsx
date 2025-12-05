@@ -1,67 +1,66 @@
 import { z } from "zod";
 import type { PlayerProfileId, PublicPlayerProfile } from "../..";
 import type { BfgGameImplPublicHistoryAction } from "../../models/game-engine/bfg-game-engine-types";
-import type { GameRoomDb } from "../../models/tinybase/game-room-db";
 import type { GameRoomP2p } from "../../models/p2p/game-room-p2p";
 import type { GameTableSeat } from "../../models/internal/game-room-base";
 import type { BfgGameActionByPlayer, BfgGameActionByHost } from "../metadata-types/game-action-types";
-import type { BfgGameStateForHost, BfgGameStateForPlayer, BfgGameStateForWatcher } from "../metadata-types/game-state-types";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
+import type { GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../models/p2p/game-table-event-p2p";
+import type { BfgGameStep } from "../../models/types/bfg-versions";
 
 
 
-export interface ObserverComponentProps<GSW extends BfgGameStateForWatcher> {
+export interface ObserverScreenComponentProps<
+  WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType,
+  WatcherGameEventPerspectiveSchema extends z.ZodType = z.ZodType
+> {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 
-  gameState: z.infer<GSW>
+  gameState: z.infer<WatcherGamePerspectiveSchema>
   hostPlayerProfileId: PlayerProfileId
   
   observedPlayerProfileId: PlayerProfileId | null
   observedPlayerSeat: GameTableSeat | null
 
-  latestWatcherGameEvent: GameTableEventForWatcherP2p
-  watcherGameEvents: GameTableEventForWatcherP2p[]
+  latestWatcherGameEvent: GameTableEventForWatcherP2p<WatcherGameEventPerspectiveSchema>
+  watcherGameEvents: GameTableEventForWatcherP2p<WatcherGameEventPerspectiveSchema>[]
 }
 
 
-export interface PlayerComponentProps<
-  GSP extends BfgGameStateForPlayer,
-  // GPA extends BfgGameActionByPlayer,
-  // PPK extends BfgPrivatePlayerKnowledgeImplState | null = null,
+export interface PlayerScreenComponentProps<
+  PlayerGamePerspectiveSchema extends z.ZodType = z.ZodType,
+  PlayerGameEventPerspectiveSchema extends z.ZodType = z.ZodType
 > {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 
-  gameState: z.infer<GSP>
-  // myPrivatePlayerKnowledge: PPK | null
+  gameState: z.infer<PlayerGamePerspectiveSchema>
   hostPlayerProfileId: PlayerProfileId
 
   currentPlayerProfileId: PlayerProfileId
   currentPlayerSeat: GameTableSeat
 
-  latestPlayerGameEvent: GameTableEventForPlayerP2p
-  playerGameEvents: GameTableEventForPlayerP2p[]
+  latestPlayerGameEvent: GameTableEventForPlayerP2p<PlayerGameEventPerspectiveSchema>
+  playerGameEvents: GameTableEventForPlayerP2p<PlayerGameEventPerspectiveSchema>[]
   
   onPlayerAction: <PGA extends BfgGameActionByPlayer>(playerAction: PGA) => void
 }
 
 
-export interface GameHostComponentProps<
-  GSH extends BfgGameStateForHost,
-  // GAH extends BfgGameActionByHost,
+export interface GameHostScreenComponentProps<
+  HostGameStateSchema extends z.ZodType = z.ZodType
 > {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
 
-  gameState: GSH
+  gameState: z.infer<HostGameStateSchema>
   hostPlayerProfileId: PlayerProfileId
 
   actingAsPlayerProfileId: PlayerProfileId | null
   actingAsPlayerSeat: GameTableSeat | null
 
-  latestHostGameEvent: GameTableEventForHostP2p
-  hostGameEvents: GameTableEventForHostP2p[]
+  latestHostGameEvent: BfgGameStep
+  hostGameEvents: BfgGameStep[]
   
   onHostAction: <HGA extends BfgGameActionByHost>(hostAction: HGA) => void
 }
@@ -70,12 +69,14 @@ export interface GameHistoryComponentProps {
   gameActions: BfgGameImplPublicHistoryAction[];
 }
 
-export interface GameSpineComponentProps<GSW extends BfgGameStateForWatcher> {
+export interface GameSpineComponentProps<
+  WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType
+> {
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
   orientation: 'horizontal' | 'vertical';
 
-  gameState: z.infer<GSW>
+  gameState: z.infer<WatcherGamePerspectiveSchema>
 }
 
 
@@ -122,30 +123,30 @@ export interface GameSpineComponentProps<GSW extends BfgGameStateForWatcher> {
 // export type BfgGameEngineComponents = ReturnType<typeof createBfgGameEngineComponents>;
 
 
-export type PlayerSeatGameState<
-  GSP extends BfgGameStateForPlayer,
-> = {
-  playerSeat: GameTableSeat,
-  playerGameState: GSP,
-};
-
-export interface IBfgGameEngineAccessLevelConverters
-// <
-//   GSH extends BfgGameStateForHost,
+// export type PlayerSeatGameState<
 //   GSP extends BfgGameStateForPlayer,
-//   GSW extends BfgGameStateForWatcher,
-// >
-{
-  hostToPlayerSeatGameStates: <
-    GSH extends BfgGameStateForHost,
-    GSP extends BfgGameStateForPlayer,
-  >(gameRoom: GameRoomDb, hostState: GSH) => ReadonlyArray<PlayerSeatGameState<GSP>>;
+// > = {
+//   playerSeat: GameTableSeat,
+//   playerGameState: GSP,
+// };
 
-  hostToWatcherAccessLevel: <
-    GSH extends BfgGameStateForHost,
-    GSW extends BfgGameStateForWatcher,
-  >(hostState: GSH) => GSW;
-}
+// export interface IBfgGameEngineAccessLevelConverters
+// // <
+// //   GSH extends BfgGameStateForHost,
+// //   GSP extends BfgGameStateForPlayer,
+// //   GSW extends BfgGameStateForWatcher,
+// // >
+// {
+//   hostToPlayerSeatGameStates: <
+//     GSH extends BfgGameStateForHost,
+//     GSP extends BfgGameStateForPlayer,
+//   >(gameRoom: GameRoomDb, hostState: GSH) => ReadonlyArray<PlayerSeatGameState<GSP>>;
+
+//   hostToWatcherAccessLevel: <
+//     GSH extends BfgGameStateForHost,
+//     GSW extends BfgGameStateForWatcher,
+//   >(hostState: GSH) => GSW;
+// }
 
 
 // export interface IBfgGameEngineComponents<
@@ -164,10 +165,16 @@ export interface IBfgGameEngineAccessLevelConverters
 
 
 
-export type BfgGameEngineComponents = {
-  ObserverComponent: <GSW extends BfgGameStateForWatcher>(props: ObserverComponentProps<GSW>) => React.ReactNode;
-  PlayerComponent: <GSP extends BfgGameStateForPlayer>(props: PlayerComponentProps<GSP>) => React.ReactNode;
-  HostComponent: <GSH extends BfgGameStateForHost>(props: GameHostComponentProps<GSH>) => React.ReactNode;
+export type BfgGameEngineComponents<
+  WatcherGamePerspectiveSchema extends z.ZodType = z.ZodType,
+  PlayerGamePerspectiveSchema extends z.ZodType = z.ZodType,
+  HostGameStateSchema extends z.ZodType = z.ZodType,
+  WatcherGameEventPerspectiveSchema extends z.ZodType = z.ZodType,
+  PlayerGameEventPerspectiveSchema extends z.ZodType = z.ZodType
+> = {
+  ObserverScreenComponent: (props: ObserverScreenComponentProps<WatcherGamePerspectiveSchema, WatcherGameEventPerspectiveSchema>) => React.ReactNode;
+  PlayerScreenComponent: (props: PlayerScreenComponentProps<PlayerGamePerspectiveSchema, PlayerGameEventPerspectiveSchema>) => React.ReactNode;
+  HostScreenComponent: (props: GameHostScreenComponentProps<HostGameStateSchema>) => React.ReactNode;
   HistoryComponent?: (props: GameHistoryComponentProps) => React.ReactNode;
-  GameSpineComponent: <GSW extends BfgGameStateForWatcher>(props: GameSpineComponentProps<GSW>) => React.ReactNode;
+  GameSpineComponent: (props: GameSpineComponentProps<WatcherGamePerspectiveSchema>) => React.ReactNode;
 }

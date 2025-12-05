@@ -1,24 +1,26 @@
-import { type GameTableEventWithTransition, type GameTableStepHostP2p } from "../../models/game-table/game-table-event";
+import type { z } from "zod";
+import { type GameTableEventForGameStep } from "../../models/game-table/game-table-event";
 import { type GameRoomP2p } from "../../models/p2p/game-room-p2p";
 import { RoomPhase } from "../../models/internal/table-phase";
-import type { IGameRegistry } from "../../game-metadata/games-registry";
-import type { BfgGameActionByHost, BfgGameHostActionOutcome } from "../../game-metadata/metadata-types/game-action-types";
-import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
-import type { GameStateTransitionForDb } from "../../models/game-table/game-table-event-db";
+import type { GenericGameMetadata, IGameRegistry } from "../../game-metadata/games-registry";
+import type { BfgGameActionByHost } from "../../game-metadata/metadata-types/game-action-types";
+import type { BfgGameStep } from "../../models/types/bfg-versions";
+// import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
+// import type { GameStateTransitionForDb } from "../../models/game-table/game-table-event-db";
 
 
 export type HostApplyHostActionResult = {
   resultTablePhase: RoomPhase;
   gameRoom: GameRoomP2p;
-  gameEvent: GameTableEventWithTransition;
-  gameEventOutcome: BfgGameHostActionOutcome;
-  nextGameState: BfgGameStateForHost;
+  gameEvent: GameTableEventForGameStep;
+  gameEventOutcome: z.infer<GenericGameMetadata['schemas']['hostGameEventOutcomeSchema']>;
+  nextGameState: z.infer<GenericGameMetadata['schemas']['hostGameStateSchema']>;
 }
 
 export const asHostApplyHostAction = async (
   gameRegistry: IGameRegistry,
   gameRoom: GameRoomP2p,
-  latestGameStep: GameTableStepHostP2p,
+  latestGameStep: BfgGameStep,
   hostAction: BfgGameActionByHost
 ): Promise<HostApplyHostActionResult> => {
   
@@ -53,22 +55,25 @@ export const asHostApplyHostAction = async (
 
   // const updatedWatcherState = gameMetadata.accessLevelAdapters.hostToWatcherAccessLevelAdapter(updatedGameState);
 
-  const transition: GameStateTransitionForDb = {
-    event: hostAction,
-    change: {
-      ...afterActionResult.hostActionOutcome,
-      description: afterActionSummary,
-    },
-    nextBoardState: updatedGameState,
-  }
-
-  const hostActionStep: GameTableEventWithTransition = {
-    // gameTableId: gameRoom.id,
-    createdAt: now,
+  const gameStep = {
     stepIndex: nextStepIndex,
+    createdAt: now,
+    event: hostAction,
+    // outcome: {
+    //   ...afterActionResult.hostActionOutcome,
+    //   description: afterActionSummary,
+    // },
+    outcome: afterActionResult.hostActionOutcome,
+    nextBoardState: updatedGameState,
+  };
+
+  // Nested structure - gameStep contains the step details, top level has metadata
+  const hostActionStep: GameTableEventForGameStep = {
+    stepIndex: nextStepIndex,
+    createdAt: now,
     source: 'game-table-action-source-host',
     eventType: 'game-table-action-host-action',
-    transitionForHost: transition,
+    gameStep,
   }
 
   const retVal: HostApplyHostActionResult = {

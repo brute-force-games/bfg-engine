@@ -1,9 +1,8 @@
-import { GameRoomDb } from "../tinybase/game-room-db";
+import { GameRoomPersist } from "../tinybase/game-room-persist";
 import { GameTableSeat } from "../internal/game-room-base";
 import { PlayerProfileId } from "../types/bfg-branded-uuids";
-import type { GameTableEventWithTransition } from "../game-table/game-table-event";
-import type { BfgGameStateForHost } from "../../game-metadata/metadata-types/game-state-types";
-import type { BfgGameActionByHost, BfgGameEvent } from "../../game-metadata/metadata-types/game-action-types";
+// import type { GameTableEventForGameStep } from "../game-table/game-table-event";
+import type { z } from "zod";
 
 // // Branded types for JSON strings based on their schema
 // declare const GameStateJsonBrand: unique symbol;
@@ -46,25 +45,25 @@ import type { BfgGameActionByHost, BfgGameEvent } from "../../game-metadata/meta
 //   onGameAction: (gameState: z.infer<GS>, gameAction: z.infer<GA>) => void;
 // }
 
-export interface GameHistoryComponentProps<GSH extends BfgGameStateForHost> {
+export interface GameHistoryComponentProps<HostGameStateSchema extends z.ZodType = z.ZodType> {
   playerSeat: GameTableSeat;
-  gameState: GSH;
-  gameActions: GameTableEventWithTransition[];
+  gameState: z.infer<HostGameStateSchema>;
+  gameActions: GameTableEventForGameStep[];
 }
 
 export interface GameStateHostComponentProps<
-  GSH extends BfgGameStateForHost,
-  GEv extends BfgGameEvent,
-  GAH extends BfgGameActionByHost,
+  HostGameStateSchema extends z.ZodType = z.ZodType,
+  HostGameEventSchema extends z.ZodType = z.ZodType,
+  HostGameActionSchema extends z.ZodType = z.ZodType,
 > {
   hostPlayerProfileId: PlayerProfileId;
   myPlayerProfileId: PlayerProfileId | null;
   myPlayerSeat: GameTableSeat | null;
-  gameTable: GameRoomDb;
-  gameState: GSH;
-  mostRecentAction: GEv;
-  onGameAction: (gameTable: GameRoomDb, gameState: GSH, gameAction: GEv) => void;
-  onHostAction: (gameTable: GameRoomDb, gameState: GSH, hostAction: GAH) => void;
+  gameTable: GameRoomPersist;
+  gameState: z.infer<HostGameStateSchema>;
+  mostRecentAction: z.infer<HostGameEventSchema>;
+  onGameAction: (gameTable: GameRoomPersist, gameState: z.infer<HostGameStateSchema>, gameAction: z.infer<HostGameEventSchema>) => void;
+  onHostAction: (gameTable: GameRoomPersist, gameState: z.infer<HostGameStateSchema>, hostAction: z.infer<HostGameActionSchema>) => void;
 }
 
 

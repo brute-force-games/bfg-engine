@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { type BfgGameInstanceId, type BfgGameRoomId, type BfgGameTableId } from "../../models/types/bfg-branded-uuids";
-import { GameRoomDb, type UpdatedGameRoom } from "../../models/tinybase/game-room-db";
+import { GameRoomPersist, type UpdatedGameTable } from "../../models/tinybase/game-room-persist";
 import { ALL_PLAYER_SEATS } from "../../models/internal/game-room-base";
 import { GameLobby } from "../../models/p2p-lobby";
 import type { IGameRegistry } from "@bfg-engine/game-metadata/games-registry";
 import { ROOM_PHASE_GAME_IN_PROGRESS } from "../../models/internal/table-phase";
 import { saveNewHostedGame } from "../../tb-store/games-archives-store";
-import { createGameStateTransitionForDbSchema } from "../../models/game-table/game-table-event-db";
-import { createGameTableEventWithTransitionSchema } from "../../models/game-table/game-table-event";
+import type { BfgGameStepIndex, BfgTimestamp } from "../../models/types/bfg-versions";
+import type { GameTableEventForDb } from "../../game-metadata/metadata-types";
+// import type { BfgGameRoomEvent } from "../../game-metadata/metadata-types";
 
 
 // const createNewGameTableFromLobbyState = (
@@ -67,7 +68,7 @@ const createNewGameRoomFromGameSpecificState = (
   newGameTableId: BfgGameTableId,
   // gameMetadata: GenericGameMetadata,
   // gameStateTransition: GameStateTransition,
-): GameRoomDb => {
+): GameRoomPersist => {
 
   const gameTitle = lobbyState.gameTitle;
   if (!gameTitle) {
@@ -114,7 +115,7 @@ const createNewGameRoomFromGameSpecificState = (
   const playerCount = playerPool.length;
 
   // Fill out p1-p8 from the lobby player pool array
-  const retVal: GameRoomDb = {
+  const retVal: GameRoomPersist = {
     id: newGameRoomId,
     gameTableId: newGameTableId,
 
@@ -145,7 +146,7 @@ export const asHostStartNewGame = async (
   newGameInstanceId: BfgGameInstanceId,
   newGameRoomId: BfgGameRoomId,
   newGameTableId: BfgGameTableId,
-): Promise<UpdatedGameRoom> => {
+): Promise<UpdatedGameTable> => {
 
   console.log("DB: asHostStartGame", lobbyState);
 
@@ -156,48 +157,56 @@ export const asHostStartNewGame = async (
 
   const newGameRoom = createNewGameRoomFromGameSpecificState(lobbyState, newGameRoomId, newGameTableId);
 
-  const now = Date.now();
+  const now = Date.now() as BfgTimestamp;
   const metadata = gameRegistry.getGameMetadata(gameTitle);
   const gameProcessor = metadata.gameProcessor;
+  const gameSchemas = metadata.schemas;
 
   const startGameAction = gameProcessor.createHostStartsGameAction(lobbyState);
   const startGameOutcome = gameProcessor.createHostOpensGameOutcome(startGameAction);
   const startGameState = gameProcessor.createHostOpensGameState(startGameAction);
 
-  const GameStateTransitionSchema = createGameStateTransitionForDbSchema(metadata.schemas);
-  type GameStateTransition = z.infer<typeof GameStateTransitionSchema>;
+  // Type for game step can be extracted when needed:
+  type BfgGameStep = z.infer<typeof gameSchemas.gameStepSchema>;
+  const bfgGameStep: BfgGameStep = {
+    // stepIndex: 0 as BfgGameStepIndex,
+    // createdAt: now as BfgTimestamp,
+    source: 'host',
+    action: startGameAction,
+    outcome: startGameOutcome,
+    // nextBoardState: startGameState,
+  }
+  
+  const GameRoomEventSchema = gameSchemas.gameTableEventSchema;
+  // type GameRoomEvent = z.infer<typeof GameRoomEventSchema>;
 
-  const gameStateTransition: GameStateTransition = {
-    event: startGameAction,
-    change: {
-      ...startGameOutcome,
-      description: startGameOutcome.description,
-    },
+  const gameRoomEvent: GameTableEventForDb = {
+    createdAt: now,
+    stepIndex: 0 as BfgGameStepIndex,
+    source: "game-table-action-source-host",
+    eventType: "game-table-action-host-starts-setup",
+    event: bfgGameStep,
     nextBoardState: startGameState,
   }
 
-  const GameTableEventWithTransitionSchema = createGameTableEventWithTransitionSchema(metadata.schemas);
-  type GameTableEventWithTransition = z.infer<typeof GameTableEventWithTransitionSchema>;
+  const gameRoomEventParseResult = GameRoomEventSchema.safeParse(gameRoomEvent);
+  if (!gameRoomEventParseResult.success) {
+    console.error('Error validating game room event:', gameRoomEventParseResult.error);
+    throw new Error('Invalid game room event');
+  }
+  const validatedGameRoomEvent = gameRoomEventParseResult.data;
 
-  const gameTableEventWithTransition: GameTableEventWithTransition = {
-    stepIndex: 0,
-    source: "game-table-action-source-host",
-    eventType: "game-table-action-host-starts-setup",
-    transitionForHost: gameStateTransition,
-    createdAt: now,
+  console.log("ADDING GAME ACTION", gameRoomEvent);
+  const saveResult = await saveNewHostedGame(newGameInstanceId, newGameRoomId, newGameTableId, newGameRoom, validatedGameRoomEvent);
+  
+  if (!saveResult.success) {
+    console.error('Failed to save new hosted game:', saveResult.error);
+    throw new Error(`Failed to save new hosted game: ${saveResult.error}`);
   }
   
-  const gameTableEventWithTransitionParseResult = GameTableEventWithTransitionSchema.safeParse(gameTableEventWithTransition);
-  if (!gameTableEventWithTransitionParseResult.success) {
-    console.error('Error validating game table event with transition:', gameTableEventWithTransitionParseResult.error);
-    throw new Error('Invalid game table event with transition');
-  }
-  const validatedGameTableEventWithTransition = gameTableEventWithTransitionParseResult.data;
+  console.log('Successfully saved new hosted game:', newGameInstanceId);
 
-  console.log("ADDING GAME ACTION", gameTableEventWithTransition);
-  await saveNewHostedGame(newGameInstanceId, newGameRoomId, newGameTableId, newGameRoom, validatedGameTableEventWithTransition);
-
-  const retVal: UpdatedGameRoom = {
+  const retVal: UpdatedGameTable = {
     gameRoom: newGameRoom,
     gameState: startGameState,
   };

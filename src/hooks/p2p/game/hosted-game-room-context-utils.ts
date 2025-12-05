@@ -1,14 +1,27 @@
 import type { GameRoomP2p } from "../../../models/p2p/game-room-p2p";
-import type { GameTableEventForHostP2p, GameTableEventForPlayerP2p, GameTableEventForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
-import type { GameRoomDb } from "../../../models/tinybase/game-room-db";
-import type { GameBoardEventForDb } from "../../../models/tinybase/game-board-event";
-import type { BfgGameInstanceId } from "../../../models/types/bfg-branded-uuids";
-import type { UserGameRoomDataForHost as UserGameRoomDataForHost, UserGameRoomDataForPlayer as UserGameRoomDataForPlayer, UserGameRoomDataForWatcher as UserGameRoomDataForWatcher } from "./user-game-room-data";
+import type { GameRoomPersist } from "../../../models/tinybase/game-room-persist";
+// import type { GameTableEventForDb } from "../../../models/tinybase/game-board-event";
+import type { UserGameRoomDataForPlayer, UserGameRoomDataForWatcher } from "./user-game-room-data";
 import type { GameTableSeat } from "../../../models/internal/game-room-base";
-import type { AllAssignedBfgGameStateForPlayers } from "../../../game-metadata/metadata-types/game-state-types";
+import type { BfgSupportedGameTitle } from "../../../models/game-box-definition";
+import { getGameMetadata } from "../../../game-metadata/games-registry";
+import { useGameRegistry } from "../../games-registry/games-registry-hook";
+import type { GameTableEventForDb } from "../../../game-metadata/metadata-types";
+
+// Define UserGameRoomDataForHost type
+export type UserGameRoomDataForHost = {
+  // gameInstanceId: BfgGameInstanceId;
+  accessLevel: 'host';
+  role: 'host';
+  gameRoom: GameRoomP2p;
+  hostGameHistory: any[];
+};
+
+// Define AllAssignedBfgGameStateForPlayers type
+export type AllAssignedBfgGameStateForPlayers = UserGameRoomDataForPlayer[];
 
 
-export const convertGameRoomDbToP2p = (gameRoomDb: GameRoomDb): GameRoomP2p => {
+export const convertGameRoomDbToP2p = (gameRoomDb: GameRoomPersist): GameRoomP2p => {
   const retVal: GameRoomP2p = {
     id: gameRoomDb.id,
     gameTitle: gameRoomDb.gameTitle,
@@ -25,62 +38,69 @@ export const convertGameRoomDbToP2p = (gameRoomDb: GameRoomDb): GameRoomP2p => {
 };
 
 
-export const convertGameBoardEventDbToHostP2p = (gameBoardEventDb: GameBoardEventForDb): GameTableEventForHostP2p => {
-  // With the consolidation to BfgGameAction, events from DB should already conform to BfgGameAction
-  // The constraint ensures gameEventSchema extends z.ZodType<BfgGameAction>, so the event conforms to the discriminated union
-  // TypeScript can't automatically verify the discriminated union structure, so we use a type assertion
-  const event = gameBoardEventDb.transitionForHost.event;
+export const convertGameRoomEventDbToHostP2p = (
+  gameBoardEventDb: GameTableEventForDb,
+  gameTitle: BfgSupportedGameTitle,
+): any => {
+  // Get game metadata and schemas for this specific game
+  const gameMetadata = getGameMetadata(gameTitle);
+  if (!gameMetadata) {
+    throw new Error(`Game metadata not found for game title: ${gameTitle}`);
+  }
 
-  const retVal: GameTableEventForHostP2p = {
-    createdAt: gameBoardEventDb.createdAt,
-    stepIndex: gameBoardEventDb.stepIndex,
-    event,
-    outcome: gameBoardEventDb.transitionForHost.change,
-    nextGameHostState: gameBoardEventDb.transitionForHost.nextBoardState,
-  };
+  const gameTableEventSchema = gameMetadata.schemas.gameTableEventSchema;
+
+  const bfgGameStep = gameTableEventSchema.safeParse(gameBoardEventDb);
+
+  if (!bfgGameStep.success) {
+    console.error('Error parsing game step:', bfgGameStep.error);
+    throw new Error('Error parsing game step: ' + bfgGameStep.error.message);
+  }
+
+  const retVal = bfgGameStep.data;
 
   return retVal;
 };
 
 
-export const convertGameBoardEventDbToPlayerP2p = (
-  gameBoardEventDb: GameBoardEventForDb,
-  playerSeat: GameTableSeat,
-): GameTableEventForPlayerP2p => {
-  // With the consolidation to BfgGameAction, events from DB should already conform to BfgGameAction
-  // The constraint ensures gameEventSchema extends z.ZodType<BfgGameAction>, so the event conforms to the discriminated union
-  // TypeScript can't automatically verify the discriminated union structure, so we use a type assertion
-  // Using double assertion (as unknown as) because TypeScript is strict about the discriminated union structure
-  const retVal: GameTableEventForPlayerP2p = {
-    createdAt: gameBoardEventDb.createdAt,
-    stepIndex: gameBoardEventDb.stepIndex,
-    event: gameBoardEventDb.transitionForHost.event,
-    outcome: gameBoardEventDb.transitionForHost.change,
-    nextGamePlayerState: {
-      ...gameBoardEventDb.transitionForHost.nextBoardState,
-      playerSeat,
-    },
-  };
+// export const convertGameBoardEventDbToPlayerP2p = (
+//   gameBoardEventDb: GameBoardEventForDb,
+//   playerSeat: GameTableSeat,
+// ): any => {
+//   // With the consolidation to BfgGameAction, events from DB should already conform to BfgGameAction
+//   // The constraint ensures gameEventSchema extends z.ZodType<BfgGameAction>, so the event conforms to the discriminated union
+//   // TypeScript can't automatically verify the discriminated union structure, so we use a type assertion
+//   // Using double assertion (as unknown as) because TypeScript is strict about the discriminated union structure
+//   const retVal: any = {
+//     createdAt: gameBoardEventDb.createdAt,
+//     stepIndex: gameBoardEventDb.stepIndex,
+//     event: gameBoardEventDb.transitionForHost.event,
+//     outcome: gameBoardEventDb.transitionForHost.change,
+//     nextGamePlayerState: {
+//       ...gameBoardEventDb.gameStep.nextBoardState,
+//       playerSeat,
+//     },
+//   };
   
-  return retVal;
-}
+//   return retVal;
+// }
 
 
 
-export const convertGameBoardEventDbToWatcherP2p = (gameBoardEventDb: GameBoardEventForDb): GameTableEventForWatcherP2p => {
-  // With the consolidation to BfgGameAction, events from DB should already conform to BfgGameAction
-  // The constraint ensures gameEventSchema extends z.ZodType<BfgGameAction>, so the event conforms to the discriminated union
-  // TypeScript can't automatically verify the discriminated union structure, so we use a type assertion
-  const event = gameBoardEventDb.transitionForHost.event;
+// export const convertGameBoardEventDbToWatcherP2p = (gameBoardEventDb: GameBoardEventForDb): any => {
+//   // With the consolidation to BfgGameAction, events from DB should already conform to BfgGameAction
+//   // The constraint ensures gameEventSchema extends z.ZodType<BfgGameAction>, so the event conforms to the discriminated union
+//   // TypeScript can't automatically verify the discriminated union structure, so we use a type assertion
+//   const event = gameBoardEventDb.transitionForHost.event;
   
-  return {
-    createdAt: gameBoardEventDb.createdAt,
-    stepIndex: gameBoardEventDb.stepIndex,
-    event,
-    outcome: gameBoardEventDb.transitionForHost.change,
-    nextGameWatcherState: gameBoardEventDb.transitionForHost.nextBoardState,
-  };
-}
+//   return {
+//     createdAt: gameBoardEventDb.createdAt,
+//     stepIndex: gameBoardEventDb.stepIndex,
+//     event,
+//     outcome: gameBoardEventDb.transitionForHost.change,
+//     nextGameWatcherState: gameBoardEventDb.transitionForHost.nextBoardState,
+//   };
+// }
 
 
 // export const convertGameBoardEventDbToPlayerP2p = (gameBoardEventDb: GameBoardEventForDb): GameTableEventForPlayerP2p => {
@@ -96,17 +116,18 @@ export const convertGameBoardEventDbToWatcherP2p = (gameBoardEventDb: GameBoardE
 
 
 export const createHostGameRoomData = (
-  gameInstanceId: BfgGameInstanceId,
-  hostedGame: GameRoomDb,
-  hostedGameBoardEvents: GameBoardEventForDb[],
+  // gameInstanceId: BfgGameInstanceId,
+  hostedGame: GameRoomPersist,
+  hostedGameBoardEvents: GameTableEventForDb[],
 ): UserGameRoomDataForHost => {
 
   const gameRoomP2p = convertGameRoomDbToP2p(hostedGame);
-  const hostGameHistory = hostedGameBoardEvents
-    .map(convertGameBoardEventDbToHostP2p);
+  
+  const hostGameHistory = hostedGameBoardEvents.map((gameBoardEventDb) => 
+    convertGameRoomEventDbToHostP2p(gameBoardEventDb, hostedGame.gameTitle));
 
   const retVal: UserGameRoomDataForHost = {
-    gameInstanceId,
+    // gameInstanceId,
     accessLevel: 'host',
     role: 'host',
     gameRoom: gameRoomP2p,
@@ -130,18 +151,19 @@ export const createHostGameRoomData = (
 
 
 export const createSinglePlayerGameRoomData = (
-  gameInstanceId: BfgGameInstanceId,
+  // gameInstanceId: BfgGameInstanceId,
   playerSeat: GameTableSeat,
-  hostedGame: GameRoomDb,
-  hostedGameBoardEvents: GameBoardEventForDb[],
+  hostedGame: GameRoomPersist,
+  hostedGameBoardEvents: GameTableEventForDb[],
 ): UserGameRoomDataForPlayer => {
 
   const gameRoomP2p = convertGameRoomDbToP2p(hostedGame);
+
   const playerGameHistory = hostedGameBoardEvents.map((gameBoardEventDb) => 
-    convertGameBoardEventDbToPlayerP2p(gameBoardEventDb, playerSeat));
+    convertGameRoomEventDbToHostP2p(gameBoardEventDb, hostedGame.gameTitle));
 
   const retVal: UserGameRoomDataForPlayer = {
-    gameInstanceId,
+    // gameInstanceId,
     accessLevel: 'player',
     role: 'player',
     playerSeat,
@@ -154,9 +176,9 @@ export const createSinglePlayerGameRoomData = (
 
 
 export const createAllPlayersGameRoomData = (
-  gameInstanceId: BfgGameInstanceId,
-  hostedGame: GameRoomDb,
-  hostedGameBoardEvents: GameBoardEventForDb[],
+  // gameInstanceId: BfgGameInstanceId,
+  hostedGame: GameRoomPersist,
+  hostedGameBoardEvents: GameTableEventForDb[],
 ): AllAssignedBfgGameStateForPlayers => {
 
   // const gameRoomP2p = convertGameRoomDbToP2p(hostedGame);
@@ -165,16 +187,16 @@ export const createAllPlayersGameRoomData = (
   //   createSinglePlayerGameHistory(gameInstanceId, playerSeat, hostedGame, hostedGameBoardEvents));
 
   const retVal = allPlayerSeats.map((playerSeat) =>
-    createSinglePlayerGameRoomData(gameInstanceId, playerSeat, hostedGame, hostedGameBoardEvents));
+    createSinglePlayerGameRoomData(playerSeat, hostedGame, hostedGameBoardEvents));
 
   return retVal;
 }
 
 
 export const createWatcherGameRoomData = (
-  gameInstanceId: BfgGameInstanceId,
-  hostedGame: GameRoomDb,
-  hostedGameBoardEvents: GameBoardEventForDb[],
+  // gameInstanceId: BfgGameInstanceId,
+  hostedGame: GameRoomPersist,
+  hostedGameTableEvents: GameTableEventForDb[],
 ): UserGameRoomDataForWatcher => {
   // Convert GameBoardEventForDb[] to GameTableEventForWatcherP2p[]
   // const watcherGameHistory: GameTableEventForWatcherP2p[] = hostedGameBoardEvents.map((boardEvent) => ({
@@ -189,10 +211,14 @@ export const createWatcherGameRoomData = (
   // }));
 
   const gameRoomP2p = convertGameRoomDbToP2p(hostedGame);
-  const watcherGameHistory = hostedGameBoardEvents.map(convertGameBoardEventDbToWatcherP2p);
+  const gameRegistry = useGameRegistry();
+  const gameMetadata = gameRegistry.getGameMetadata(hostedGame.gameTitle);
+  const toWatcherGameEventsFn = gameMetadata.gameEventOutcomePerspectiveAdapters.hostEventTransitionToWatcherAccessLevelAdapter;
+  const watcherGameHistory = hostedGameTableEvents.map((tableEvent) => 
+    toWatcherGameEventsFn(tableEvent.outcome, tableEvent.nextBoardState));
 
   const retVal: UserGameRoomDataForWatcher = {
-    gameInstanceId,
+    // gameInstanceId,
     accessLevel: 'observer',
     role: 'watcher',
     gameRoom: gameRoomP2p,

@@ -40,7 +40,7 @@ export const usePublicGameTableForObserverFromHost = (
 
   const [snapshot, metadata] = values;
   const watcherGameEvents = snapshot.boardEvents.map(boardEvent => 
-    metadata.accessLevelAdapters.hostEventTransitionToWatcherAccessLevelAdapter(boardEvent)
+    metadata.gameEventOutcomePerspectiveAdapters.hostEventTransitionToWatcherAccessLevelAdapter(boardEvent.outcome, boardEvent.nextBoardState)
   );
   const latestWatcherGameEvent = watcherGameEvents[watcherGameEvents.length - 1];
 

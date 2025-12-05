@@ -1,7 +1,7 @@
-import { z } from "zod";
+// import { z } from "zod";
 import { useGameRegistry } from "../../hooks/games-registry/games-registry-hook";
 import { Container, Typography, Stack, Box } from "../bfg-ui";
-import type { PlayerComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
+import type { PlayerScreenComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { IPlayerBfgGameDetails } from "@bfg-engine/hooks/p2p/game/p2p-game-types";
 
 
@@ -34,7 +34,9 @@ export const PlayerGameView =
     )
   }
 
-  const gameSpecificStateRaw = latestAction.nextGamePlayerState;
+  // const gameSpecificStateRaw = latestAction.nextGamePlayerPerspective;
+  const gameSpecificStateRaw = latestAction;
+  
 
   // if (!latestAction) {
   //   return <Typography variant="body1">No game actions yet...</Typography>;
@@ -101,7 +103,7 @@ export const PlayerGameView =
   //   )
   // }
 
-  type GameSpecificState = z.infer<typeof gameMetadata.schemas.playerGameStateSchema>;
+  // type GameSpecificState = z.infer<typeof gameMetadata.schemas.playerGamePerspectiveSchema>;
   
   // AssignedBfgGameStateForPlayer extends BfgGameStateForPlayer and adds playerSeat
   // We need to extract just the game state part (without playerSeat) for the component
@@ -109,7 +111,7 @@ export const PlayerGameView =
   const { playerSeat, ...gameStateWithoutSeat } = gameSpecificStateRaw;
   
   // Validate the gameState to ensure all required properties are present
-  const gameStateParseResult = gameMetadata.schemas.playerGameStateSchema.safeParse(gameStateWithoutSeat);
+  const gameStateParseResult = gameMetadata.schemas.playerGameStatePerspectiveSchema.safeParse(gameStateWithoutSeat);
   if (!gameStateParseResult.success) {
     console.error('❌ Player game state validation failed:', gameStateParseResult.error);
     console.error('❌ Raw game state:', gameSpecificStateRaw);
@@ -118,7 +120,7 @@ export const PlayerGameView =
   }
   const gameSpecificState = gameStateParseResult.data;
 
-  const playerGameComponentProps: PlayerComponentProps<GameSpecificState>
+  const playerGameComponentProps: PlayerScreenComponentProps<typeof gameMetadata.schemas.playerGameStatePerspectiveSchema>
   // <
   //   GameSpecificState,
     // z.infer<typeof zodPlayerActionSchema>,
@@ -140,7 +142,7 @@ export const PlayerGameView =
     playerGameEvents,
     onPlayerAction,
   };
-  const playerGameRepresentation = gameMetadata.components.PlayerComponent(playerGameComponentProps);
+  const playerGameRepresentation = gameMetadata.components.PlayerScreenComponent(playerGameComponentProps);
 
   return (
     <Box>

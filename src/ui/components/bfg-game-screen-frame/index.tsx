@@ -7,12 +7,9 @@ import { BfgGameSpineNavBar } from "../bfg-nav-bar/bfg-game-spine-nav-bar";
 import { BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
 import { type GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import { GameLogPanel } from "../game-log-panel";
-import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { AppBarTabsConfig } from "../bfg-app-bar/tabs-config";
 import { OptionalGameContext } from "@bfg-engine/hooks/p2p/game/use-optional-game-context";
-import type { GameTableEventWithTransitionForWatcherP2p } from "../../../models/p2p/game-table-event-p2p";
-import type { GameTableEventWithTransition } from "../../../models/game-table/game-table-event";
-import { convertWatcherEventToBoardEvent } from "../../../models/game-table/game-table-event-converter";
+import type { z } from "zod";
 
 
 // Fixed width for side panels (log panel and game spine)
@@ -38,18 +35,27 @@ const FixedWidthPanel = ({ children }: FixedWidthPanelProps) => {
   );
 };
 
-interface BfgGameScreenFrameProps<TTabId extends string = string> {
+// type SCHEMAS = 'schemas';
+
+interface BfgGameScreenFrameProps<
+  TTabId extends string = string,
+  TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata
+> {
   tabsConfig: AppBarTabsConfig<TTabId> | null;
-  gameMetadata: BfgGameEngineMetadata;
+  gameMetadata: TGameMetadata;
   gameRoom: GameRoomP2p;
   allPlayerProfiles: Map<PlayerProfileId, PublicPlayerProfile>;
-  gameState: BfgGameStateForWatcher | null;
-  boardEvents: GameTableEventWithTransitionForWatcherP2p[];
+  gameState: z.infer<TGameMetadata['schemas']['watcherGameStatePerspectiveSchema']> | null;
+  // boardEvents: GameTableEventWithTransitionForWatcherP2p[];
+  boardEvents: z.infer<TGameMetadata['schemas']['gameTableEventSchema']>[];
 
   children: React.ReactNode;
 }
 
-export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGameScreenFrameProps<TTabId>) => {
+export const BfgGameScreenFrame = <
+  TTabId extends string = string,
+  TGameMetadata extends BfgGameEngineMetadata = BfgGameEngineMetadata
+>(props: BfgGameScreenFrameProps<TTabId, TGameMetadata>) => {
 
   const { tabsConfig, gameMetadata, gameRoom, allPlayerProfiles, gameState, boardEvents, children } = props;
 
@@ -124,13 +130,9 @@ export const BfgGameScreenFrame = <TTabId extends string = string>(props: BfgGam
       playerDetailsLineFn={playerDetailsLineFn}
     />;
     
-  const convertedBoardEvents: GameTableEventWithTransition[] = boardEvents.map(event => 
-    convertWatcherEventToBoardEvent(event, gameMetadata)
-  );
-
   const bfgGameLogPanel = (
-    <GameLogPanel
-      boardEvents={convertedBoardEvents}
+    <GameLogPanel<TGameMetadata['schemas']['watcherGameEventPerspectiveSchema']>
+      boardEvents={boardEvents}
     />
   );
 
