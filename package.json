@@ -24,6 +24,7 @@
     "routes:generate": "tsr generate",
     "routes:watch": "tsr watch",
     "cli": "node dist/cli/cli.js",
+    "cli:interactive": "node dist/cli/cli.js",
     "web-cli": "VITE_WEB_CLI=true vite --config vite.config.ts"
   },
   "keywords": [
@@ -37,6 +38,7 @@
     "@bundled-es-modules/memfs": "^4.17.0",
     "@types/node": "^20.10.5",
     "@types/qrcode": "^1.5.5",
+    "@types/sql.js": "^1.4.9",
     "@types/yargs": "^17.0.35",
     "@vitejs/plugin-react": "^4.2.1",
     "assert": "^2.1.0",
@@ -64,6 +66,7 @@
     "@tanstack/react-router": "^1.132.2",
     "effect": "^3.19.8",
     "qrcode": "^1.5.4",
+    "sql.js": "^1.13.0",
     "sqlite3": "^5.1.7",
     "tinybase": "^6.7.0",
     "trystero": "^0.22.0",

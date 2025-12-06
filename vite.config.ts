@@ -50,7 +50,7 @@ export default defineConfig(({ command }) => {
       publicDir: resolve(__dirname, 'public'),
       optimizeDeps: {
         include: ['@bundled-es-modules/memfs'],
-        exclude: ['tinybase/persisters/persister-sqlite-wasm', '@sqlite.org/sqlite-wasm'],
+        exclude: ['tinybase/persisters/persister-sqlite-wasm', '@sqlite.org/sqlite-wasm', 'sql.js'],
       },
     };
   }

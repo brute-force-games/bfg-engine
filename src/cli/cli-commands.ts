@@ -131,9 +131,18 @@ export function createStepCommand(gameOps: IBfgGameOps) {
 
 export async function handleAddUser(argv: any) {
   try {
-    console.log(`Creating user with handle: ${argv.handle}...`);
+    // Extract handle from argv - yargs positional arguments can be in different places
+    const handle = argv.handle || (argv._ && argv._.length > 2 ? argv._[2] : undefined);
     
-    const result = await UserOps.createPlayerProfile(argv.handle);
+    if (!handle) {
+      console.error('✗ Error: Handle is required. Usage: add-user <handle>');
+      process.exit(1);
+      return;
+    }
+    
+    console.log(`Creating user with handle: ${handle}...`);
+    
+    const result = await UserOps.createPlayerProfile(handle);
     
     if (result.success && result.profileId) {
       console.log('✓ User created successfully');
@@ -154,16 +163,30 @@ export async function handleAddUser(argv: any) {
 
 export async function handleListUsers(_argv: any) {
   try {
+    console.log('[handleListUsers] Starting');
     console.log('Fetching user profiles...');
     
     // Ensure SQLite is initialized and data is loaded before fetching
     await ensurePlayerProfileSqliteInitialized();
     
+    // Give the persister a moment to ensure data is fully loaded
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const result = await UserOps.getAllPlayerProfiles();
     
     if (result.success && result.profiles) {
       if (result.profiles.length === 0) {
-        console.log('\nNo users found. Use "bfg add-user <handle>" to create a new user.\n');
+        // Check if there's raw data that failed validation
+        const { playerProfileStore, TB_PLAYER_PROFILES_TABLE_KEY } = await import('../tb-store/player-profile-store');
+        const rawTable = playerProfileStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY);
+        const rawCount = rawTable ? Object.keys(rawTable).length : 0;
+        
+        if (rawCount > 0) {
+          console.log(`\n⚠️  Warning: Found ${rawCount} profile(s) in store but none passed validation.`);
+          console.log('This may indicate data format issues. Try creating a new user with "bfg add-user <handle>".\n');
+        } else {
+          console.log('\nNo users found. Use "bfg add-user <handle>" to create a new user.\n');
+        }
       } else {
         console.log(`\nFound ${result.profiles.length} user(s):\n`);
         result.profiles.forEach((profile, index) => {
@@ -190,15 +213,68 @@ export async function handleListUsers(_argv: any) {
 
 export async function handleRemoveUser(argv: any) {
   try {
-    if (!argv.profileId) {
-      console.error('✗ Profile ID is required. Use "bfg remove-user <profile-id>"');
-      process.exit(1);
-      return;
+    // Yargs converts kebab-case to camelCase, so check both
+    const profileId = argv.profileId || argv['profile-id'];
+    
+    // If profileId not provided, show interactive menu
+    if (!profileId) {
+      // Ensure SQLite is initialized and data is loaded
+      await ensurePlayerProfileSqliteInitialized();
+      
+      // Give the persister a moment to ensure data is fully loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const result = await UserOps.getAllPlayerProfiles();
+      
+      if (!result.success) {
+        console.error(`✗ Failed to fetch users: ${result.error || 'Unknown error'}`);
+        process.exit(1);
+        return;
+      }
+      
+      if (!result.profiles || result.profiles.length === 0) {
+        console.error('✗ No users found to remove. Use "bfg add-user <handle>" to create a new user.');
+        process.exit(1);
+        return;
+      }
+
+      // Show menu to select user
+      const { showMenuPrompt } = await import('./menu-prompt');
+      const menuResult = await showMenuPrompt({
+        message: 'Select a user to remove:',
+        options: result.profiles.map((profile) => ({
+          label: profile.handle,
+          value: profile.id,
+          description: `ID: ${profile.id}`,
+        })),
+      });
+
+      if (menuResult.selectedIndex === -1) {
+        // If cancelled or non-TTY, show list of available profiles
+        if (!process.stdin.isTTY) {
+          console.log('\nAvailable users:');
+          result.profiles.forEach((profile, index) => {
+            console.log(`  ${index + 1}. ${profile.handle} (${profile.id})`);
+          });
+          console.log('\nTo remove a user, run: bfg remove-user <profile-id>');
+          console.log('Or run this command directly in your terminal (not through npm) for an interactive menu.');
+        } else {
+          console.log('Cancelled');
+        }
+        process.exit(0);
+        return;
+      }
+
+      argv.profileId = menuResult.selectedValue;
     }
 
-    console.log(`Removing user with profile ID: ${argv.profileId}...`);
+    // Ensure SQLite is initialized before removing profile
+    await ensurePlayerProfileSqliteInitialized();
+
+    const finalProfileId = argv.profileId || argv['profile-id'];
+    console.log(`Removing user with profile ID: ${finalProfileId}...`);
     
-    const result = await UserOps.deletePlayerProfile(argv.profileId);
+    const result = await UserOps.deletePlayerProfile(finalProfileId);
     
     if (result.success) {
       console.log('✓ User removed successfully');
@@ -212,6 +288,102 @@ export async function handleRemoveUser(argv: any) {
     }
   } catch (error) {
     console.error('✗ Failed to remove user:', error);
+    process.exit(1);
+  }
+}
+
+export async function handleUserDetails(argv: any) {
+  try {
+    // Yargs converts kebab-case to camelCase, so check both
+    const profileId = argv.profileId || argv['profile-id'];
+    
+    // If profileId not provided, show interactive menu
+    if (!profileId) {
+      // Ensure SQLite is initialized and data is loaded
+      await ensurePlayerProfileSqliteInitialized();
+      
+      // Give the persister a moment to ensure data is fully loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const result = await UserOps.getAllPlayerProfiles();
+      
+      if (!result.success) {
+        console.error(`✗ Failed to fetch users: ${result.error || 'Unknown error'}`);
+        process.exit(1);
+        return;
+      }
+      
+      if (!result.profiles || result.profiles.length === 0) {
+        console.error('✗ No users found. Use "bfg add-user <handle>" to create a new user.');
+        process.exit(1);
+        return;
+      }
+
+      // Show menu to select user
+      const { showMenuPrompt } = await import('./menu-prompt');
+      const menuResult = await showMenuPrompt({
+        message: 'Select a user to view details:',
+        options: result.profiles.map((profile) => ({
+          label: profile.handle,
+          value: profile.id,
+          description: `ID: ${profile.id}`,
+        })),
+      });
+
+      if (menuResult.selectedIndex === -1) {
+        // If cancelled or non-TTY, show list of available profiles
+        if (!process.stdin.isTTY) {
+          console.log('\nAvailable users:');
+          result.profiles.forEach((profile, index) => {
+            console.log(`  ${index + 1}. ${profile.handle} (${profile.id})`);
+          });
+          console.log('\nTo view details, run: bfg user-details <profile-id>');
+          console.log('Or run this command directly in your terminal (not through npm) for an interactive menu.');
+        } else {
+          console.log('Cancelled');
+        }
+        process.exit(0);
+        return;
+      }
+
+      argv.profileId = menuResult.selectedValue;
+    }
+
+    // Ensure SQLite is initialized before fetching profile
+    await ensurePlayerProfileSqliteInitialized();
+
+    const finalProfileId = argv.profileId || argv['profile-id'];
+    console.log(`Fetching details for profile ID: ${finalProfileId}...`);
+    
+    const result = await UserOps.getPlayerProfile(finalProfileId);
+    
+    if (result.success && result.data) {
+      const profile = result.data;
+      console.log('\n═══════════════════════════════════════════════════════');
+      console.log('USER PROFILE DETAILS');
+      console.log('═══════════════════════════════════════════════════════\n');
+      console.log(`Handle:           ${profile.handle}`);
+      console.log(`Profile ID:       ${profile.id}`);
+      console.log(`Created:          ${new Date(profile.createdAt).toLocaleString()}`);
+      console.log(`Updated:          ${new Date(profile.updatedAt).toLocaleString()}`);
+      if (profile.avatarImageUrl) {
+        console.log(`Avatar URL:       ${profile.avatarImageUrl}`);
+      } else {
+        console.log(`Avatar URL:       (not set)`);
+      }
+      if (profile.walletAddress) {
+        console.log(`Wallet Address:   ${profile.walletAddress}`);
+      } else {
+        console.log(`Wallet Address:   (not set)`);
+      }
+      console.log('\n═══════════════════════════════════════════════════════\n');
+      process.exit(0);
+    } else {
+      console.error('✗ Failed to fetch user details:', result.error || 'Unknown error');
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('✗ Failed to get user details:', error);
     process.exit(1);
   }
 }

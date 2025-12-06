@@ -46,6 +46,14 @@ export const initializePlayerProfileBrowserPersisters = async (): Promise<void> 
     browserSqlite3 = await initializeSqliteWasm();
     browserSqliteDb = await createSqliteDatabase(PLAYER_PROFILES_DB_NAME, 'c');
     
+    // Ensure DELETE journal mode is set BEFORE creating persister (prevents WAL cleanup errors)
+    // This must be done before any operations that might trigger WAL mode
+    try {
+      browserSqliteDb.exec('PRAGMA journal_mode = DELETE;');
+    } catch (e) {
+      console.warn('Could not set journal mode:', e);
+    }
+    
     browserSqlitePersister = createSqliteWasmPersister(
       playerProfileStore,
       browserSqlite3,
@@ -53,11 +61,12 @@ export const initializePlayerProfileBrowserPersisters = async (): Promise<void> 
       TB_PLAYER_PROFILES_TABLE_KEY
     );
     
+    // Sync current store data to SQLite immediately (so download works)
+    // Do this BEFORE starting auto-save to avoid WAL errors
+    await browserSqlitePersister.save();
+    
     // Configure auto-save to SQLite (but not auto-load, since IndexedDB is source of truth)
     browserSqlitePersister.startAutoSave();
-    
-    // Sync current store data to SQLite immediately (so download works)
-    await browserSqlitePersister.save();
     console.log('SQLite WASM persister initialized for download/export');
 
     browserSqliteInitialized = true;
@@ -88,6 +97,13 @@ export const savePlayerProfileStore = async (): Promise<void> => {
  */
 export const getPlayerProfileSqlitePersister = (): ReturnType<typeof createSqliteWasmPersister> | null => {
   return browserSqlitePersister;
+};
+
+/**
+ * Get the IndexedDB persister for player profiles (browser)
+ */
+export const getPlayerProfileIndexedDbPersister = (): ReturnType<typeof createLocalPersister> | null => {
+  return indexedDbPersister;
 };
 
 /**
