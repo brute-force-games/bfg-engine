@@ -57,7 +57,6 @@ const commandInput = document.getElementById('commandInput') as HTMLInputElement
 const executeBtn = document.getElementById('executeBtn')!;
 const helpBtn = document.getElementById('helpBtn')!;
 const downloadDbBtn = document.getElementById('downloadDbBtn')!;
-const listDbFilesBtn = document.getElementById('listDbFilesBtn')!;
 const helpModal = document.getElementById('helpModal')!;
 const helpContent = document.getElementById('helpContent')!;
 const closeHelp = document.getElementById('closeHelp')!;
@@ -448,83 +447,83 @@ function closeHelpModal() {
   helpModal.style.display = 'none';
 }
 
-// List database files function
-async function listDatabaseFiles() {
-  try {
-    addOutput('Scanning OPFS for database files...', 'normal');
+// // List database files function
+// async function listDatabaseFiles() {
+//   try {
+//     addOutput('Scanning OPFS for database files...', 'normal');
     
-    if (!navigator.storage || !navigator.storage.getDirectory) {
-      addOutput('Error: OPFS (Origin Private File System) is not available in this browser', 'error');
-      return;
-    }
+//     if (!navigator.storage || !navigator.storage.getDirectory) {
+//       addOutput('Error: OPFS (Origin Private File System) is not available in this browser', 'error');
+//       return;
+//     }
     
-    const opfsRoot = await navigator.storage.getDirectory();
-    const files: Array<{ path: string; size: number }> = [];
+//     const opfsRoot = await navigator.storage.getDirectory();
+//     const files: Array<{ path: string; size: number }> = [];
     
-    // Recursively scan OPFS for all files
-    async function scanDirectory(dir: FileSystemDirectoryHandle, path: string = '') {
-      try {
-        // @ts-ignore - entries() exists but may not be in TypeScript definitions
-        for await (const [name, handle] of dir.entries()) {
-          const currentPath = path ? `${path}/${name}` : name;
+//     // Recursively scan OPFS for all files
+//     async function scanDirectory(dir: FileSystemDirectoryHandle, path: string = '') {
+//       try {
+//         // @ts-ignore - entries() exists but may not be in TypeScript definitions
+//         for await (const [name, handle] of dir.entries()) {
+//           const currentPath = path ? `${path}/${name}` : name;
           
-          if (handle.kind === 'file') {
-            try {
-              const file = await (handle as FileSystemFileHandle).getFile();
-              files.push({
-                path: currentPath,
-                size: file.size
-              });
-            } catch (e) {
-              console.warn(`Could not get file info for ${currentPath}:`, e);
-            }
-          } else if (handle.kind === 'directory') {
-            await scanDirectory(handle as FileSystemDirectoryHandle, currentPath);
-          }
-        }
-      } catch (e) {
-        console.warn(`Error scanning directory ${path}:`, e);
-      }
-    }
+//           if (handle.kind === 'file') {
+//             try {
+//               const file = await (handle as FileSystemFileHandle).getFile();
+//               files.push({
+//                 path: currentPath,
+//                 size: file.size
+//               });
+//             } catch (e) {
+//               console.warn(`Could not get file info for ${currentPath}:`, e);
+//             }
+//           } else if (handle.kind === 'directory') {
+//             await scanDirectory(handle as FileSystemDirectoryHandle, currentPath);
+//           }
+//         }
+//       } catch (e) {
+//         console.warn(`Error scanning directory ${path}:`, e);
+//       }
+//     }
     
-    await scanDirectory(opfsRoot);
+//     await scanDirectory(opfsRoot);
     
-    if (files.length === 0) {
-      addOutput('No database files found in OPFS', 'normal');
-      addOutput('(This is expected if the SQLite WASM persister has not been initialized)', 'normal');
-    } else {
-      addOutput(`Found ${files.length} file(s) in OPFS:`, 'success');
-      addOutput('', 'normal');
+//     if (files.length === 0) {
+//       addOutput('No database files found in OPFS', 'normal');
+//       addOutput('(This is expected if the SQLite WASM persister has not been initialized)', 'normal');
+//     } else {
+//       addOutput(`Found ${files.length} file(s) in OPFS:`, 'success');
+//       addOutput('', 'normal');
       
-      // Sort by path
-      files.sort((a, b) => a.path.localeCompare(b.path));
+//       // Sort by path
+//       files.sort((a, b) => a.path.localeCompare(b.path));
       
-      // Format file sizes
-      function formatSize(bytes: number): string {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
-      }
+//       // Format file sizes
+//       function formatSize(bytes: number): string {
+//         if (bytes === 0) return '0 B';
+//         const k = 1024;
+//         const sizes = ['B', 'KB', 'MB', 'GB'];
+//         const i = Math.floor(Math.log(bytes) / Math.log(k));
+//         return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+//       }
       
-      // Display files in a table-like format
-      const maxPathLength = Math.max(...files.map(f => f.path.length), 20);
-      files.forEach(file => {
-        const pathPadded = file.path.padEnd(maxPathLength);
-        const sizeFormatted = formatSize(file.size).padStart(10);
-        addOutput(`${pathPadded}  ${sizeFormatted}`, 'normal');
-      });
+//       // Display files in a table-like format
+//       const maxPathLength = Math.max(...files.map(f => f.path.length), 20);
+//       files.forEach(file => {
+//         const pathPadded = file.path.padEnd(maxPathLength);
+//         const sizeFormatted = formatSize(file.size).padStart(10);
+//         addOutput(`${pathPadded}  ${sizeFormatted}`, 'normal');
+//       });
       
-      addOutput('', 'normal');
-      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
-      addOutput(`Total: ${formatSize(totalSize)}`, 'normal');
-    }
-  } catch (error: any) {
-    addOutput(`Error listing database files: ${error.message || error}`, 'error');
-    console.error('Error listing database files:', error);
-  }
-}
+//       addOutput('', 'normal');
+//       const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+//       addOutput(`Total: ${formatSize(totalSize)}`, 'normal');
+//     }
+//   } catch (error: any) {
+//     addOutput(`Error listing database files: ${error.message || error}`, 'error');
+//     console.error('Error listing database files:', error);
+//   }
+// }
 
 // Download database function
 async function downloadDatabase() {
@@ -569,11 +568,15 @@ async function downloadDatabase() {
 // Event listeners
 helpBtn.addEventListener('click', showHelp);
 downloadDbBtn.addEventListener('click', downloadDatabase);
-listDbFilesBtn.addEventListener('click', listDatabaseFiles);
-closeHelp.addEventListener('click', closeHelpModal);
+// listDbFilesBtn.addEventListener('click', listDatabaseFiles); // Commented out - button is not in HTML
+closeHelp.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  closeHelpModal();
+});
 
 // Close modal when clicking outside of it
-window.addEventListener('click', (event) => {
+helpModal.addEventListener('click', (event) => {
   if (event.target === helpModal) {
     closeHelpModal();
   }

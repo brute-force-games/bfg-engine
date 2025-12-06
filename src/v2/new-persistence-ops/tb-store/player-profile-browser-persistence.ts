@@ -41,6 +41,7 @@ export const initializePlayerProfileBrowserPersisters = async (): Promise<void> 
     
     // Now set up SQLite WASM persister for download/export
     // Create database and sqlite3 instances directly so we can store references
+    // Note: createSqliteDatabase already sets journal_mode = DELETE to prevent SQLITE_IOERR_DELETE_NOENT errors
     const { initializeSqliteWasm, createSqliteDatabase } = await import('../../../tb-store/sqlite-wasm-initializer');
     browserSqlite3 = await initializeSqliteWasm();
     browserSqliteDb = await createSqliteDatabase(PLAYER_PROFILES_DB_NAME, 'c');

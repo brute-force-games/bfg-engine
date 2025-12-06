@@ -155,6 +155,15 @@ export async function createSqliteDatabase(dbName: string, mode: string = 'c'): 
     try {
       // OpfsDb might not work in main thread, but let's try
       const db = new sqlite3.oo1.OpfsDb(dbName);
+      
+      // Configure SQLite to use DELETE journal mode instead of WAL to avoid cleanup errors
+      try {
+        db.exec('PRAGMA journal_mode = DELETE;');
+      } catch (e) {
+        // Ignore if pragma fails
+        console.warn('Could not set journal mode on OpfsDb:', e);
+      }
+      
       console.log(`Created OPFS database: ${dbName} (OpfsDb)`);
       return db;
     } catch (error: any) {
@@ -167,6 +176,16 @@ export async function createSqliteDatabase(dbName: string, mode: string = 'c'): 
   // Use regular DB - with COOP/COEP headers, it may still use OPFS internally
   // if the sqlite3_vfs is installed (though it warns about needing worker)
   const db = new sqlite3.oo1.DB(dbName, mode);
+  
+  // Configure SQLite to use DELETE journal mode instead of WAL to avoid cleanup errors
+  // This prevents SQLITE_IOERR_DELETE_NOENT errors when SQLite tries to delete non-existent WAL files
+  try {
+    db.exec('PRAGMA journal_mode = DELETE;');
+  } catch (e) {
+    // Ignore if pragma fails - database might not support it
+    console.warn('Could not set journal mode:', e);
+  }
+  
   console.log(`Created database: ${dbName} (regular DB, may use OPFS if VFS installed)`);
   return db;
 }
@@ -233,6 +252,7 @@ export async function createSqlitePersisterForStore(
   }
   
   // Create database instance (use let so we can reassign if restoring from backup)
+  // Note: createSqliteDatabase already sets journal_mode = DELETE
   let db = await createSqliteDatabase(dbName, 'c');
   
   // If we have a backup, restore it to the database before creating persister
