@@ -23,35 +23,35 @@ const initializeSqlitePersisters = async () => {
     return;
   }
 
-  try {
-    // Dynamic import to avoid Vite resolution issues during test module loading
-    // Use string literal to prevent Vite from analyzing the import path
-    const sqlitePersisterPath = "tinybase/persisters/persister-sqlite";
-    const betterSqlitePath = "better-sqlite3";
-    
-    const sqliteModule = await import(/* @vite-ignore */ sqlitePersisterPath);
-    const betterSqliteModule = await import(/* @vite-ignore */ betterSqlitePath);
-    
-    const { createSqlitePersister } = sqliteModule;
-    const Database = betterSqliteModule.default;
+    try {
+      // Dynamic import to avoid Vite resolution issues during test module loading
+      // Use string literal to prevent Vite from analyzing the import path
+      const sqlitePersisterPath = "tinybase/persisters/persister-sqlite3";
+      const sqlite3Path = "sqlite3";
+      
+      const sqliteModule = await import(/* @vite-ignore */ sqlitePersisterPath);
+      const sqlite3Module = await import(/* @vite-ignore */ sqlite3Path);
+      
+      const { createSqlite3Persister } = sqliteModule;
+      const Database = sqlite3Module.Database || sqlite3Module.default?.Database || sqlite3Module.default;
 
   // Initialize single SQLite database connection for all tables
   const sqliteDb = new Database("bfg-archives.db");
 
   // Create SQLite persisters for local/Node environment using the same database
-  gameRoomsSqlitePersister = createSqlitePersister(
+  gameRoomsSqlitePersister = createSqlite3Persister(
     bfgSqliteArchivesStore,
     sqliteDb,
     BFG_GAME_ROOMS_TABLE_NAME
   );
 
-  gameStepsSqlitePersister = createSqlitePersister(
+  gameStepsSqlitePersister = createSqlite3Persister(
     bfgSqliteArchivesStore,
     sqliteDb,
     BFG_GAME_STEPS_TABLE_NAME
   );
 
-  gameInstancesSqlitePersister = createSqlitePersister(
+  gameInstancesSqlitePersister = createSqlite3Persister(
     bfgSqliteArchivesStore,
     sqliteDb,
     BFG_GAME_INSTANCES_TABLE_NAME

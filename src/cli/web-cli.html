@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BFG CLI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    h1 {
+      color: #4ec9b0;
+      margin-bottom: 20px;
+    }
+    .cli-container {
+      background: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background: #1e1e1e;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .output-line {
+      margin-bottom: 4px;
+    }
+    .output-line.error {
+      color: #f48771;
+    }
+    .output-line.success {
+      color: #4ec9b0;
+    }
+    .input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      height: auto;
+      min-height: 0;
+    }
+    .prompt {
+      color: #4ec9b0;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    input {
+      flex: 1;
+      background: #1e1e1e;
+      border: 1px solid #3e3e42;
+      color: #d4d4d4;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      height: auto;
+    }
+    input:focus {
+      outline: none;
+      border-color: #4ec9b0;
+    }
+    button {
+      background: #0e639c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: #1177bb;
+    }
+    .help-text {
+      color: #858585;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .help-btn {
+      background: #3e3e42;
+      color: #d4d4d4;
+      border: 1px solid #3e3e42;
+    }
+    .help-btn:hover {
+      background: #4e4e52;
+      border-color: #4e4e52;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      overflow: auto;
+    }
+    .modal-content {
+      background-color: #252526;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      width: 80%;
+      max-width: 800px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #3e3e42;
+      padding-bottom: 10px;
+    }
+    .modal-title {
+      color: #4ec9b0;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .close {
+      color: #858585;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .close:hover {
+      color: #d4d4d4;
+    }
+    .modal-body {
+      overflow-y: auto;
+      flex: 1;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #d4d4d4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-actions">
+      <h1>BFG CLI</h1>
+      <div style="display: flex; gap: 10px;">
+        <!-- <button id="createTestFileBtn" class="help-btn">Create Test File</button>
+        <button id="downloadTestFileBtn" class="help-btn">Download Test File</button> -->
+        <button id="listDbFilesBtn" class="help-btn">List DB xxFiles</button>
+        <button id="downloadDbBtn" class="help-btn">Download DB</button>
+        <button id="helpBtn" class="help-btn">bfg --help</button>
+        <button id="listDbFilesBtn" class="help-btn">List DB Files</button>
+      </div>
+    </div>
+    <div class="cli-container">
+      <div id="output" class="output"></div>
+      <div class="input-container">
+        <span class="prompt">$</span>
+        <input type="text" id="commandInput" placeholder="Enter command (e.g., list-users, add-user &lt;handle&gt;)">
+        <button id="executeBtn">Execute</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">bfg --help</div>
+        <span class="close" id="closeHelp">&times;</span>
+      </div>
+      <div class="modal-body" id="helpContent"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./web-cli.ts"></script>
+</body>
+</html>
