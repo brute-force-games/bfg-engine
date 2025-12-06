@@ -584,3 +584,6 @@ addOutput('BFG CLI Web Interface', 'success');
 addOutput('Type a command and press Enter or click Execute', 'normal');
 addOutput('', 'normal');
 
+// Focus the command input on page load
+commandInput.focus();
+

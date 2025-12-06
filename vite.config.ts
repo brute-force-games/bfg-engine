@@ -29,17 +29,28 @@ export default defineConfig(({ command }) => {
           },
           // Exclude fs since we're handling it with our custom alias
           exclude: ['fs'],
-        })
+        }),
+        // Plugin to add COOP/COEP headers for OPFS support
+        {
+          name: 'add-coop-coep-headers',
+          configureServer(server) {
+            server.middlewares.use((_req, res, next) => {
+              res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+              res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+              next();
+            });
+          },
+        },
       ],
       server: {
         port: 62776,
         open: '/src/cli/web-cli.html',
       },
       root: resolve(__dirname),
-      publicDir: false,
+      publicDir: resolve(__dirname, 'public'),
       optimizeDeps: {
         include: ['@bundled-es-modules/memfs'],
-        exclude: ['tinybase/persisters/persister-sqlite-wasm'],
+        exclude: ['tinybase/persisters/persister-sqlite-wasm', '@sqlite.org/sqlite-wasm'],
       },
     };
   }

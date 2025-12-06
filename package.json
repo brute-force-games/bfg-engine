@@ -59,6 +59,7 @@
     }
   },
   "dependencies": {
+    "@sqlite.org/sqlite-wasm": "^3.50.4-build1",
     "@tanstack/react-form": "^1.23.5",
     "@tanstack/react-router": "^1.132.2",
     "effect": "^3.19.8",
