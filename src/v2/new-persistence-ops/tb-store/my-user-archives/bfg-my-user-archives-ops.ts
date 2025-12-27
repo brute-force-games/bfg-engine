@@ -1,0 +1,349 @@
+import { PrivatePlayerProfile, PrivatePlayerProfileSchema } from "@bfg-engine/models/internal/player-profile/private-player-profile";
+import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
+import { createPrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
+import { createPlayerProfileId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { BfgTimestamp } from '@bfg-engine/models/types/bfg-versions';
+import { BfgMyUserArchivesStore } from "./bfg-my-user-archives-store";
+
+
+/**
+ * TinyBase store for player profiles
+ * Provides reactive state management for player profile data
+ */
+
+
+export const TB_STORE_NAME = 'tinybase_player_profiles';
+
+export const TB_PLAYER_PROFILES_TABLE_KEY = 'playerProfiles';
+
+export const TB_DEFAULT_PROFILE_ID_KEY = 'defaultProfileId';
+export const DEFAULT_PROFILE_ID_VALUE = '';
+
+export const PLAYER_PROFILES_DB_NAME = 'player_profiles.db';
+
+
+// Create the store
+// export const BfgUserArchivesStore = createStore();
+
+// Persister initialization is handled by platform-specific files:
+// - Browser: src/v2/new-persistence-ops/tb-store/player-profile-browser-persistence.ts
+// - CLI: src/v2/new-persistence-ops/tb-store/player-profile-local-persistence.ts
+
+// /**
+//  * Save/flush the player profile store to database
+//  * This ensures all pending changes are written
+//  * Delegates to platform-specific persistence modules
+//  */
+// export const savePlayerProfileStore = async (): Promise<void> => {
+//   if (typeof localStorage !== 'undefined') {
+//     // Browser environment
+//     const { savePlayerProfileStore: saveBrowser } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
+//     await saveBrowser();
+//   } else {
+//     // CLI environment
+//     const { savePlayerProfileStore: saveLocal } = await import('../v2/new-persistence-ops/tb-store/player-profile-local-persistence');
+//     await saveLocal();
+//   }
+// };
+
+// /**
+//  * Ensure persister is initialized and data is loaded
+//  * This should be called before operations that need persistence
+//  * Delegates to platform-specific persistence modules
+//  */
+// export const ensurePlayerProfileSqliteInitialized = async (): Promise<void> => {
+//   // Keep the old function name for backward compatibility, but it now initializes JSON for CLI
+//   if (typeof localStorage !== 'undefined') {
+//     // Browser environment
+//     const { ensurePlayerProfileBrowserPersistersInitialized } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
+//     await ensurePlayerProfileBrowserPersistersInitialized();
+//   } else {
+//     // CLI environment - now uses JSON
+//     const { ensurePlayerProfileLocalPersisterInitialized } = await import('../v2/new-persistence-ops/tb-store/player-profile-local-persistence');
+//     await ensurePlayerProfileLocalPersisterInitialized();
+//   }
+// };
+
+// Set initial values only if store is empty (no existing data)
+const hasExistingData = BfgMyUserArchivesStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY) &&
+  Object.keys(BfgMyUserArchivesStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY)).length > 0;
+
+if (!hasExistingData) {
+  BfgMyUserArchivesStore.setValue(TB_DEFAULT_PROFILE_ID_KEY, DEFAULT_PROFILE_ID_VALUE);
+}
+
+
+/**
+ * Safely parse profile data from TinyBase store - now just validates the stored object
+ */
+export const parseRawProfileData = (profileId: PlayerProfileId, rawData: any): PrivatePlayerProfile | null => {
+  // TinyBase stores complex nested objects as JSON strings, so we need to parse the webCryptoWallet field
+  let parsedData = rawData;
+  if (rawData.webCryptoWallet && typeof rawData.webCryptoWallet === 'string') {
+    try {
+      parsedData = {
+        ...rawData,
+        webCryptoWallet: JSON.parse(rawData.webCryptoWallet),
+      };
+    } catch (error) {
+      console.error(`Error parsing webCryptoWallet for ${profileId}:`, error);
+      return null;
+    }
+  }
+  
+  const result = PrivatePlayerProfileSchema.safeParse(parsedData);
+  
+  if (!result.success) {
+    console.error(`Error validating profile data for ${profileId}:`, result.error);
+    return null;
+  }
+  
+  return result.data;
+}
+
+
+/**
+ * Add a new player profile to the store
+ */
+export const addPlayerProfile = async (
+  handle: string,
+  avatarImageUrl?: string
+): Promise<PlayerProfileId> => {
+  try {
+    // Ensure SQLite is initialized before adding profile (for Node.js environments)
+    // await ensurePlayerProfileSqliteInitialized();
+    
+    // Create profile data using mnemonic-based wallet system
+    const profileData = await createPrivatePlayerProfile(handle, avatarImageUrl);
+    
+    // Add required fields
+    const now = Date.now() as BfgTimestamp;
+    const profileId = createPlayerProfileId();
+    
+    const completeProfileData: PrivatePlayerProfile = {
+      id: profileId,
+      ...profileData,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    // Serialize webCryptoWallet as JSON string for TinyBase storage
+    const storeData = {
+      ...completeProfileData,
+      webCryptoWallet: JSON.stringify(completeProfileData.webCryptoWallet),
+    };
+    
+    // Add to store - store the entire profile object
+    BfgMyUserArchivesStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, storeData as any);
+    
+    return profileId;
+  } catch (error) {
+    console.error('Error adding player profile:', error);
+    throw new Error('Failed to add player profile');
+  }
+};
+
+/**
+ * Update an existing player profile
+ */
+export const updatePlayerProfile = (
+  profileId: PlayerProfileId,
+  updates: Partial<Omit<PrivatePlayerProfile, 'id' | 'createdAt' | 'updatedAt'>>
+): boolean => {
+  try {
+    const existingProfile = BfgMyUserArchivesStore.getRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId);
+    if (!existingProfile) {
+      return false;
+    }
+    
+    // Serialize webCryptoWallet if it's being updated
+    const serializedUpdates = updates.webCryptoWallet
+      ? { ...updates, webCryptoWallet: JSON.stringify(updates.webCryptoWallet) }
+      : updates;
+    
+    const updatedProfile = {
+      ...existingProfile,
+      ...serializedUpdates,
+      updatedAt: Date.now(),
+    };
+    
+    BfgMyUserArchivesStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId, updatedProfile as any);
+    return true;
+  } catch (error) {
+    console.error('Error updating player profile:', error);
+    return false;
+  }
+};
+
+/**
+ * Delete a player profile
+ */
+export const deletePlayerProfile = (profileId: PlayerProfileId): boolean => {
+  try {
+    const existingProfile = BfgMyUserArchivesStore.getRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId);
+    if (!existingProfile) {
+      return false;
+    }
+    
+    // Remove from store
+    BfgMyUserArchivesStore.delRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId);
+    
+    // If this was the default profile, clear the default
+    const currentDefault = BfgMyUserArchivesStore.getValue(TB_DEFAULT_PROFILE_ID_KEY);
+    if (currentDefault === profileId) {
+      BfgMyUserArchivesStore.setValue(TB_DEFAULT_PROFILE_ID_KEY, DEFAULT_PROFILE_ID_VALUE);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting player profile:', error);
+    return false;
+  }
+};
+
+/**
+ * Get a player profile by ID
+ */
+export const getPlayerProfile = (profileId: PlayerProfileId): PrivatePlayerProfile | null => {
+  try {
+    const rawProfileData = BfgMyUserArchivesStore.getRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId);
+    if (!rawProfileData) {
+      return null;
+    }
+    
+    return parseRawProfileData(profileId, rawProfileData);
+  } catch (error) {
+    console.error('Error getting player profile:', error);
+    return null;
+  }
+};
+
+/**
+ * Get all player profiles
+ */
+export const getAllPlayerProfiles = (): PrivatePlayerProfile[] => {
+  try {
+    const rawProfiles = BfgMyUserArchivesStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY);
+    const profiles: PrivatePlayerProfile[] = [];
+    
+    Object.entries(rawProfiles).forEach(([id, rawProfileData]) => {
+      const parsedProfile = parseRawProfileData(id as PlayerProfileId, rawProfileData);
+      if (parsedProfile) {
+        profiles.push(parsedProfile);
+      }
+    });
+    
+    return profiles;
+  } catch (error) {
+    console.error('Error getting all player profiles:', error);
+    return [];
+  }
+};
+
+/**
+ * Set the default player profile
+ */
+export const setDefaultProfile = async (profileId: PlayerProfileId): Promise<boolean> => {
+  try {
+    const profile = BfgMyUserArchivesStore.getRow(TB_PLAYER_PROFILES_TABLE_KEY, profileId);
+    if (!profile) {
+      return false;
+    }
+    
+    BfgMyUserArchivesStore.setValue(TB_DEFAULT_PROFILE_ID_KEY, profileId);
+    
+    return true;
+  } catch (error) {
+    console.error('Error setting default profile:', error);
+    return false;
+  }
+};
+
+/**
+ * Get the default player profile
+ */
+export const getDefaultPlayerProfile = (): PrivatePlayerProfile | null => {
+  try {
+    const defaultId = BfgMyUserArchivesStore.getValue(TB_DEFAULT_PROFILE_ID_KEY);
+    if (!defaultId || typeof defaultId !== 'string') {
+      return null;
+    }
+    
+    return getPlayerProfile(defaultId as PlayerProfileId);
+  } catch (error) {
+    console.error('Error getting default player profile:', error);
+    return null;
+  }
+};
+
+/**
+ * Convert a private profile to public (for sharing)
+ */
+export const getPublicProfile = (profileId: PlayerProfileId): PublicPlayerProfile | null => {
+  const privateProfile = getPlayerProfile(profileId);
+  if (!privateProfile) {
+    return null;
+  }
+  
+  return {
+    id: privateProfile.id,
+    handle: privateProfile.handle,
+    avatarImageUrl: privateProfile.avatarImageUrl,
+    signingPublicKey: privateProfile.signingPublicKey,
+    encryptionPublicKey: privateProfile.encryptionPublicKey,
+    publicKey: privateProfile.publicKey, // Legacy
+    walletAddress: privateProfile.walletAddress, // Legacy
+    walletPublicKey: privateProfile.walletPublicKey, // Legacy
+    // identityType: privateProfile.identityType,
+    createdAt: privateProfile.createdAt,
+    updatedAt: privateProfile.updatedAt,
+  };
+};
+
+/**
+ * Get all public profiles (for sharing with other players)
+ */
+export const getAllPublicProfiles = (): PublicPlayerProfile[] => {
+  return getAllPlayerProfiles().map(privateProfile => ({
+    id: privateProfile.id,
+    handle: privateProfile.handle,
+    avatarImageUrl: privateProfile.avatarImageUrl,
+    signingPublicKey: privateProfile.signingPublicKey,
+    encryptionPublicKey: privateProfile.encryptionPublicKey,
+    publicKey: privateProfile.publicKey, // Legacy
+    walletAddress: privateProfile.walletAddress, // Legacy
+    walletPublicKey: privateProfile.walletPublicKey, // Legacy
+    // identityType: privateProfile.identityType,
+    createdAt: privateProfile.createdAt,
+    updatedAt: privateProfile.updatedAt,
+  }));
+};
+
+/**
+ * Clear all player profiles (for testing/debugging)
+ */
+export const clearAllProfiles = (): void => {
+  BfgMyUserArchivesStore.delTable(TB_PLAYER_PROFILES_TABLE_KEY);
+  BfgMyUserArchivesStore.setValue(TB_DEFAULT_PROFILE_ID_KEY, DEFAULT_PROFILE_ID_VALUE);
+};
+
+// /**
+//  * Export the player profiles as JSON
+//  * Routes to browser-specific or CLI-specific implementation based on environment
+//  * Returns JSON string (for browser) or file path (for CLI)
+//  */
+// export const getPlayerProfilesJsonExport = async (): Promise<string | null> => {
+//   // Get all tables from the store
+//   const tables = BfgMyUserArchivesStore.getTables();
+  
+//   // Create export object with metadata
+//   const exportData = {
+//     version: '1.0',
+//     exportedAt: new Date().toISOString(),
+//     tables: tables,
+//   };
+  
+//   // Convert to JSON string with pretty formatting
+//   return JSON.stringify(exportData, null, 2);
+// };
+

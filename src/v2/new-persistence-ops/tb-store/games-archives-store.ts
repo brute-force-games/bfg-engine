@@ -7,7 +7,7 @@ import { GameRoomPersistSchema } from '../models/tinybase/game-room-persist';
 import { InferTypeFromSchema, createZodSchemaFromTinyBaseSchema, type TinybaseTableSchema } from './zod-tb-utils';
 import { useRow } from 'tinybase/ui-react';
 // import { type GameBoardEventForDb } from '../models/game-table/game-table-event-db';
-import { type HydratedLatestGameSnapshot } from '../models/internal/game-room-snapshot';
+import { type HydratedLatestGameSnapshot } from '../models/player-profile/internal/game-room-snapshot';
 import { getGameMetadata } from '../game-metadata/games-registry';
 // import type { GameTableEventForGameStep } from '../models/game-table/game-table-event';
 import { TB_GAME_INSTANCES_TABLE_NAME, TB_GAME_ROOMS_TABLE_NAME, TB_GAME_EVENTS_TABLE_NAME } from './tb-constants';

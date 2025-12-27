@@ -22,7 +22,7 @@ if (typeof (globalThis as any).process === 'undefined') {
 import { configureYargsCommands } from './cli-yargs-config';
 
 import { NewHostOps } from '../v2/new-host-ops/new-host-ops';
-import { LocalTbPersistenceOps } from '../v2/new-persistence-ops/local-tb-persistence-ops';
+import { LocalTbPersistenceOps } from '../v2/new-persistence-ops/tb-file-persistence-ops';
 import { TxOps } from '../v2/relay-ops/tx-ops';
 import { RxOps } from '../v2/relay-ops/rx-ops';
 import { createBfgGameOpsForConsoleInstance } from '../v2/game-ops/game-ops-for-console-impl';
@@ -483,30 +483,34 @@ function closeHelpModal() {
 //   }
 // }
 
-// Download database function
+// Download JSON export function
 async function downloadDatabase() {
   try {
-    addOutput('Preparing database download...', 'normal');
+    addOutput('Preparing JSON export...', 'normal');
     
-    const { getPlayerProfilesDatabaseFile, PLAYER_PROFILES_DB_NAME } = await import('../tb-store/player-profile-store');
-    const dbData = await getPlayerProfilesDatabaseFile();
+    // Get the TinyBase store and export all tables as JSON
+    const { playerProfileStore } = await import('../tb-store/player-profile-store');
     
-    if (!dbData) {
-      addOutput('Error: Could not retrieve database file', 'error');
-      return;
-    }
+    // Get all tables from the store
+    const tables = playerProfileStore.getTables();
     
-    // Create a blob and download it
-    // Create a new Uint8Array to ensure we have a proper ArrayBuffer
-    const arrayBuffer = new Uint8Array(dbData).buffer;
-    const blob = new Blob([arrayBuffer], { type: 'application/x-sqlite3' });
+    // Create export object with metadata
+    const exportData = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      tables: tables,
+    };
+    
+    // Convert to JSON string with pretty formatting
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    // Create blob and download
+    const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5); // Format: YYYY-MM-DDTHH-MM-SS
-    const baseName = PLAYER_PROFILES_DB_NAME || 'player_profiles.db';
-    const nameWithoutExt = baseName.replace(/\.db$/, '');
-    const filename = `${nameWithoutExt}_${timestamp}.db`;
+    const filename = `player_profiles_${timestamp}.json`;
     
     const a = document.createElement('a');
     a.href = url;
@@ -516,391 +520,55 @@ async function downloadDatabase() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    addOutput(`✓ Database downloaded: ${filename}`, 'success');
+    addOutput(`✓ JSON export downloaded: ${filename}`, 'success');
   } catch (error: any) {
-    addOutput(`Error downloading database: ${error.message || error}`, 'error');
-    console.error('Error downloading database:', error);
+    addOutput(`Error exporting JSON: ${error.message || error}`, 'error');
+    console.error('Error exporting JSON:', error);
   }
 }
 
-// Upload/import database function
+// Upload/import JSON function
 async function uploadDatabase(file: File) {
   try {
-    addOutput(`Reading database file: ${file.name}...`, 'normal');
+    addOutput(`Reading JSON file: ${file.name}...`, 'normal');
     
-    // Read file as ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    const dbBytes = new Uint8Array(arrayBuffer);
+    // Read file as text (JSON)
+    const text = await file.text();
     
-    addOutput(`File read: ${dbBytes.length} bytes`, 'normal');
+    addOutput(`File read: ${text.length} characters`, 'normal');
     
-    // Get SQLite references
-    const { ensurePlayerProfileSqliteInitialized } = await import('../tb-store/player-profile-store');
-    await ensurePlayerProfileSqliteInitialized();
-    
-    const { getPlayerProfileSqliteReferences: getSqliteRefs } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
-    const refs = getSqliteRefs();
-    
-    if (!refs || !refs.sqlite3 || !refs.db) {
-      addOutput('Error: SQLite database not initialized', 'error');
+    // Parse JSON
+    let importData: any;
+    try {
+      importData = JSON.parse(text);
+    } catch (parseError: any) {
+      addOutput(`Error: Invalid JSON format - ${parseError.message}`, 'error');
       return;
     }
     
-    const { sqlite3, db } = refs;
-    const { PLAYER_PROFILES_DB_NAME } = await import('../tb-store/player-profile-store');
-    
-    addOutput('Importing database...', 'normal');
-    
-    // Write the database file directly to OPFS
-    addOutput('Writing database to OPFS...', 'normal');
-    
-    // Close the current database first
-    try {
-      db.close();
-      addOutput('Closed current database', 'normal');
-    } catch (e) {
-      console.warn('Error closing database (may already be closed):', e);
-    }
-    
-    // Write the database bytes to OPFS
-    try {
-      const opfsRoot = await navigator.storage.getDirectory();
-      
-      // Remove the old file if it exists
-      try {
-        await opfsRoot.removeEntry(PLAYER_PROFILES_DB_NAME);
-        addOutput('Removed old database file from OPFS', 'normal');
-      } catch (e) {
-        // File might not exist, that's okay
-      }
-      
-      // Write the new database file
-      const dbFile = await opfsRoot.getFileHandle(PLAYER_PROFILES_DB_NAME, { create: true });
-      const writable = await dbFile.createWritable();
-      await writable.write(dbBytes);
-      await writable.close();
-      addOutput(`Database file written to OPFS (${dbBytes.length} bytes)`, 'normal');
-      
-      // Give OPFS time to flush and ensure the file is fully written
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Verify the file was written correctly by reading it back
-      const verifyFile = await opfsRoot.getFileHandle(PLAYER_PROFILES_DB_NAME);
-      const verifyFileData = await verifyFile.getFile();
-      const verifyBytes = new Uint8Array(await verifyFileData.arrayBuffer());
-      addOutput(`Verified file size: ${verifyBytes.length} bytes (expected: ${dbBytes.length})`, verifyBytes.length === dbBytes.length ? 'success' : 'error');
-      
-      if (verifyBytes.length !== dbBytes.length) {
-        addOutput('Error: File size mismatch! The database file may be corrupted.', 'error');
-        throw new Error('File size mismatch after write');
-      }
-    } catch (opfsError: any) {
-      addOutput(`Error writing to OPFS: ${opfsError.message}`, 'error');
-      throw opfsError;
-    }
-    
-    // The core issue: SQLite WASM uses its own VFS to access OPFS files, and it can't
-    // read files we write using the browser's File System Access API.
-    // 
-    // Solution: Since we can't import bytes directly, we need to:
-    // 1. Verify the file is a valid SQLite database (check header)
-    // 2. Use a workaround: Read the database using a different method
-    // 
-    // Actually, wait - the CLI database might be in a different format or location.
-    // Let's check if the file is actually a valid SQLite database first.
-    
-    addOutput('Verifying SQLite file format...', 'normal');
-    
-    // SQLite files start with a specific header: "SQLite format 3\000"
-    const sqliteHeader = new TextDecoder().decode(dbBytes.slice(0, 16));
-    const isValidSqlite = sqliteHeader.startsWith('SQLite format 3');
-    addOutput(`File header: ${isValidSqlite ? 'Valid SQLite format' : 'Invalid or corrupted'}`, isValidSqlite ? 'success' : 'error');
-    
-    if (!isValidSqlite) {
-      addOutput('Error: The uploaded file does not appear to be a valid SQLite database.', 'error');
-      addOutput('Please ensure you are uploading a .db or .sqlite file created by SQLite.', 'error');
+    // Validate JSON structure
+    if (!importData.tables || typeof importData.tables !== 'object') {
+      addOutput('Error: JSON file must contain a "tables" object', 'error');
       return;
     }
     
-    // The problem: SQLite WASM can't read files we write to OPFS using File System Access API
-    // because it uses its own VFS. We need to use SQLite WASM's own file writing mechanism.
-    // 
-    // Workaround: Since we can't import bytes directly, we'll need to:
-    // 1. Use a JavaScript SQLite parser to read the file (complex)
-    // 2. Or, use a different approach: Create an in-memory database and try to restore
-    // 
-    // Actually, let's try using the fact that SQLite WASM might be able to read the file
-    // if we use OpfsDb instead of regular DB. But OpfsDb requires a worker thread.
-    // 
-    // Better approach: Since the CLI database might have multiple tables, let's try to
-    // open it and see what tables it actually has, then extract the playerProfiles data.
+    addOutput('Importing data into TinyBase store...', 'normal');
     
-    addOutput('Attempting to read database using SQLite WASM...', 'normal');
+    // Get the TinyBase store
+    const { playerProfileStore, TB_PLAYER_PROFILES_TABLE_KEY } = await import('../tb-store/player-profile-store');
     
-    // Try using OpfsDb if available (it might be able to read the file we wrote)
-    let sourceDb: any = null;
-    let importSuccess = false;
+    // Set all tables from the imported data
+    // TinyBase will handle all the parsing and validation
+    playerProfileStore.setTables(importData.tables);
     
-    try {
-      // First, try using OpfsDb which might be able to read the file
-      if (sqlite3.oo1?.OpfsDb) {
-        addOutput('Trying OpfsDb to read the file...', 'normal');
-        try {
-          const opfsDb = new sqlite3.oo1.OpfsDb(PLAYER_PROFILES_DB_NAME);
-          
-          // Check if it can read the file
-          const tables = opfsDb.exec({
-            returnValue: 'resultRows',
-            sql: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-          });
-          const tableNames = tables.map((row: any) => row.name);
-          addOutput(`OpfsDb found tables: ${tableNames.join(', ') || 'none'}`, 'normal');
-          
-          if (tableNames.includes('playerProfiles')) {
-            sourceDb = opfsDb;
-            importSuccess = true;
-            addOutput('Successfully opened database using OpfsDb', 'success');
-          } else {
-            opfsDb.close();
-            addOutput('OpfsDb opened file but no playerProfiles table found', 'error');
-          }
-        } catch (opfsError: any) {
-          addOutput(`OpfsDb failed: ${opfsError.message}`, 'error');
-          console.warn('OpfsDb error:', opfsError);
-        }
-      }
-      
-      // If OpfsDb didn't work, use sql.js to parse the uploaded file directly
-      if (!importSuccess) {
-        addOutput('Using sql.js to parse the uploaded database file...', 'normal');
-        
-        try {
-          // Load sql.js from CDN instead of bundling it
-          // This avoids Vite bundling issues with sql.js
-          addOutput('Loading sql.js from CDN...', 'normal');
-          
-          // Check if sql.js is already loaded globally
-          // sql.js from CDN exposes initSqlJs in different ways depending on the build
-          let initSqlJs: any = (window as any).initSqlJs || (window as any).SQL;
-          
-          if (!initSqlJs || typeof initSqlJs !== 'function') {
-            // Load sql.js script from CDN
-            await new Promise<void>((resolve, reject) => {
-              // Check if script already exists
-              const existingScript = document.querySelector('script[data-sqljs]');
-              if (existingScript) {
-                initSqlJs = (window as any).initSqlJs || (window as any).SQL;
-                if (typeof initSqlJs === 'function') {
-                  resolve();
-                  return;
-                }
-              }
-              
-              const script = document.createElement('script');
-              script.setAttribute('data-sqljs', 'true');
-              // Use the UMD build which exposes initSqlJs globally
-              script.src = 'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js';
-              script.onload = () => {
-                // Try multiple ways sql.js might expose itself
-                initSqlJs = (window as any).initSqlJs || (window as any).SQL || (window as any).default;
-                
-                // If it's an object, try to get initSqlJs from it
-                if (initSqlJs && typeof initSqlJs !== 'function') {
-                  initSqlJs = initSqlJs.initSqlJs || initSqlJs.default;
-                }
-                
-                if (typeof initSqlJs === 'function') {
-                  resolve();
-                } else {
-                  // Log what we found for debugging
-                  console.error('sql.js loaded but initSqlJs not found. Window keys:', Object.keys(window).filter(k => k.includes('sql') || k.includes('SQL')));
-                  reject(new Error('sql.js loaded but initSqlJs is not a function'));
-                }
-              };
-              script.onerror = () => {
-                reject(new Error('Failed to load sql.js from CDN'));
-              };
-              document.head.appendChild(script);
-            });
-          }
-          
-          if (typeof initSqlJs !== 'function') {
-            throw new Error('sql.js initSqlJs is not available after loading');
-          }
-          
-          // Initialize sql.js with WASM file location
-          addOutput('Initializing sql.js...', 'normal');
-          const SQL = await initSqlJs({
-            // Use CDN for the WASM file
-            locateFile: (file: string) => {
-              if (file.endsWith('.wasm')) {
-                return `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`;
-              }
-              return file;
-            }
-          });
-              
-              // Load the database from the uploaded bytes
-              const db = new SQL.Database(dbBytes);
-              
-              // Check what tables exist
-          const tablesResult = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-          const tableNames = tablesResult.length > 0 ? tablesResult[0].values.map((row: any) => row[0]) : [];
-          addOutput(`Found tables in uploaded database: ${tableNames.join(', ') || 'none'}`, 'normal');
-          
-          // Check if playerProfiles table exists
-          if (!tableNames.includes('playerProfiles')) {
-            db.close();
-            addOutput(`Error: Database does not contain 'playerProfiles' table`, 'error');
-            addOutput(`Available tables: ${tableNames.join(', ') || 'none'}`, 'error');
-            addOutput(`The CLI database (bfg-archives.db) may contain multiple tables.`, 'error');
-            addOutput(`Please ensure the database contains a 'playerProfiles' table.`, 'error');
-            return;
-          }
-          
-          // Extract all player profiles from the database
-          const profilesResult = db.exec("SELECT * FROM playerProfiles");
-          if (profilesResult.length === 0 || profilesResult[0].values.length === 0) {
-            db.close();
-            addOutput('Database contains playerProfiles table but it is empty', 'error');
-            return;
-          }
-          
-          const profiles = profilesResult[0];
-          const columnNames = profiles.columns;
-          const profileRows = profiles.values;
-          
-          addOutput(`Found ${profileRows.length} profile(s) in uploaded database`, 'success');
-          
-          // Now insert each profile into the TinyBase store
-          addOutput('Importing profiles into TinyBase store...', 'normal');
-          const { TB_PLAYER_PROFILES_TABLE_KEY, playerProfileStore } = await import('../tb-store/player-profile-store');
-          
-          let importedCount = 0;
-          let errorCount = 0;
-          
-          for (const row of profileRows) {
-            try {
-              // Convert row array to object using column names
-              const profileData: any = {};
-              columnNames.forEach((col: string, index: number) => {
-                profileData[col] = row[index];
-              });
-              
-              // Parse webCryptoWallet if it's a string
-              if (profileData.webCryptoWallet && typeof profileData.webCryptoWallet === 'string') {
-                try {
-                  profileData.webCryptoWallet = JSON.parse(profileData.webCryptoWallet);
-                } catch (e) {
-                  // If parsing fails, keep it as a string
-                }
-              }
-              
-              // Validate the profile data
-              const { parseRawProfileData } = await import('../tb-store/player-profile-store');
-              const validatedProfile = parseRawProfileData(profileData.id, profileData);
-              
-              if (validatedProfile) {
-                // Store the profile (webCryptoWallet needs to be stringified for TinyBase)
-                const storeData = {
-                  ...validatedProfile,
-                  webCryptoWallet: typeof validatedProfile.webCryptoWallet === 'string' 
-                    ? validatedProfile.webCryptoWallet 
-                    : JSON.stringify(validatedProfile.webCryptoWallet),
-                };
-                
-                playerProfileStore.setRow(TB_PLAYER_PROFILES_TABLE_KEY, validatedProfile.id, storeData as any);
-                importedCount++;
-              } else {
-                errorCount++;
-                addOutput(`Warning: Failed to validate profile ${profileData.id?.substring(0, 8)}...`, 'error');
-              }
-            } catch (rowError: any) {
-              errorCount++;
-              console.error('Error importing profile row:', rowError);
-            }
-          }
-          
-          db.close();
-          
-          addOutput(`Imported ${importedCount} profile(s) successfully`, importedCount > 0 ? 'success' : 'error');
-          if (errorCount > 0) {
-            addOutput(`Failed to import ${errorCount} profile(s)`, 'error');
-          }
-          
-              // Mark as successful so we continue with IndexedDB save
-              importSuccess = true;
-        } catch (sqlJsError: any) {
-          addOutput(`Error using sql.js to parse database: ${sqlJsError.message}`, 'error');
-          console.error('sql.js error:', sqlJsError);
-          return;
-        }
-      }
-      
-      if (!importSuccess) {
-        addOutput('Failed to import database using any method', 'error');
-        return;
-      }
-    } catch (error: any) {
-      addOutput(`Error attempting to read database: ${error.message}`, 'error');
-      console.error('Database read error:', error);
-      return;
-    }
+    addOutput('Data loaded into TinyBase store', 'success');
     
-    // If we used OpfsDb, create a persister and load data
-    // If we used sql.js, the data is already in the TinyBase store
-    if (sourceDb) {
-      addOutput('Creating new persister with imported database...', 'normal');
-      const { createSqliteWasmPersister } = await import('tinybase/persisters/persister-sqlite-wasm');
-      const { TB_PLAYER_PROFILES_TABLE_KEY, playerProfileStore } = await import('../tb-store/player-profile-store');
-      
-      const newPersister = createSqliteWasmPersister(
-        playerProfileStore,
-        sqlite3,
-        sourceDb,
-        TB_PLAYER_PROFILES_TABLE_KEY
-      );
-      
-      // Load data from the imported database into the TinyBase store
-      addOutput('Loading data from imported database into TinyBase store...', 'normal');
-      try {
-        await newPersister.load();
-        addOutput('Data loaded from imported database', 'normal');
-        
-        // Check how many profiles were loaded
-        const { getAllPlayerProfiles } = await import('../tb-store/player-profile-store');
-        const profiles = getAllPlayerProfiles();
-        addOutput(`Data loaded from imported database: ${profiles.length} profile(s) found`, profiles.length > 0 ? 'success' : 'error');
-        console.log('Profiles after SQLite load:', profiles);
-        
-        if (profiles.length === 0) {
-          addOutput('Warning: No profiles loaded. The database may be empty or in a different format.', 'error');
-          addOutput('Checking raw store data...', 'normal');
-          const rawTable = playerProfileStore.getTable(TB_PLAYER_PROFILES_TABLE_KEY);
-          const rawKeys = Object.keys(rawTable);
-          addOutput(`Raw store has ${rawKeys.length} key(s): ${rawKeys.slice(0, 5).join(', ')}${rawKeys.length > 5 ? '...' : ''}`, 'normal');
-        }
-        
-        // Stop auto-save on the new persister - we'll restart it after IndexedDB save
-        newPersister.stopAutoSave?.();
-      } catch (loadError: any) {
-        addOutput(`Error loading from imported database: ${loadError.message}`, 'error');
-        console.error('Load error:', loadError);
-        if (sourceDb) sourceDb.close();
-      }
-    } else {
-      // Data was imported via sql.js, already in the store
-      addOutput('Data imported directly into TinyBase store via sql.js', 'success');
-      
-      // Verify the data is in the store
-      const { getAllPlayerProfiles } = await import('../tb-store/player-profile-store');
-      const profiles = getAllPlayerProfiles();
-      addOutput(`Store now contains ${profiles.length} profile(s)`, profiles.length > 0 ? 'success' : 'error');
-    }
+    // Check how many profiles were loaded
+    const { getAllPlayerProfiles } = await import('../tb-store/player-profile-store');
+    const profiles = getAllPlayerProfiles();
+    addOutput(`Loaded ${profiles.length} profile(s) from imported JSON`, profiles.length > 0 ? 'success' : 'error');
     
     // CRITICAL: Save the imported data to IndexedDB (the primary source of truth)
-    // The IndexedDB persister has auto-load enabled, so we need to save to it
-    // so it becomes the new source of truth
     addOutput('Saving imported data to IndexedDB (primary storage)...', 'normal');
     const { getPlayerProfileIndexedDbPersister } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
     const indexedDbPersister = getPlayerProfileIndexedDbPersister();
@@ -912,10 +580,8 @@ async function uploadDatabase(file: File) {
       await indexedDbPersister.save();
       
       // Verify the save worked
-      const { getAllPlayerProfiles } = await import('../tb-store/player-profile-store');
       const profilesAfterSave = getAllPlayerProfiles();
       addOutput(`Data saved to IndexedDB: ${profilesAfterSave.length} profile(s)`, profilesAfterSave.length > 0 ? 'success' : 'error');
-      console.log('Profiles after IndexedDB save:', profilesAfterSave);
       
       // Restart auto-load
       indexedDbPersister.startAutoLoad();
@@ -923,24 +589,28 @@ async function uploadDatabase(file: File) {
       addOutput('Warning: IndexedDB persister not available', 'error');
     }
     
-    // Also save to SQLite for consistency
-    const { savePlayerProfileStore } = await import('../tb-store/player-profile-store');
-    await savePlayerProfileStore();
-    addOutput('Data synced to SQLite', 'normal');
+    // Also save to SQLite for consistency (if SQLite is being used)
+    try {
+      const { savePlayerProfileStore } = await import('../tb-store/player-profile-store');
+      await savePlayerProfileStore();
+      addOutput('Data synced to SQLite', 'normal');
+    } catch (e) {
+      // SQLite might not be initialized, that's okay
+      console.warn('Could not sync to SQLite:', e);
+    }
     
     // Final verification
-    const { getAllPlayerProfiles: getAllPlayerProfilesFinal } = await import('../tb-store/player-profile-store');
-    const finalProfiles = getAllPlayerProfilesFinal();
+    const finalProfiles = getAllPlayerProfiles();
     addOutput(`Final verification: ${finalProfiles.length} profile(s) in store`, finalProfiles.length > 0 ? 'success' : 'error');
     if (finalProfiles.length > 0) {
       addOutput(`Profile handles: ${finalProfiles.map(p => p.handle).join(', ')}`, 'normal');
     }
     
-    addOutput(`✓ Database imported successfully from ${file.name}`, 'success');
+    addOutput(`✓ JSON imported successfully from ${file.name}`, 'success');
     addOutput('You may need to refresh the page or run "list-users" to see the imported data', 'normal');
   } catch (error: any) {
-    addOutput(`Error importing database: ${error.message || error}`, 'error');
-    console.error('Error importing database:', error);
+    addOutput(`Error importing JSON: ${error.message || error}`, 'error');
+    console.error('Error importing JSON:', error);
   }
 }
 

@@ -3,6 +3,7 @@ import { PrivatePlayerProfile, PrivatePlayerProfileSchema } from "@bfg-engine/mo
 import { PublicPlayerProfile } from "@bfg-engine/models/internal/player-profile/public-player-profile";
 import { createPrivatePlayerProfile } from "@bfg-engine/models/internal/player-profile/private-player-profile";
 import { createPlayerProfileId, PlayerProfileId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { BfgTimestamp } from '@bfg-engine/models/types/bfg-versions';
 
 
 /**
@@ -46,17 +47,18 @@ export const savePlayerProfileStore = async (): Promise<void> => {
 };
 
 /**
- * Ensure SQLite persister is initialized and data is loaded
+ * Ensure persister is initialized and data is loaded
  * This should be called before operations that need persistence
  * Delegates to platform-specific persistence modules
  */
 export const ensurePlayerProfileSqliteInitialized = async (): Promise<void> => {
+  // Keep the old function name for backward compatibility, but it now initializes JSON for CLI
   if (typeof localStorage !== 'undefined') {
     // Browser environment
     const { ensurePlayerProfileBrowserPersistersInitialized } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
     await ensurePlayerProfileBrowserPersistersInitialized();
   } else {
-    // CLI environment
+    // CLI environment - now uses JSON
     const { ensurePlayerProfileLocalPersisterInitialized } = await import('../v2/new-persistence-ops/tb-store/player-profile-local-persistence');
     await ensurePlayerProfileLocalPersisterInitialized();
   }
@@ -115,7 +117,7 @@ export const addPlayerProfile = async (
     const profileData = await createPrivatePlayerProfile(handle, avatarImageUrl);
     
     // Add required fields
-    const now = Date.now();
+    const now = Date.now() as BfgTimestamp;
     const profileId = createPlayerProfileId();
     
     const completeProfileData: PrivatePlayerProfile = {
@@ -326,34 +328,22 @@ export const clearAllProfiles = (): void => {
 };
 
 /**
- * Get the SQLite WASM database file as a Uint8Array for download (browser only)
- */
-/**
- * Export the player profiles database file
+ * Export the player profiles as JSON
  * Routes to browser-specific or CLI-specific implementation based on environment
- * Delegates to platform-specific persistence modules
+ * Returns JSON string (for browser) or file path (for CLI)
  */
-export const getPlayerProfilesDatabaseFile = async (): Promise<Uint8Array | null> => {
-  if (typeof localStorage !== 'undefined') {
-    // Browser environment - use generic browser export
-    const { getPlayerProfileSqlitePersister, getPlayerProfileSqliteReferences, savePlayerProfileStore } = await import('../v2/new-persistence-ops/tb-store/player-profile-browser-persistence');
-    
-    // Ensure SQLite is synced before export
-    await savePlayerProfileStore();
-    console.log('Synced store data to SQLite before export');
-    
-    const persister = getPlayerProfileSqlitePersister();
-    const { exportSqliteDatabaseBrowser } = await import('../v2/new-persistence-ops/tb-store/sqlite-browser-export');
-    return await exportSqliteDatabaseBrowser(
-      persister,
-      PLAYER_PROFILES_DB_NAME,
-      TB_PLAYER_PROFILES_TABLE_KEY,
-      getPlayerProfileSqliteReferences
-    );
-  } else {
-    // Node.js/CLI environment - use generic CLI export
-    const { exportSqliteDatabaseCli } = await import('../v2/new-persistence-ops/tb-store/sqlite-local-export');
-    return await exportSqliteDatabaseCli(PLAYER_PROFILES_DB_NAME);
-  }
+export const getPlayerProfilesJsonExport = async (): Promise<string | null> => {
+  // Get all tables from the store
+  const tables = playerProfileStore.getTables();
+  
+  // Create export object with metadata
+  const exportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    tables: tables,
+  };
+  
+  // Convert to JSON string with pretty formatting
+  return JSON.stringify(exportData, null, 2);
 };
 

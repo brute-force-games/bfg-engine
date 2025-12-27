@@ -1,0 +1,29 @@
+# context concept is equivalent of environment variables, but established so that cmd line app can 
+# maintain its own context variables and settings given a "context-id"? 
+# "context-key" establishes proof of context authority (e.g. permission to delete/update?)
+# "context-ttl" gives a maximum amount of time-to-live for default context to be settable 
+#    (e.g. can't be updated after this time-to-live has expired)
+
+
+bfg unset-default-context [context-id]
+bfg set-default-context [context-id] [context-key] [context-ttl]
+
+bfg set-context LOBBY_NAME "My Fun Lobby"
+bfg set-context GAME_TO_PLAY tic-tac-toe
+bfg set-context HOST_PLAYER_ID p-host
+bfg set-context P1_ID p1
+bfg set-context P2_ID p2
+
+
+bfg add-user p-host
+bfg add-user p1
+bfg add-user p2
+
+
+bfg create-lobby *LOBBY_NAME* --game *GAME_TO_PLAY* --host *HOST_PLAYER_ID*
+bfg update-lobby-players *P1_ID* *P2_ID*
+bfg start-lobby-game
+
+
+
+bfg unset-default-context

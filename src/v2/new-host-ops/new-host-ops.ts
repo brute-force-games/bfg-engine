@@ -6,9 +6,9 @@ import type { BfgGameInstanceId, BfgGameRoomId, BfgGameTableId } from "../../mod
 import type { BfgTimestamp } from "../../models/types/bfg-versions";
 import { NewGamesRegistry, type INewGameRegistry } from "../new-game-registry/new-game-registry";
 import type { IPersistenceOps } from "../new-persistence-ops/persistence-ops";
-import { LocalTbPersistenceOps } from "../new-persistence-ops/local-tb-persistence-ops";
+import { TbFilePersistenceOps } from "../new-persistence-ops/tb-file-persistence-ops";
 import { GameStepPersist } from "@bfg-engine/models/persist/game-step-persist";
-import { GameTablePersist } from "../new-persistence-ops/tb-store/sqlite-persistence-helpers";
+// import { GameTablePersist } from "../new-persistence-ops/tb-store/sqlite-persistence-helpers";
 
 
 export type UpdatedGameTable = {
@@ -135,5 +135,5 @@ const createNewHostOps = (dependencies: INewHostOpsDependencies): INewHostOps =>
 
 export const NewHostOps = createNewHostOps({
   gameRegistry: NewGamesRegistry,
-  persistenceOps: LocalTbPersistenceOps,
+  persistenceOps: TbFilePersistenceOps,
 });

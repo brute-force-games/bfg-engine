@@ -1,0 +1,34 @@
+I want to support the content below as a command line app called bfr. 
+I want it to be in Typescript, driven by yargs, and have it maintain its context/state
+via an app configuration directory on the user's directory path in a directory named .bfr -
+the goal is contexts can be established on the command line and maintained in this directory
+for later reference and access.
+
+# This comment section describes some of how the app should work
+# context concept is equivalent of environment variables, but established so that cmd line app can 
+# maintain its own context variables and settings given a "context-id"? 
+# "context-key" establishes proof of context authority (e.g. permission to delete/update?)
+# "context-ttl" gives a maximum amount of time-to-live for default context to be settable 
+#    (e.g. can't be updated after this time-to-live has expired)
+# Here's an example which clears the previous context, sets a new one and establishes it for
+# following commands to execute against, then creates users and chat room.
+
+bfr unset-default-context [context-id]
+bfr set-default-context [context-id] [context-key] [context-ttl]
+
+bfr set-context CHAT_NAME "My Fun Chat"
+bfr set-context HOST_USER_ID user1
+bfr set-context USER2_ID user2
+bfr set-context USER3_ID user3
+
+
+bfr add-user user1
+bfr add-user user2
+
+
+bfr create-chat *CHAT_NAME* --host *HOST_USER_ID*
+bfr update-chat-users *USER2_ID* *USER3_ID*
+bfr start-chat-room
+
+
+bfr unset-default-context

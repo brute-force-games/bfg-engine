@@ -5,7 +5,7 @@ import {
   type BfgGameInstanceId,
 } from '../../../models/types/bfg-branded-uuids';
 import { createZodSchemaFromTinyBaseSchema, InferTypeFromSchema, type TinybaseTableSchema } from '../../../utils/zod-tb-utils';
-import { bfgArchivesStore } from './bfg-stores';
+import { bfgArchivesStore } from './gamehost-archives/bfg-gamehost-archives-store';
 import { BFG_GAME_INSTANCES_TABLE_NAME, GameInstanceMappingsForZodSchema, type GameInstanceMappings } from './bfg-store-constants';
 import type z from 'zod';
 import { BfgSupportedGameTitleSchema } from '../../../models/game-box-definition';

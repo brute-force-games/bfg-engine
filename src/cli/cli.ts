@@ -6,7 +6,7 @@ import type { INewHostOps } from '../v2/new-host-ops/new-host-ops';
 import { NewHostOps } from '../v2/new-host-ops/new-host-ops';
 import { registerGame } from '../v2/new-game-registry/new-game-registry';
 import type { IPersistenceOps } from '../v2/new-persistence-ops/persistence-ops';
-import { LocalTbPersistenceOps } from '../v2/new-persistence-ops/local-tb-persistence-ops';
+import { LocalTbPersistenceOps } from '../v2/new-persistence-ops/tb-file-persistence-ops';
 import type { IPlayerOps } from '../v2/player-ops/player-ops';
 import type { IWatcherOps } from '../v2/watcher-ops/watcher-ops';
 import type { ITxOps } from '../v2/relay-ops/tx-ops';

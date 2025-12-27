@@ -14,6 +14,9 @@ export type BfgGameStepIndex = z.infer<typeof BfgGameStepIndexSchema>;
 export const BfgTimestampSchema = z.number().int().nonnegative().brand<"BfgTimestamp">();
 export type BfgTimestamp = z.infer<typeof BfgTimestampSchema>;
 
+export const BfgStepIndexSchema = z.number().int().nonnegative().brand<"BfgStepIndex">();
+export type BfgStepIndex = z.infer<typeof BfgStepIndexSchema>;
+
 
 export const BfgGameRoomVersionSchema = z.object({
   roomId: BfgGameRoomIdToolbox.idSchema,

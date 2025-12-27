@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "BFG CLI" [level=1] [ref=e4]
+      - generic [ref=e5]:
+        - generic [ref=e6] [cursor=pointer]:
+          - text: Upload JSON
+          - button "Upload JSON" [ref=e7]
+        - button "Download JSON" [ref=e8] [cursor=pointer]
+        - button "bfg --help" [ref=e9] [cursor=pointer]
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: BFG CLI Web Interface
+        - generic [ref=e13]: Type a command and press Enter or click Execute
+        - generic [ref=e14]: bfg$ add-user test-user-remove-web
+        - generic [ref=e15]: "Creating user with handle: test-user-remove-web..."
+        - generic [ref=e16]: IndexedDB persister initialized - data loaded from IndexedDB
+        - generic [ref=e17]: IndexedDB persister initialized - data loaded from IndexedDB
+        - generic [ref=e18]: "Ignoring inability to install OPFS sqlite3_vfs: The OPFS sqlite3_vfs cannot run in the main thread because it requires Atomics.wait()."
+        - generic [ref=e19]: SQLite WASM module initialized (with OPFS support)
+        - generic [ref=e20]: "Created database: player_profiles.db (regular DB, may use OPFS if VFS installed)"
+        - generic [ref=e21]: "Created database: player_profiles.db (regular DB, may use OPFS if VFS installed)"
+        - generic [ref=e22]: sqlite3_step() rc= 5898 SQLITE_IOERR_DELETE_NOENT SQL = END
+        - generic [ref=e23]: SQLite WASM persister initialized for download/export
+        - generic [ref=e24]: "Hybrid persistence initialized: IndexedDB (primary) + SQLite (export)"
+        - generic [ref=e25]: SQLite WASM persister initialized for download/export
+        - generic [ref=e26]: "Hybrid persistence initialized: IndexedDB (primary) + SQLite (export)"
+        - generic [ref=e27]: ✓ User created successfully
+        - generic [ref=e28]: "Profile ID: bfg_player_profile_fd69c0f0-73b7-4e5b-8962-26edde73e605"
+        - generic [ref=e29]: bfg$ remove-user bfg_player_profile_fd69c0f0-73b7-4e5b-8962-26edde73e605
+      - generic [ref=e30]:
+        - generic [ref=e31]: $
+        - textbox "Enter command (e.g., list-users, add-user <handle>)" [ref=e32]
+        - button "Execute" [active] [ref=e33] [cursor=pointer]
+  - generic [ref=e35]:
+    - generic [ref=e36]: "Select a user to remove:"
+    - generic [ref=e38] [cursor=pointer]:
+      - generic [ref=e39]: test-user-remove-web
+      - generic [ref=e40]: "ID: bfg_player_profile_fd69c0f0-73b7-4e5b-8962-26edde73e605"
+    - generic [ref=e41]: Use ↑↓ arrows to navigate, Enter to select, Esc to cancel
+```

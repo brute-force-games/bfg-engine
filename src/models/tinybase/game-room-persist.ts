@@ -6,7 +6,7 @@ import { BfgPlayersSchema } from "../internal/game-room-base";
 import { RoomPhaseEnumSchema } from "../internal/table-phase";
 
 
-export const GameRoomPersistSchema = z.object({
+export const GameRoomPersistSchemaTb = z.object({
   id: BfgGameRoomIdToolbox.idSchema,
   gameTableId: BfgGameTableIdToolbox.idSchema,
 
@@ -28,12 +28,12 @@ export const GameRoomPersistSchema = z.object({
 });
 
 
-export type GameRoomPersistFields = z.infer<typeof GameRoomPersistSchema>;
+// export type GameRoomPersistFields = z.infer<typeof GameRoomPersistSchemaTb>;
 
-export type GameRoomPersist = GameRoomPersistFields;
+// export type GameRoomPersistTb = GameRoomPersistFields;
 
 
-export interface UpdatedGameTable<HostGameStateSchema extends z.ZodType = z.ZodType> {
-  gameRoom: GameRoomPersist;
-  gameState: z.infer<HostGameStateSchema>;
-}
+// export interface UpdatedGameTable<HostGameStateSchema extends z.ZodType = z.ZodType> {
+//   gameRoom: GameRoomPersistTb;
+//   gameState: z.infer<HostGameStateSchema>;
+// }
