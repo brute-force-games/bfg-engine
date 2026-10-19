@@ -47,6 +47,7 @@
     "@tanstack/react-router": "^1.132.2",
     "qrcode": "^1.5.4",
     "tinybase": "^6.7.0",
-    "trystero": "^0.22.0"
+    "trystero": "^0.22.0",
+    "zod": "^4.1.12"
   }
 }
